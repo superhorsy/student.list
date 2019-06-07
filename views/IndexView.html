@@ -1,0 +1,29 @@
+<head>
+    <meta charset="UTF-8">
+    <title>Форма вноса данных</title>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+</head>
+
+
+
+<body>
+
+<form action="index.php" method="post" enctype="multipart/form-data">
+    <p>Name<input type="text" name="name"></p>
+    <p>E-mail<input type="text" name="email"></p>
+    <p>Message<input type="text" name="message"></p>
+
+
+    <p>
+        <input type="hidden" name="MAX_FILE_SIZE" value="31457280">
+        <input type="file" name="file" value="Download my file!">
+    </p>
+
+    <div class="g-recaptcha" data-sitekey="6Lef0J0UAAAAAHF_VUuCBVlf9rTwnLa1yDg9xYL1"></div>
+    <p><input type="submit" value="Send me!"></p>
+    <p><input type="reset" value="Reset"></p>
+</form>
+
+<button type="button"><a href="paginator.php">Показать посты</a></button>
+
+</body>
