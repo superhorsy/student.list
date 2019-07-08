@@ -1,6 +1,6 @@
 <?php
 
-class Db {
+class TableDataGateway {
 
 	public $connection = null;
 

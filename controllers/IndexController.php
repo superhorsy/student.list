@@ -38,7 +38,7 @@ $fileName = "File is not attached.";
 }
 
 //Передаем пользовательские данные в базу данных
-$db = new DB();
+$db = new TableDataGateway();
 $db->insert(blog, $name, $email, $message, $fileName);
 
 //Проверяем загружен ли файл?
