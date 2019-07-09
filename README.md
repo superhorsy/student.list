@@ -1,2 +1,2 @@
-# student.list
-Приложение "Список студентов"
+# tevent.tournament
+Tournament app for DOTA 2
