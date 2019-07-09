@@ -44,55 +44,38 @@ abstract class TableDataGateway
         return $rows;
     }
 
-    //Внесение строк массивом [key => value]
+    //Insert values with array [column => data]
     public function insertValues(array $values)
     {
         if (!$values) {
-            return;
+            return false;
         }
-        foreach ($values as $k => $v) {
+        //Parameters and bind string
+        $columns = array();
 
+        foreach ($values as $k => $v) {
+            $columns[] = $k;
         }
-        //CREATIN VARIABLE FOR "PREPARE"
+        $columnsString = '"' . implode(', "', $columns);
+        $columnBindString = ':' . implode(', :', $columns);
+
+        //Creating variable for "Prepare"
         // The SQL query you want to run is entered as the parameter, and placeholders are written like this :placeholder_name
 
-        $myInsertStatment = $dbConnection->prepare("INSERT INTO $tableName (name, email, message, file) VALUES (:name, :email, :message, :filename)");
+        $myInsertStatment = $this->connection->prepare("
+            INSERT INTO `$this->table` ($columnsString) 
+            VALUES (:name, :email, :message, :filename)
+            ");
 
         // Now we tell the script which variable each placeholder actually refers to using the bindParam() method
         // First parameter is the placeholder in the statement above - the second parameter is a variable that it should refer to
 
-        $myInsertStatment->bindParam(":name", $name);
-        $myInsertStatment->bindParam(":email", $email);
-        $myInsertStatment->bindParam(":message", $message);
-        $myInsertStatment->bindParam(":filename", $fileName);
-
-        if ($myInsertStatment->execute()) {
-            echo "Данные успешно внесены!<br/>";
+        foreach ($values as $column => $value) {
+            $columnBindName = ":" . $value;
+            $myInsertStatment->bindParam($columnBindName, $$value);
         }
 
+        $myInsertStatment->execute();
+        return true;
     }
-
-    //Направление запроса к ДБ
-    public function query($sql, array $bind = NULL)
-    {
-
-        $dbConnection = $this->connection;//подключаемчся к БД
-
-        $myInsertStatment = $dbConnection->prepare($sql);//подготовка запроса
-
-        if (!empty($bind)) {
-            foreach ($bind as $key => $value) {
-                $myInsertStatment->bindParam($key, $value);// извлекаем и привязываем переменные
-            }
-        }
-
-        if ($myInsertStatment->execute()) { //исполняем запрос
-            echo "Запрос успешно выполнен!<br>";
-        }
-
-        if (strpos($sql, 'SELECT') !== NULL) {
-            return $data = $myInsertStatment->fetchAll();
-        }
-    }
-
 }

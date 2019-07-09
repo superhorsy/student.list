@@ -1,0 +1,5 @@
+host = localhost
+name = tevent_tournament
+user = root
+pass =
+type = mysql
