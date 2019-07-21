@@ -56,7 +56,7 @@ abstract class TableDataGateway
         foreach ($values as $k => $v) {
             $columns[] = $k;
         }
-        $columnsString = '"' . implode(', "', $columns);
+        $columnsString = '"' . implode(', "', $columns) . '"';
         $columnBindString = ':' . implode(', :', $columns);
 
         //Creating variable for "Prepare"
@@ -64,18 +64,19 @@ abstract class TableDataGateway
 
         $myInsertStatment = $this->connection->prepare("
             INSERT INTO `$this->table` ($columnsString) 
-            VALUES (:name, :email, :message, :filename)
+            VALUES ($columnBindString)
             ");
 
         // Now we tell the script which variable each placeholder actually refers to using the bindParam() method
         // First parameter is the placeholder in the statement above - the second parameter is a variable that it should refer to
 
         foreach ($values as $column => $value) {
-            $columnBindName = ":" . $value;
-            $myInsertStatment->bindParam($columnBindName, $$value);
+            $columnBindName = ":" . $column;
+            $myInsertStatment->bindParam($columnBindName, $value);
         }
 
-        $myInsertStatment->execute();
-        return true;
+        if ($myInsertStatment->execute()) {
+            return true;
+        }
     }
 }
