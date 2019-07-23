@@ -1,12 +1,18 @@
 <?php
 
+
+set_include_path( implode( PATH_SEPARATOR, array(
+    realpath(dirname(__FILE__)),
+    get_include_path()
+) ) );
+
 //INIT APP
 
-require_once __DIR__ . '/models/Tournament.php';
+require_once "../models/TableDataGateway.php";
 
 //Обработчик исключений
 
-set_exeception_handler(function (Throwable $exception) {
+set_exception_handler(function (Throwable $exception) {
     // Функция будет вызвана, если исключение не будет
     // поймано и завершит программу.
     //
@@ -20,8 +26,6 @@ set_exeception_handler(function (Throwable $exception) {
     echo "Попробуйте перезагрузить страницу.\n";
 });
 
-error_log()
-
 set_error_handler(function ($errno, $errstr, $errfile, $errline ) {
     // Не выбрасываем исключение если ошибка подавлена с
     // помощью оператора @
@@ -32,4 +36,7 @@ set_error_handler(function ($errno, $errstr, $errfile, $errline ) {
     throw new ErrorException($errstr, $errno, 0, $errfile, $errline);
 });
 
+require '../views/header.phtml';
+require '../views/index.phtml';
+require '../views/footer.phtml';
 
