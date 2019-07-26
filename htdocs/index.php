@@ -1,16 +1,12 @@
 <?php
 
+define('ROOT', dirname(__FILE__));
+define('VIEWS_BASEDIR', dirname(__FILE__).'/../views/');
 
-set_include_path( implode( PATH_SEPARATOR, array(
-    realpath(dirname(__FILE__)),
-    get_include_path()
-) ) );
+//composer autoload
+require_once ROOT . '/../vendor/autoload.php';
 
-//INIT APP
-
-require_once "../models/TableDataGateway.php";
-
-//Обработчик исключений
+/*//Обработчик исключений
 
 set_exception_handler(function (Throwable $exception) {
     // Функция будет вызвана, если исключение не будет
@@ -32,11 +28,13 @@ set_error_handler(function ($errno, $errstr, $errfile, $errline ) {
     if (!error_reporting()) {
         return;
     }
-
     throw new ErrorException($errstr, $errno, 0, $errfile, $errline);
-});
+});*/
 
-require '../views/header.phtml';
-require '../views/index.phtml';
-require '../views/footer.phtml';
+// подключаем конфигурацию URL
+$routes = ROOT . '/../routes.php';
+
+// запускаем роутер
+$router = new Router($routes);
+$router->run();
 
