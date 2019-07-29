@@ -41,17 +41,11 @@ class Router {
                 // Разбиваем внутренний путь на сегменты.
                 $segments = explode('/', $internalRoute);
                 // Первый сегмент — контроллер.
-                $controller = ucfirst(array_shift($segments)).'Controller';
+                $controller = 'App\\Controllers\\'.ucfirst(array_shift($segments)).'Controller';
                 // Второй — действие.
                 $action = 'action'.ucfirst(array_shift($segments));
                 // Остальные сегменты — параметры.
                 $parameters = $segments;
-
-                // Подключаем файл контроллера, если он имеется
-                $controllerFile = ROOT.'/../controllers/'.$controller.'.php';
-                if(file_exists($controllerFile)){
-                    include($controllerFile);
-                }
 
                 // Если не загружен нужный класс контроллера или в нём нет
                 // нужного метода — 404

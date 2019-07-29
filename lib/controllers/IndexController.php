@@ -8,7 +8,7 @@ class IndexController {
 
     function __construct(){
         // используем наш View, описанный ранее
-        $this->view = new View();
+        $this->view = new \App\View();
     }
 
     public function action() {

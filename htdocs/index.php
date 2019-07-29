@@ -35,6 +35,6 @@ set_error_handler(function ($errno, $errstr, $errfile, $errline ) {
 $routes = ROOT . '/../routes.php';
 
 // запускаем роутер
-$router = new Router($routes);
+$router = new App\Router($routes);
 $router->run();
 
