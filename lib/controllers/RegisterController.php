@@ -14,4 +14,8 @@ class RegisterController {
     public function action() {
         $this->view->render('register');
     }
+
+    public function actionSubmit() {
+        $this->view->render('register');
+    }
 }
