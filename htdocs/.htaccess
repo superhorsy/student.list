@@ -1,6 +1,10 @@
+AddDefaultCharset utf-8
+
 RewriteEngine on
-# если папка или файл реально существуют, используем их
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-# если нет — отдаём всё index.php
-RewriteRule . index.php
+    RewriteBase /
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} /+[^\.]+$
+    RewriteRule ^(.+[^/])$ %{REQUEST_URI}/ [R=301,L]
+    RewriteRule \.(php|htm|swf|fla|xml|ico|jpg|gif|png|js|css)$ - [L]
+    RewriteRule ^.*$ index.php [NC,L]

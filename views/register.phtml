@@ -1,42 +1,50 @@
 <main role="main" class="flex-shrink-0">
     <div class="container">
-        <form class="form-register" action="/register/submit/" method="post">
+        <form name="register" class="form-register" action="/register/" method="post">
             <h1 class="h3 mb-3 font-weight-normal">Регистрация:</h1>
+            <?php if (isset($errors) && $errors): ?>
+            <div class="alert alert-danger" role="alert">
+                <?php foreach ($errors as $error): ?>
+                    <span class="error-messages"><?= $error; ?></span>
+                <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
+            <input type="hidden" name="token_registration" value="<?=$_SESSION['token_registration'];?>">
             <div class="row">
                 <div class="col">
                     <label for="inputUsername" class="sr-only">Имя пользователя</label>
-                    <input id="inputUsername" class="form-control" placeholder="Имя пользователя"
+                    <input name="username" id="inputUsername" class="form-control" placeholder="Имя пользователя"
                            required autofocus>
                 </div>
                 <div class="col">
-                    <label for="inputUsername" class="sr-only">Ваше имя</label>
-                    <input id="inputUsername" class="form-control" placeholder="Ваше имя" required autofocus>
+                    <label for="inputName" class="sr-only">Ваше имя</label>
+                    <input name="name" id="inputName" class="form-control" placeholder="Ваше имя" required autofocus>
                 </div>
             </div>
             <div class="row">
                 <div class="col"><label for="inputEmail" class="sr-only">Адрес электронной почты</label>
-                    <input type="email" id="inputEmail" class="form-control" placeholder="Email" required autofocus>
+                    <input name="email" type="email" id="inputEmail" class="form-control" placeholder="Email" required autofocus>
                 </div>
             </div>
             <div class="row">
                 <div class="col">
-                    <label for="inputPasswordAgain" class="sr-only">Пароль</label>
-                    <input type="password" id="inputPassword" class="form-control" placeholder="Введите пароль"
+                    <label for="inputPassword" class="sr-only">Пароль</label>
+                    <input name="password" type="password" id="inputPassword" class="form-control" placeholder="Введите пароль"
                            required>
                 </div>
                 <div class="col">
                     <label for="inputPasswordAgain" class="sr-only">Повторите пароль</label>
-                    <input type="password" id="inputPasswordAgain" class="form-control" placeholder="Повторите пароль"
+                    <input name="passwordAgain" type="password" id="inputPasswordAgain" class="form-control" placeholder="Повторите пароль"
                            required>
                 </div>
             </div>
             <div class="row checkbox mb-3">
                 <div class="col"><label>
-                        <input type="checkbox" value="remember-me"> Запомнить меня
+                        <input name="rememberme" type="checkbox" value="remember-me"> Запомнить меня
                     </label></div>
             </div>
 
-            <button class="btn btn-lg btn-primary btn-block" type="submit">Зарегистрироваться</button>
+            <button name="submit" class="btn btn-lg btn-primary btn-block" type="submit">Зарегистрироваться</button>
         </form>
     </div>
 </main>
