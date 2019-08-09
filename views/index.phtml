@@ -1,18 +1,45 @@
 <main role="main" class="flex-shrink-0">
     <div class="container">
-        <form class="form-signin">
+        <?php if (isset($notify) && ($notify == 'registered')): ?>
+            <div class="alert alert-success" role="alert">
+                <h4 class="alert-heading">Регистрация прошла успешно!</h4>
+                <p>Теперь вы можете войти, используя ваш логин и пароль</p>
+            </div>
+        <?php endif; ?>
+        <?php if (isset($notify) && ($notify == 'logined')): ?>
+            <div class="alert alert-success" role="alert">
+                <h4 class="alert-heading">Вы успешно авторизованы!</h4>
+                <p>Вы можете создать турнир</p>
+            </div>
+        <?php endif; ?>
+
+        <form name="login" class="form-signin" method="post" action="/index/" onsubmit="document.getElementById(submit-button).disabled=true">
+
             <h1 class="h3 mb-3 font-weight-normal">Пожалуйста, войдите в свой аккаут</h1>
-            <label for="inputEmail" class="sr-only">Адрес электронной почты</label>
-            <input type="email" id="inputEmail" class="form-control" placeholder="Ваш e-mail" required autofocus>
+
+            <?php if (isset($errors) && $errors): ?>
+                <div class="alert alert-danger" role="alert">
+                    <?php foreach ($errors as $error): ?>
+                        <span class="error-messages"><?= $error; ?></span><br>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+
+            <input name="token_login" type="hidden" value="<?=htmlspecialchars($_SESSION['token_login'], ENT_QUOTES);?>">
+            <label for="inputUsername" class="sr-only">Адрес электронной почты</label>
+            <input name="username" type="text" id="inputUsername" class="form-control" placeholder="Имя пользователя" value="<?=htmlspecialchars($values['username']??'');?>" required autofocus>
             <label for="inputPassword" class="sr-only">Пароль</label>
-            <input type="password" id="inputPassword" class="form-control" placeholder="Ваш пароль" required>
+            <input name="password" type="password" id="inputPassword" class="form-control" placeholder="Ваш пароль" required>
+
             <div class="checkbox mb-3">
                 <label>
-                    <input type="checkbox" value="remember-me"> Запомнить меня
+                    <input name="rememberme" type="checkbox" value="rememberme"> Запомнить меня
                 </label>
             </div>
-            <button class="btn btn-lg btn-primary btn-block" type="submit">Войти</button>
-            <a class="btn btn-lg btn-block btn-lnk" role="button" href="register">Зарегистрироваться</a>
+
+            <button name="submit" id="submit-button" class="btn btn-lg btn-primary btn-block" type="submit">Войти</button>
         </form>
+
+        <a class="btn btn-lg btn-block btn-lnk" role="button" href="/register">Зарегистрироваться</a>
     </div>
 </main>

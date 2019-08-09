@@ -1,50 +1,50 @@
 <main role="main" class="flex-shrink-0">
     <div class="container">
-        <form name="register" class="form-register" action="/register/" method="post">
+        <form name="register" class="form-register" action="/register/" method="post" onsubmit="document.getElementById(submit-button).disabled=true">
             <h1 class="h3 mb-3 font-weight-normal">Регистрация:</h1>
             <?php if (isset($errors) && $errors): ?>
             <div class="alert alert-danger" role="alert">
                 <?php foreach ($errors as $error): ?>
-                    <span class="error-messages"><?= $error; ?></span>
+                    <span class="error-messages"><?= $error; ?></span><br>
                 <?php endforeach; ?>
             </div>
             <?php endif; ?>
-            <input type="hidden" name="token_registration" value="<?=$_SESSION['token_registration'];?>">
+            <input type="hidden" name="token_registration" value="<?=htmlspecialchars($_SESSION['token_registration'], ENT_QUOTES);?>">
             <div class="row">
                 <div class="col">
                     <label for="inputUsername" class="sr-only">Имя пользователя</label>
-                    <input name="username" id="inputUsername" class="form-control" placeholder="Имя пользователя"
+                    <input name="username" id="inputUsername" class="form-control <?php if(isset($errors['username'])) {echo 'is-invalid';}?>" placeholder="Имя пользователя" value="<?=htmlentities($values['username'])?>"
                            required autofocus>
+                    <div class="invalid-feedback"><?=$errors['username']?></div>
                 </div>
                 <div class="col">
                     <label for="inputName" class="sr-only">Ваше имя</label>
-                    <input name="name" id="inputName" class="form-control" placeholder="Ваше имя" required autofocus>
+                    <input name="name" id="inputName" class="form-control <?php if(isset($errors['name'])) {echo 'is-invalid';}?>" placeholder="Ваше имя" value="<?= htmlentities($values['name']) ?>" required autofocus>
+                    <div class="invalid-feedback"><?=$errors['name']?></div>
                 </div>
             </div>
             <div class="row">
-                <div class="col"><label for="inputEmail" class="sr-only">Адрес электронной почты</label>
-                    <input name="email" type="email" id="inputEmail" class="form-control" placeholder="Email" required autofocus>
+                <div class="col">
+                    <label for="inputEmail" class="sr-only">Адрес электронной почты</label>
+                    <input name="email" type="email" id="inputEmail" class="form-control <?php if(isset($errors['email'])) {echo 'is-invalid';}?>" placeholder="Email" value="<?=htmlentities($values['email']) ?>" required autofocus>
+                    <div class="invalid-feedback"><?=$errors['email']?></div>
                 </div>
             </div>
             <div class="row">
                 <div class="col">
                     <label for="inputPassword" class="sr-only">Пароль</label>
-                    <input name="password" type="password" id="inputPassword" class="form-control" placeholder="Введите пароль"
+                    <input name="password" type="password" id="inputPassword" class="form-control <?php if(isset($errors['password'])) {echo 'is-invalid';}?>" placeholder="Введите пароль"
                            required>
+
+                    <div class="invalid-feedback"><?=$errors['password']?></div>
                 </div>
                 <div class="col">
                     <label for="inputPasswordAgain" class="sr-only">Повторите пароль</label>
-                    <input name="passwordAgain" type="password" id="inputPasswordAgain" class="form-control" placeholder="Повторите пароль"
+                    <input name="passwordAgain" type="password" id="inputPasswordAgain" class="form-control <?php if(isset($errors['password'])) {echo 'is-invalid';}?>" placeholder="Повторите пароль"
                            required>
                 </div>
             </div>
-            <div class="row checkbox mb-3">
-                <div class="col"><label>
-                        <input name="rememberme" type="checkbox" value="remember-me"> Запомнить меня
-                    </label></div>
-            </div>
-
-            <button name="submit" class="btn btn-lg btn-primary btn-block" type="submit">Зарегистрироваться</button>
+            <button name="submit" id="submit-button" class="btn btn-lg btn-primary btn-block" type="submit">Зарегистрироваться</button>
         </form>
     </div>
 </main>

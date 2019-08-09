@@ -31,6 +31,11 @@
                     <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
                 </li>
             </ul>
+            <?php if(isset($_COOKIE['auth'])):?>
+            <form class="form-inline mt-2 mt-md-0">
+                <a class="btn btn-outline-danger my-2 my-sm-0" role="button" href="/index/logout/">Выйти из аккаунта</a>
+            </form>
+            <?php endif;?>
             <!--Форма поиска-->
             <!--<form class="form-inline mt-2 mt-md-0">
                 <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">

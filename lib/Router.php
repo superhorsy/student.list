@@ -14,7 +14,7 @@ class Router {
     /**Метод получает URI. Несколько вариантов представлены для надёжности.
      * @return string
      */
-    function getURI(){
+    function getPath(){
         if(!empty($_SERVER['REQUEST_URI'])) {
             return trim($_SERVER['REQUEST_URI'], '/');
         }
@@ -29,15 +29,22 @@ class Router {
     }
 
     function run(){
-        // Получаем URI.
-        $uri = $this->getURI();
+
+        // Parse URL
+        $path = $this->getpath();
+
+        if(!$path) {
+            // Ничего не применилось. 404.
+            header("HTTP/1.0 404 Not Found");
+            return;
+        }
 
         // Пытаемся применить к нему правила из конфигуации.
         foreach($this->routes as $pattern => $route){
             // Если правило совпало.
-            if(preg_match("~$pattern~", $uri)){
+            if(preg_match("~$pattern~", $path)){
                 // Получаем внутренний путь из внешнего согласно правилу.
-                $internalRoute = preg_replace("~$pattern~", $route, $uri);
+                $internalRoute = preg_replace("~$pattern~", $route, $path);
                 // Разбиваем внутренний путь на сегменты.
                 $segments = explode('/', $internalRoute);
                 // Первый сегмент — контроллер.
