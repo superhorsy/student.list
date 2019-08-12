@@ -49,10 +49,10 @@ abstract class TDG
     }
 
     //Подгрузка всех значений из БД
-    public function getAll()
+    public function getAll():array
     {
-        $rows = $this->connection->query("SELECT * FROM `$this->table`")->fetchAll(PDO::FETCH_ASSOC);
-        return $rows;
+        $dataArray = $this->connection->query("SELECT * FROM `$this->table`")->fetchAll(PDO::FETCH_ASSOC);
+        return $dataArray;
     }
 
     //Insert values with array [column => data]

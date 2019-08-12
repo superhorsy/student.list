@@ -33,12 +33,6 @@ class Router {
         // Parse URL
         $path = $this->getpath();
 
-        if(!$path) {
-            // Ничего не применилось. 404.
-            header("HTTP/1.0 404 Not Found");
-            return;
-        }
-
         // Пытаемся применить к нему правила из конфигуации.
         foreach($this->routes as $pattern => $route){
             // Если правило совпало.

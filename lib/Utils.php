@@ -8,7 +8,19 @@ use App\models\UserTDG;
 
 class Utils
 {
-    public static function getValues(array $postData): array
+
+    private static function trimValue($value)
+    {
+        if(is_array($value)) {
+            array_filter($value, 'self::trimValue');
+            return $value;
+        }
+
+        $value = strval($value);
+        return trim($value);
+    }
+
+    public static function getUserValues(array $postData): array
     {
         $values = [];
         $data = [];
@@ -22,5 +34,16 @@ class Utils
         $values['password'] = isset($data['password']) ? strval($data['password']) : '';
 
         return $values;
+    }
+
+    public static function getTournamentValues(array $postData): array
+    {
+        $values = array_filter($postData, 'self::trimValue');
+
+        return [
+            't_name' => $values['t_name'] ?? '',
+            't_date' => $values['t_date'] ?? '',
+            'p_nickname' => $values['t_name'] ?? '',
+        ];
     }
 }

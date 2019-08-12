@@ -1,45 +1,64 @@
 <main role="main" class="flex-shrink-0">
     <div class="container">
+
         <?php if (isset($notify) && ($notify == 'registered')): ?>
             <div class="alert alert-success" role="alert">
                 <h4 class="alert-heading">Регистрация прошла успешно!</h4>
                 <p>Теперь вы можете войти, используя ваш логин и пароль</p>
             </div>
-        <?php endif; ?>
-        <?php if (isset($notify) && ($notify == 'logined')): ?>
+        <?php elseif (isset($notify) && ($notify == 'logined')): ?>
             <div class="alert alert-success" role="alert">
-                <h4 class="alert-heading">Вы успешно авторизованы!</h4>
+                <h4 class="alert-heading">Добро пожаловать, <?=$user->getName();?></h4>
                 <p>Вы можете создать турнир</p>
             </div>
         <?php endif; ?>
 
-        <form name="login" class="form-signin" method="post" action="/index/" onsubmit="document.getElementById(submit-button).disabled=true">
+        <?php if (empty($user)): ?>
 
-            <h1 class="h3 mb-3 font-weight-normal">Пожалуйста, войдите в свой аккаут</h1>
+            <form name="login" class="form-signin" method="post" action="/index/"
+                  onsubmit="document.getElementById(submit-button).disabled=true">
 
-            <?php if (isset($errors) && $errors): ?>
-                <div class="alert alert-danger" role="alert">
-                    <?php foreach ($errors as $error): ?>
-                        <span class="error-messages"><?= $error; ?></span><br>
-                    <?php endforeach; ?>
+                <h1 class="h3 mb-3 font-weight-normal">Пожалуйста, войдите в свой аккаут</h1>
+
+                <?php if (isset($errors) && $errors): ?>
+                    <div class="alert alert-danger" role="alert">
+                        <?php foreach ($errors as $error): ?>
+                            <span class="error-messages"><?= $error; ?></span><br>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+
+                <input name="token_login" type="hidden"
+                       value="<?= htmlspecialchars($_SESSION['token_login'], ENT_QUOTES); ?>">
+                <label for="inputUsername" class="sr-only">Адрес электронной почты</label>
+                <input name="username" type="text" id="inputUsername" class="form-control"
+                       placeholder="Имя пользователя" value="<?= htmlspecialchars($values['username'] ?? ''); ?>"
+                       required autofocus>
+                <label for="inputPassword" class="sr-only">Пароль</label>
+                <input name="password" type="password" id="inputPassword" class="form-control" placeholder="Ваш пароль"
+                       required>
+
+                <div class="checkbox mb-3">
+                    <label>
+                        <input name="rememberme" type="checkbox" value="rememberme"> Запомнить меня
+                    </label>
                 </div>
-            <?php endif; ?>
 
-            <input name="token_login" type="hidden" value="<?=htmlspecialchars($_SESSION['token_login'], ENT_QUOTES);?>">
-            <label for="inputUsername" class="sr-only">Адрес электронной почты</label>
-            <input name="username" type="text" id="inputUsername" class="form-control" placeholder="Имя пользователя" value="<?=htmlspecialchars($values['username']??'');?>" required autofocus>
-            <label for="inputPassword" class="sr-only">Пароль</label>
-            <input name="password" type="password" id="inputPassword" class="form-control" placeholder="Ваш пароль" required>
+                <button name="submit" id="submit-button" class="btn btn-lg btn-primary btn-block" type="submit">Войти
+                </button>
+            </form>
 
-            <div class="checkbox mb-3">
-                <label>
-                    <input name="rememberme" type="checkbox" value="rememberme"> Запомнить меня
-                </label>
+            <a class="btn btn-lg btn-block btn-lnk" role="button" href="/register">Зарегистрироваться</a>
+
+        <?php else: ?>
+
+            <div>
+            <a class="btn btn-lg btn-primary btn-block btn-lnk" role="button" href="/tournament">Перейти к турнирам</a>
             </div>
 
-            <button name="submit" id="submit-button" class="btn btn-lg btn-primary btn-block" type="submit">Войти</button>
-        </form>
+        <?php endif; ?>
 
-        <a class="btn btn-lg btn-block btn-lnk" role="button" href="/register">Зарегистрироваться</a>
     </div>
+
+
 </main>

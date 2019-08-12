@@ -8,29 +8,28 @@ class User
 {
     private $tdg = null;
 
-    public $id = null;
-    public $hash = null;
-    public $username = null;
-    public $name = null;
-    public $email = null;
+    private $id = null;
+    private $hash = null;
+    private $username = null;
+    private $name = null;
+    private $email = null;
 
-    public function __construct($values = null)
+    public function __construct($idOrUsername = null)
     {
         $db = new UserTDG();
         $this->tdg = $db;
-        if (isset($values)){
-            $this->createUser($values);
+        if (isset($idOrUsername)){
+            $userData = $this->tdg->getUserData($idOrUsername);
+            $this->hydrate($userData);
         }
     }
 
-    private function createUser($values){
-        $this->username = $values['username'];
-        $this->name = $values['name'];
-        $this->email = $values['email'];
-    }
-
-    public function getHash(){
-        return $this->hash ? $this->hash : false;
+    public function hydrate($values){
+        $values['id'] ? $this->setId($values['id']) : $this->setId('');
+        $values['hash'] ? $this->setHash($values['hash']) : $this->setHash('');
+        $values['username'] ? $this->setUsername($values['username']) : $this->setUsername('');
+        $values['name'] ? $this->setName($values['name']) : $this->setName('');
+        $values['email'] ? $this->setEmail($values['email']) : $this->setEmail('');
     }
 
     public function save($values) {
@@ -104,4 +103,86 @@ class User
 
         return $errors;
     }
+
+
+    /**
+     * @return null
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param null $id
+     */
+    public function setId($id): void
+    {
+        $this->id = $id;
+    }
+
+    /**
+     * @return null
+     */
+    public function getUsername()
+    {
+        return $this->username;
+    }
+
+    /**
+     * @param null $username
+     */
+    public function setUsername($username): void
+    {
+        $this->username = $username;
+    }
+
+    /**
+     * @return null
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
+     * @param null $name
+     */
+    public function setName($name): void
+    {
+        $this->name = $name;
+    }
+
+    /**
+     * @return null
+     */
+    public function getEmail()
+    {
+        return $this->email;
+    }
+
+    /**
+     * @param null $email
+     */
+    public function setEmail($email): void
+    {
+        $this->email = $email;
+    }
+
+    /**
+     * @return null
+     */
+    public function getHash()
+    {
+        return $this->hash;
+    }
+
+    /**
+     * @param null $hash
+     */
+    public function setHash($hash): void
+    {
+        $this->hash = $hash;
+    }
+
 }

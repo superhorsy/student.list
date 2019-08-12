@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\models\User;
+use App\models\UserTDG;
 use App\Utils;
 use App\View;
 
@@ -31,8 +32,9 @@ class RegisterController
             if (!isset($_POST['token_registration']) || $_SESSION['token_registration'] !== $_POST['token_registration']) {
                 $errors[] = 'Произошла ошибка. Обновите страницу и попробуйте снова.';
             } else {
-                $values = Utils::getValues($_POST);
-                $user = new User($values);
+                $values = Utils::getUserValues($_POST);
+                $user = new User();
+                $user->hydrate($values);
                 $errors = $user->validate();
 
                 if (empty($errors)) {
@@ -43,7 +45,10 @@ class RegisterController
                     header("Location: http://{$_SERVER['HTTP_HOST']}/index?$query");
                 }
             }
+        } elseif($_COOKIE['auth']) {
+            header("Location: /index");
         }
+
         $this->view->render('register', ['errors' => $errors, 'values' => $values]);
 
     }
