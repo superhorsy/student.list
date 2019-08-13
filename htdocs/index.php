@@ -6,7 +6,7 @@ define('VIEWS_BASEDIR', dirname(__FILE__).'/../views/');
 //composer autoload
 require_once ROOT . '/../vendor/autoload.php';
 
-/*//Обработчик исключений
+//Обработчик исключений
 
 set_exception_handler(function (Throwable $exception) {
     // Функция будет вызвана, если исключение не будет
@@ -29,7 +29,7 @@ set_error_handler(function ($errno, $errstr, $errfile, $errline ) {
         return;
     }
     throw new ErrorException($errstr, $errno, 0, $errfile, $errline);
-});*/
+});
 
 //Cессия
 session_start();

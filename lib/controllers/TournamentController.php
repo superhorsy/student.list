@@ -42,6 +42,18 @@ class TournamentController
                 $tournament->hydrate($values);
                 $errors = $tournament->isValid();
             }
+            if (!$errors) {
+                try {
+                    $tournament->save();
+                } catch (\PDOException $e) {
+                    $query = http_build_query(['notify' => 'fail']);
+                    http_response_code(500);
+                    header("Location: tournament?$query");
+                }
+                http_response_code(302);
+                $query = http_build_query(['notify' => 'success']);
+                header("Location: tournament?$query");
+            }
         }
 
         $this->view->render('tournament', ['user' => $user, 'values' => $values, $errors => $errors]);
