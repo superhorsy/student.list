@@ -39,8 +39,20 @@ class Tournament
     public function save(): bool
     {
         $tournamentId = $this->tdg->saveTournament($this);
+
+        if (!$tournamentId) {
+            return false;
+        }
+
         $this->id = $tournamentId;
+
+        foreach ($this->players as $player) {
+            $player->setTournamentId($tournamentId);
+            $player->save();
+        }
+
         return $this->id ? true : false;
+
     }
 
     public function isValid(): ?array
@@ -66,21 +78,18 @@ class Tournament
             }
         }
 
-        if (!$this->players) {
-            $errors[] = 'Не введены данные игроков';
-        } else {
-
-            foreach ($this->players as $player) {
-                $playerNicknames = array();
-                $playerErrors = $player->isValid();
-                if ($playerErrors) {
-                    array_merge($errors, $playerErrors);
-                };
-                if (count($playerNicknames) !== count(array_unique($playerNicknames))) {
-                    $errors[] = 'Никнэймы игроков не могут дублироваться';
-                }
-            }
+        $playerNicknames = array();
+        foreach ($this->players as $player) {
+            $playerNicknames[] = $player->getNickname();
+            $playerErrors = $player->isValid();
+            if ($playerErrors) {
+                $errors = array_merge($errors, $playerErrors);
+            };
         }
+        if (count($playerNicknames) !== count(array_unique($playerNicknames))) {
+            $errors[] = 'Никнэймы игроков не могут дублироваться';
+        }
+
 
         return $errors ? $errors : null;
     }
@@ -88,7 +97,8 @@ class Tournament
     /**
      * @return array
      */
-    public function getPlayers(): array
+    public
+    function getPlayers(): array
     {
         return $this->players;
     }
@@ -96,21 +106,23 @@ class Tournament
     /**
      * @param array $data
      */
-    public function setPlayers(array $data): void
+    public
+    function setPlayers(array $nicknames): void
     {
         $players = [];
-        foreach ($data as $params) {
+        foreach ($nicknames as $nickname) {
             $player = new Players();
-            $player->hydrate($params);
-            $players[] = $player;
+            $playerData = ['nickname' => $nickname];
+            $player->hydrate($playerData);
+            $this->players[] = $player;
         }
-        $this->players = $players;
     }
 
     /**
      * @return null
      */
-    public function getId()
+    public
+    function getId()
     {
         return $this->id;
     }
@@ -118,7 +130,8 @@ class Tournament
     /**
      * @param null $id
      */
-    public function setId($id): void
+    public
+    function setId($id): void
     {
         $this->id = $id;
     }
@@ -126,7 +139,8 @@ class Tournament
     /**
      * @return null
      */
-    public function getName()
+    public
+    function getName()
     {
         return $this->name;
     }
@@ -134,7 +148,8 @@ class Tournament
     /**
      * @param null $name
      */
-    public function setName($name): void
+    public
+    function setName($name): void
     {
         $this->name = $name;
     }
@@ -142,7 +157,8 @@ class Tournament
     /**
      * @return null
      */
-    public function getDatetime()
+    public
+    function getDatetime()
     {
         return $this->datetime;
     }
@@ -150,7 +166,8 @@ class Tournament
     /**
      * @param null $datetime
      */
-    public function setDatetime($datetime): void
+    public
+    function setDatetime($datetime): void
     {
         $this->datetime = $datetime;
     }
@@ -158,7 +175,8 @@ class Tournament
     /**
      * @return null
      */
-    public function getOwnerId()
+    public
+    function getOwnerId()
     {
         return $this->owner_id;
     }
@@ -166,7 +184,8 @@ class Tournament
     /**
      * @param null $owner_id
      */
-    public function setOwnerId($owner_id): void
+    public
+    function setOwnerId($owner_id): void
     {
         $this->owner_id = $owner_id;
     }

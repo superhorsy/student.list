@@ -93,4 +93,5 @@ class IndexController
             'notify' => $notify
         ]);
     }
+
 }

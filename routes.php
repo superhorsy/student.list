@@ -7,6 +7,7 @@ return array(
     '^index$' => 'index',
     '^tournament$' => 'tournament',
     '^tournament/add$' => 'tournament/add',
+    '^tournament/?(.+)' => 'tournament',
 
 
     'about' => 'page/show/about',

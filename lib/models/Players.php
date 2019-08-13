@@ -23,6 +23,14 @@ class Players
         $this->tdg = $tdg;
     }
 
+    public function save()
+    {
+        return $this->tdg->insertValues([
+            'nickname'=>$this->nickname,
+            'tournament_id'=>$this->tournament_id,
+        ]) ? true : false;
+    }
+
     public function hydrate(array $values)
     {
         $values['id'] ? $this->setId($values['id']) : $this->setId('');
@@ -31,10 +39,11 @@ class Players
         $values['tournament_id'] ? $this->setTournamentId($values['tournament_id']) : $this->setTournamentId('');
     }
 
-    public function isValid():?array {
+    public function isValid(): ?array
+    {
         $errors = array();
-        $emptyNicknameError = null;
-        if (!$this->nickname && !$emptyNicknameError) {
+        static $emptyNicknameError = null;
+        if (!($this->nickname) && !$emptyNicknameError) {
             $errors[] = 'Заполнены не все ники игроков';
             $emptyNicknameError = true;
         } elseif (mb_strlen($this->nickname) > 50) {

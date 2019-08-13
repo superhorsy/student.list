@@ -1,3 +1,15 @@
+<div class="container content">
+<?php if (isset($notify) && ($notify == 'success')): ?>
+    <div class="alert alert-success" role="alert">
+        <h4 class="alert-heading">Турнир успешно создан!</h4>
+    </div>
+<?php elseif (isset($notify) && ($notify == 'fail')): ?>
+    <div class="alert alert-danger" role="alert">
+        <h4 class="alert-heading">Не удалось создать турнир</h4>
+        <p>Пожалуйста, перезагрузите страницу и попробуйте снова.</p>
+    </div>
+<?php endif; ?>
 <div>
     <a class="btn btn-lg btn-primary btn-block btn-lnk" role="button" href="/tournament/add">Создать турнир</a>
+</div>
 </div>

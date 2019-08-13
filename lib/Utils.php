@@ -36,14 +36,15 @@ class Utils
         return $values;
     }
 
-    public static function getTournamentValues(array $postData): array
+    public static function getTournamentValues(array $postData, int $ownerId): array
     {
         $values = array_filter($postData, 'self::trimValue');
 
         return [
-            't_name' => $values['t_name'] ?? '',
-            't_date' => $values['t_date'] ?? '',
-            'p_nickname' => $values['t_name'] ?? '',
+            'name' => $values['t_name'] ?? '',
+            'datetime' => $values['t_date'] ?? '',
+            'players' => $values['p_nickname'] ?? '',
+            'owner_id' => $ownerId,
         ];
     }
 }
