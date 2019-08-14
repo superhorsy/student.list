@@ -44,7 +44,7 @@ class Router {
                 // Первый сегмент — контроллер.
                 $controller = 'App\\Controllers\\'.ucfirst(array_shift($segments)).'Controller';
                 // Второй — действие.
-                $action = 'action'.ucfirst(array_shift($segments));
+                    $action = 'action'.ucfirst(array_shift($segments));
                 // Остальные сегменты — параметры.
                 $parameters = $segments;
 

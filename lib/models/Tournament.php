@@ -13,6 +13,9 @@ class Tournament
     private $datetime = null;
     private $owner_id = null;
     private $players = array();
+    private $status;
+
+    const STATUS_IN_PROGRESS = 'in progress';
 
     /**
      * Tournament constructor.
@@ -22,6 +25,27 @@ class Tournament
     {
         $tdg = new TournamentTDG();
         $this->tdg = $tdg;
+        if ($this->id) {
+            $this->setPlayers();
+        }
+    }
+
+    public function start()
+    {
+        $this->setStatus(self::STATUS_IN_PROGRESS);
+        $this->mix();
+    }
+
+    public function mix()
+    {
+        for ($i = 0; $this->players[$i]; $i++) {
+            $player = $this->players[$i];
+            $groupName = 'A';
+            $player->setGroup($groupName);
+            if ($i & 5 == 0) {
+                $groupName++;
+            }
+        }
     }
 
     public function hydrate(array $values)
@@ -97,8 +121,7 @@ class Tournament
     /**
      * @return array
      */
-    public
-    function getPlayers(): array
+    public function getPlayers(): array
     {
         return $this->players;
     }
@@ -106,23 +129,26 @@ class Tournament
     /**
      * @param array $data
      */
-    public
-    function setPlayers(array $nicknames): void
+    public function setPlayers(array $nicknames = array()): void
     {
-        $players = [];
-        foreach ($nicknames as $nickname) {
-            $player = new Players();
-            $playerData = ['nickname' => $nickname];
-            $player->hydrate($playerData);
-            $this->players[] = $player;
+        if ($nicknames) {
+            $players = [];
+            foreach ($nicknames as $nickname) {
+                $player = new Players();
+                $playerData = ['nickname' => $nickname];
+                $player->hydrate($playerData);
+                $this->players[] = $player;
+            }
+        }
+        if ($this->id) {
+            $this->players = (new PlayersTDG())->getPlayersbyTournamentID($this->id);
         }
     }
 
     /**
      * @return null
      */
-    public
-    function getId()
+    public function getId()
     {
         return $this->id;
     }
@@ -130,8 +156,7 @@ class Tournament
     /**
      * @param null $id
      */
-    public
-    function setId($id): void
+    public function setId($id): void
     {
         $this->id = $id;
     }
@@ -139,8 +164,7 @@ class Tournament
     /**
      * @return null
      */
-    public
-    function getName()
+    public function getName()
     {
         return $this->name;
     }
@@ -148,8 +172,7 @@ class Tournament
     /**
      * @param null $name
      */
-    public
-    function setName($name): void
+    public function setName($name): void
     {
         $this->name = $name;
     }
@@ -157,8 +180,7 @@ class Tournament
     /**
      * @return null
      */
-    public
-    function getDatetime()
+    public function getDatetime()
     {
         return $this->datetime;
     }
@@ -166,8 +188,7 @@ class Tournament
     /**
      * @param null $datetime
      */
-    public
-    function setDatetime($datetime): void
+    public function setDatetime($datetime): void
     {
         $this->datetime = $datetime;
     }
@@ -175,8 +196,7 @@ class Tournament
     /**
      * @return null
      */
-    public
-    function getOwnerId()
+    public function getOwnerId()
     {
         return $this->owner_id;
     }
@@ -184,10 +204,25 @@ class Tournament
     /**
      * @param null $owner_id
      */
-    public
-    function setOwnerId($owner_id): void
+    public function setOwnerId($owner_id): void
     {
         $this->owner_id = $owner_id;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getStatus()
+    {
+        return $this->status;
+    }
+
+    /**
+     * @param mixed $status
+     */
+    public function setStatus($status): void
+    {
+        $this->status = $status;
     }
 
 }

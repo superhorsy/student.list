@@ -7,10 +7,8 @@ return array(
     '^index$' => 'index',
     '^tournament$' => 'tournament',
     '^tournament/add$' => 'tournament/add',
+    '^tournament/show/([-_a-z0-9]+)$' => 'tournament/show/$1',
     '^tournament/?(.+)' => 'tournament',
 
-
     'about' => 'page/show/about',
-    'page/([-_a-z0-9]+)' => 'page/show/$1',
-    'users/([-_a-z0-9]+)' => 'users/show/$1',
 );

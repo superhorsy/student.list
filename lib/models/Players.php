@@ -10,8 +10,9 @@ class Players
 
     private $id;
     private $nickname;
-    private $team;
+    private $group;
     private $tournament_id;
+    private $lifes;
 
     /**
      * Players constructor.
@@ -35,7 +36,6 @@ class Players
     {
         $values['id'] ? $this->setId($values['id']) : $this->setId('');
         $values['nickname'] ? $this->setNickname($values['nickname']) : $this->setNickname('');
-        $values['team'] ? $this->setTeam($values['team']) : $this->setTeam('');
         $values['tournament_id'] ? $this->setTournamentId($values['tournament_id']) : $this->setTournamentId('');
     }
 
@@ -104,17 +104,32 @@ class Players
     /**
      * @return mixed
      */
-    public function getTeam()
+    public function getGroup()
     {
-        return $this->team;
+        return $this->group;
     }
 
     /**
-     * @param mixed $team
+     * @param mixed $group
      */
-    public function setTeam($team): void
+    public function setGroup($group): void
     {
-        $this->team = $team;
+        $this->group = $group;
+        $this->tdg->setGroup($this);
+    }
+    /**
+     * @return null
+     */
+    public function getLifes()
+    {
+        return $this->lifes;
     }
 
+    /**
+     * @param null $lifes
+     */
+    public function setLifes($lifes): void
+    {
+        $this->lifes = $lifes;
+    }
 }

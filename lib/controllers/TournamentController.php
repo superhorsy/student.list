@@ -5,6 +5,7 @@ namespace App\controllers;
 
 
 use App\models\Tournament;
+use App\models\TournamentTDG;
 use App\models\User;
 use App\models\UserTDG;
 use App\Utils;
@@ -21,36 +22,54 @@ class TournamentController
             $_SESSION['token_tournament'] = md5(uniqid(mt_rand(), true));
         }
 
+        if (!isset($_COOKIE['auth'])) {
+            header("Location: /index");
+            exit;
+        }
+        $this->user = new User($_COOKIE['auth']);
+        $notify = $_GET['notify'] ? strval($_GET['notify']) : '';
+
     }
 
     public function action()
     {
-        if (!isset($_COOKIE['auth'])) {
-            header("Location: /index");
+       $tournaments = (new TournamentTDG())->getTournamentsByUser($this->user->getId());
+
+        $this->view->render('tournament', ['user' => $this->user, 'notify' => $notify, 'tournaments' => $tournaments]);
+    }
+
+    public function actionShow($tournamentId)
+    {
+
+        $tournament = (new TournamentTDG())->getTournamentById($tournamentId);
+
+        if (!$tournament || $tournament->getOwnerId() !== $this->user->getId()) {
+            $query = http_build_query(['notify' => 'fail']);
+            http_response_code(500);
+            header("Location: /tournament?$query");
         }
 
-        $user = new User($_COOKIE['auth']);
-        $notify = $_GET['notify'] ? strval($_GET['notify']) : '';
+        if($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if($_POST['tournament_start'] === true) {
+            $tournament->start();
+            }
+    }
 
-        $this->view->render('tournament', ['user' => $user, 'notify' => $notify]);
+        $this->view->render('tournament_show', ['user' => $this->user, 'notify' => $notify, 'tournament' => $tournament]);
 
     }
 
     public function actionAdd(array $errors = null, array $values= null)
     {
-        if (!isset($_COOKIE['auth'])) {
-            header("Location: /index");
-        }
 
         $values = [];
         $errors = [];
-        $user = new User($_COOKIE['auth']);
 
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (!$_POST['token_tournament']) {
                 $errors[] = 'Форма отправлена со стороннего сайта.';
             } else {
-                $values = Utils::getTournamentValues($_POST, $user->getId());
+                $values = Utils::getTournamentValues($_POST, $this->user->getId());
                 $tournament = new Tournament();
                 $tournament->hydrate($values);
                 $errors = $tournament->isValid();
@@ -69,7 +88,7 @@ class TournamentController
             }
         }
 
-        $this->view->render('tournament_add', ['user' => $user, 'errors' => $errors, 'values' => $values]);
+        $this->view->render('tournament_add', ['user' => $this->user, 'errors' => $errors, 'values' => $values]);
 
     }
 }

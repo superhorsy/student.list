@@ -1,0 +1,67 @@
+<div class="container content">
+    <h1 class="text-center">Турнир <?= htmlspecialchars($tournament->getName()); ?></h1><br>
+    <h2 class="text-center">Дата проведения: <?=date('d.m.Y H:m',$tournament->getDatetime());?></h2>
+    <br>
+    <div class="container">
+        <form method="post" action="/tournament/show/<?= $tournament->getId() ?>">
+            <div class="container-fluid">
+                <input name="token_tournament" type="hidden"
+                       value="<?= htmlspecialchars($_SESSION['token_tournament'], ENT_QUOTES); ?>">
+                <table class="table table-striped">
+                    <h4>Участники:</h4>
+                    <br>
+                    <thead class="thead-light">
+                    <tr>
+                        <th scope="col">№</th>
+                        <th scope="col">Ник</th>
+                        <?php if ($tournament->getStatus() == 'in progress'): ?>
+                            <th scope="col">Группа</th>
+                            <th scope="col">Жизни</th>
+                            <th scope="col"></th>
+                        <?php endif; ?>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <?php foreach ($tournament->getPlayers() as $number => $player): ?>
+                        <tr>
+                            <th scope="row"><?= $number ?></th>
+                            <td><?= $player->getNickname(); ?></td>
+                            <?php if ($tournament->getStatus() == 'in progress'): ?>
+                                <td>
+                                    <span class="badge badge-pill badge-info"><?= $player->getGroup(); ?></span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-pill badge-info"><?= $player->getLifes(); ?></span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <div class="custom-control custom-checkbox">
+                                            <input name="sendHome[]" value="<?= $player->getId(); ?>" type="checkbox"
+                                                   class="custom-control-input" id="customCheck1">
+                                            <label class="custom-control-label" for="customCheck1">Отправить игрока
+                                                домой</label>
+                                        </div>
+                                    </div>
+                                </td>
+                            <?php endif; ?>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+            <div class="btn-group container-fluid" role="group">
+                <?php if ($tournament->getStatus() === 'awaiting'): ?>
+                    <button name='tournament_start' value='true' type="button" class="btn btn-success" type="submit">Начать турнир</button>
+                    <button type="button" class="btn btn-secondary" onclick="window.location.href='/tournament/'">Вернуться к перечню турниров</button>
+                <?php elseif ($tournament->getStatus() === 'in progress'): ?>
+                    <button type="button" class="btn btn-success">Следующий раунд</button>
+                    <button type="button" class="btn btn-info">Отправить выбранных игроков домой и провести повторную
+                        жеребьевку раунда
+                    </button>
+                    <button type="button" class="btn btn-danger">Сбросить прогресс турнира</button>
+                <?php endif; ?>
+            </div>
+        </form>
+    </div>
+</div>

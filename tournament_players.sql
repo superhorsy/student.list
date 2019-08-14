@@ -10,12 +10,12 @@ create table players
             on update cascade on delete cascade
 );
 
-INSERT INTO tournament.players (team, nickname, tournament_id) VALUES ('A', 'SuperHorsy', null);
-INSERT INTO tournament.players (team, nickname, tournament_id) VALUES (null, 'asdf', 6);
-INSERT INTO tournament.players (team, nickname, tournament_id) VALUES (null, 'SuperHorsy', 7);
-INSERT INTO tournament.players (team, nickname, tournament_id) VALUES (null, 'asdf', 7);
-INSERT INTO tournament.players (team, nickname, tournament_id) VALUES (null, 'Victor222', 7);
-INSERT INTO tournament.players (team, nickname, tournament_id) VALUES (null, 'Sanyok', 7);
+INSERT INTO tournament.players (`group`, nickname, tournament_id) VALUES ('A', 'SuperHorsy', null);
+INSERT INTO tournament.players (`group`, nickname, tournament_id) VALUES (null, 'asdf', 6);
+INSERT INTO tournament.players (`group`, nickname, tournament_id) VALUES (null, 'SuperHorsy', 7);
+INSERT INTO tournament.players (`group`, nickname, tournament_id) VALUES (null, 'asdf', 7);
+INSERT INTO tournament.players (`group`, nickname, tournament_id) VALUES (null, 'Victor222', 7);
+INSERT INTO tournament.players (`group`, nickname, tournament_id) VALUES (null, 'Sanyok', 7);
 create table tournament
 (
     id       int auto_increment
