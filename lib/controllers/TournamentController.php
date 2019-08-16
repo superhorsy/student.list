@@ -33,7 +33,7 @@ class TournamentController
 
     public function action()
     {
-       $tournaments = (new TournamentTDG())->getTournamentsByUser($this->user->getId());
+        $tournaments = (new TournamentTDG())->getTournamentsByUser($this->user->getId());
 
         $this->view->render('tournament', ['user' => $this->user, 'notify' => $notify, 'tournaments' => $tournaments]);
     }
@@ -42,6 +42,7 @@ class TournamentController
     {
 
         $tournament = (new TournamentTDG())->getTournamentById($tournamentId);
+        $errors = [];
 
         if (!$tournament || $tournament->getOwnerId() !== $this->user->getId()) {
             $query = http_build_query(['notify' => 'fail']);
@@ -49,17 +50,36 @@ class TournamentController
             header("Location: /tournament?$query");
         }
 
-        if($_SERVER['REQUEST_METHOD'] === 'POST') {
-        if($_POST['tournament_start'] === true) {
-            $tournament->start();
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if ($_POST['tournament_action'] === 'start') {
+                $tournament->start();
+                $toss = $tournament->getCurrentToss();
+            } elseif ($_POST['tournament_action'] === 'next') {
+
+                if(!(isset($_POST['loosers']) && !empty($_POST['loosers']) && is_array($_POST['loosers']) )) {
+                    $errors[] = 'Не отмечены проигравшие';
+                } elseif (count($_POST['loosers']) != count($tournament->getPlayers())/10)
+                {
+                    $errors[] = 'Отмечены не все победители';
+                }
+
+                if (!$errors) {
+                    $roundResult = [
+                        'loosers' => $_POST['loosers'],
+                    ];
+
+                    $tournament->next($roundResult);
+                    $toss = $tournament->getCurrentToss();
+                }
+
             }
+        }
+
+        $this->view->render('tournament_show', ['user' => $this->user, 'notify' => $notify, 'tournament' => $tournament, 'toss' => $toss ?? null, 'errors' => $errors]);
+
     }
 
-        $this->view->render('tournament_show', ['user' => $this->user, 'notify' => $notify, 'tournament' => $tournament]);
-
-    }
-
-    public function actionAdd(array $errors = null, array $values= null)
+    public function actionAdd(array $errors = null, array $values = null)
     {
 
         $values = [];

@@ -10,7 +10,7 @@ class Players
 
     private $id;
     private $nickname;
-    private $group;
+    private $team;
     private $tournament_id;
     private $lifes;
 
@@ -26,11 +26,21 @@ class Players
 
     public function save()
     {
-        return $this->tdg->insertValues([
+        $insertValues = [
             'nickname'=>$this->nickname,
             'tournament_id'=>$this->tournament_id,
-        ]) ? true : false;
+        ];
+        if (isset($this->lifes)) {
+            $lifes = ['lifes' => $this->lifes];
+            $insertValues = array_merge($insertValues,$lifes);
+        }
+        if ($this->getId()) {
+            return $this->tdg->updateValues($insertValues, $this->getId()) ? true : false;
+        } else {
+            return $this->tdg->insertValues($insertValues) ? true : false;
+        }
     }
+
 
     public function hydrate(array $values)
     {
@@ -104,18 +114,18 @@ class Players
     /**
      * @return mixed
      */
-    public function getGroup()
+    public function getTeam()
     {
-        return $this->group;
+        return $this->team;
     }
 
     /**
-     * @param mixed $group
+     * @param mixed $team
      */
-    public function setGroup($group): void
+    public function setTeam($team): void
     {
-        $this->group = $group;
-        $this->tdg->setGroup($this);
+        $this->team = $team;
+        $this->tdg->setTeam($this);
     }
     /**
      * @return null

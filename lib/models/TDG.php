@@ -89,4 +89,40 @@ abstract class TDG
             return true;
         }
     }
+
+    public function updateValues(array $values, int $id)
+    {
+        if (!$values) {
+            return false;
+        }
+
+
+        //Parameters and bind string
+        $columns = array_keys($values);
+
+        $bind = array();
+
+        foreach($values as $key => $value) {
+            $bind[] = "`$key` = :$key";
+        }
+
+        $bindString = implode($bind, ', ');
+
+
+        //Creating variable for "Prepare"
+        // The SQL query you want to run is entered as the parameter, and placeholders are written like this :placeholder_name
+
+        $myInsertStatment = $this->connection->prepare("UPDATE `$this->table` SET $bindString WHERE `id` = '$id'");
+
+        // Now we tell the script which variable each placeholder actually refers to using the bindParam() method
+        // First parameter is the placeholder in the statement above - the second parameter is a variable that it should refer to
+
+        foreach ($values as $column => $value) {
+            $columnBindName = ":" . $column;
+            $myInsertStatment->bindValue($columnBindName, $value);
+        }
+
+        $exec = $myInsertStatment->execute();
+
+    }
 }

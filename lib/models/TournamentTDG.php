@@ -9,12 +9,21 @@ class TournamentTDG extends TDG
     public function saveTournament(Tournament $tournament): ?int
     {
         $this->insertValues([
-           'name'=>  $tournament->getName(),
+           'name' =>  $tournament->getName(),
             'datetime' => $tournament->getDatetime(),
             'owner_id' => $tournament->getOwnerId()
         ]);
         $id = $this->connection->lastInsertId();
         return  $id ? $id : null;
+    }
+
+    public function updateTournament(Tournament $tournament):void
+    {
+        $this->updateValues([
+            'status' =>  $tournament->getStatus(),
+            'current_round' => $tournament->getCurrentRound(),
+            'round_count' => $tournament->getRoundCount()
+        ], $tournament->getId());
     }
 
     public function getTournamentsByUser(int $ownerID):?array {
