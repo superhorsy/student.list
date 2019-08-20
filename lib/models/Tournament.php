@@ -386,9 +386,13 @@ class Tournament
                 $toss['waiting'] = $waiting;
             }
 
+            $toss = serialize($toss);
+
             $this->current_toss = $toss;
 
-            return $this->current_toss;
+            $this->tdg->updateValues(['toss' => $this->current_toss], $this->id);
+
+            return unserialize($this->current_toss);
         }
     }
 
@@ -397,6 +401,7 @@ class Tournament
      */
     public function setCurrentToss($current_toss): void
     {
+        $current_toss = serialize($current_toss);
         $this->current_toss = $current_toss;
     }
 
@@ -405,7 +410,7 @@ class Tournament
      */
     public function getCurrentToss()
     {
-        return $this->current_toss;
+        return unserialize($this->current_toss);
     }
 
     private function removeLife($Id)

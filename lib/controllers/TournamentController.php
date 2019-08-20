@@ -69,13 +69,11 @@ class TournamentController
                     ];
 
                     $tournament->next($roundResult);
-                    $toss = $tournament->getCurrentToss();
                 }
-
             }
         }
 
-        $this->view->render('tournament_show', ['user' => $this->user, 'notify' => $notify, 'tournament' => $tournament, 'toss' => $toss ?? null, 'errors' => $errors]);
+        $this->view->render('tournament_show', ['user' => $this->user, 'notify' => $notify, 'tournament' => $tournament, 'toss' => $tournament->getCurrentToss() ?? null, 'errors' => $errors]);
 
     }
 
