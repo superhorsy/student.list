@@ -22,8 +22,15 @@ class TournamentTDGTest extends \PHPUnit_Framework_TestCase
 
     public function testGetTournamentById() {
         $tdg = new TournamentTDG();
-        $tournaments = $tdg->getTournamentById(7);
+        $tournaments = $tdg->getTournamentById(8);
         $this->assertInstanceOf('\App\models\Tournament', $tournaments);
 
+    }
+
+    public function testSetTeams() {
+        $tdg = new TournamentTDG();
+        $tournaments = $tdg->getTournamentById(8);
+        $result = $tournaments->setTeams();
+        $this->assertSame($result,true);
     }
 }

@@ -60,9 +60,8 @@ class Tournament
             $this->setStatus(self::STATUS_IN_PROGRESS);
         }
 
-        $this->mix();
-        $teams = $this->getTeams();
-        $this->toss($teams);
+        $this->setTeams();
+        $this->current_toss = (new Toss($this));
 
         if (!$this->current_round) {
             $this->current_round = 1;
@@ -86,9 +85,8 @@ class Tournament
             }
         }
 
-        $this->mix();
-        $teams = $this->getTeams();
-        $this->toss($teams);
+        $this->setTeams();
+        $this->current_toss = (new Toss($this));
 
         if (!$this->current_round) {
             $this->current_round = 1;
@@ -103,40 +101,44 @@ class Tournament
 
     }
 
-    public function getTeams():array {
-        $teams = array();
+    public function setTeams():bool {
+
+        if(!$this->players) {
+            return false;
+        }
+
+        shuffle($this->players);
         $count = count($this->players);
         $inGame = $count - ($count % 10);
-        $inGamePlayers = array_slice($this->players,0,$inGame);
-        foreach($inGamePlayers as $player) {
-            $team = $player->getTeam();
-            if(!array_key_exists($team,$teams)) {
-                $teams[$team] = array();
-            }
-            array_push($teams[$team], $player);
-        }
 
-        $waitingPlayers = array_slice($this->players, $inGame);
-        if($waitingPlayers) {
-            $teams['waiting'] = array();
-            array_push($teams['waiting'], $waitingPlayers);
-        }
+        //Team names
+        $teamNames = array_map('str_getcsv', file(ROOT . '/../Heroes of Dota.csv'));
+        $teamNames = array_column($teamNames,0);
 
-        return $teams;
-    }
+        $teamKeys = array_rand($teamNames, $inGame/5);
 
-    public function mix()
-    {
-        shuffle($this->players);
-        $teamArray = array_map('str_getcsv', file(ROOT . '/../Heroes of Dota.csv'));
-        $teamName = $teamArray[mt_rand(1,117)][0];
-        for ($i = 0; $this->players[$i]; $i++) {
-            $player = $this->players[$i];
-            $player->setTeam($teamName);
-            if (($i+1)%5 == 0) {
-                $teamName = $teamArray[mt_rand(1,117)][0];
+        foreach ($teamKeys as $key) {
+            for($i=0;$i<5;$i++) {
+                $player = current($this->players);
+                $player->setTeam($teamNames[$key]);
+                $nextPlayer = next($this->players);
             }
         }
+
+        $endPlayer = current(array_slice($this->players, -1));
+
+        if ($nextPlayer && $nextPlayer == $endPlayer) {
+            $player = current($this->players);
+            $player->setTeam('WAIT');
+        } else {
+            while ($nextPlayer) {
+                $player = current($this->players);
+                $player->setTeam('WAIT');
+                $nextPlayer = next($this->players);
+            }
+        }
+
+        return true;
     }
 
     public function hydrate(array $values)
@@ -355,53 +357,10 @@ class Tournament
     }
 
     /**
-     * @return mixed
-     */
-    public function toss($teams)
-    {
-        {
-            $toss = array();
-
-            if (array_key_exists('waiting', $teams)) {
-                $waiting = $teams['waiting'];
-                unset($teams['waiting']);
-            }
-
-            $groupNumber = 'A';
-            $toss[$groupNumber] = array();
-            $group = array();
-            foreach ($teams as $teamName => $team) {
-                if (count($group) < 2) {
-                    $group[$teamName] = $team;
-                } else {
-                    $toss[$groupNumber] = $group;
-                    $group = array();
-                    $groupNumber++;
-                    $group[$teamName] = $team;
-                }
-            }
-            $toss[$groupNumber] = $group;
-
-            if(isset($waiting)) {
-                $toss['waiting'] = $waiting;
-            }
-
-            $toss = serialize($toss);
-
-            $this->current_toss = $toss;
-
-            $this->tdg->updateValues(['toss' => $this->current_toss], $this->id);
-
-            return unserialize($this->current_toss);
-        }
-    }
-
-    /**
      * @param mixed $current_toss
      */
     public function setCurrentToss($current_toss): void
     {
-        $current_toss = serialize($current_toss);
         $this->current_toss = $current_toss;
     }
 
@@ -410,7 +369,7 @@ class Tournament
      */
     public function getCurrentToss()
     {
-        return unserialize($this->current_toss);
+        return $this->current_toss;
     }
 
     private function removeLife($Id)
