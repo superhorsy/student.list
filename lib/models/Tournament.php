@@ -12,34 +12,18 @@ class Tournament
     private $name = null;
     private $datetime = null;
     private $owner_id = null;
-    private $players = array();
     private $status;
     private $current_round;
-    private $current_toss;
+    private $round_count;
+    private $toss;
 
-    private $teams;
+    private $players = array();
     private $loosers = array();
 
-    /**
-     * @return mixed
-     */
-    public function getLoosers()
-    {
-        return $this->loosers;
-    }
-
-    /**
-     * @param mixed $loosers
-     */
-    public function setLoosers($loosers): void
-    {
-        $this->loosers = $loosers;
-    }
-
-
-    private $round_count;
-
+    /*Статусы турнира*/
+    const STATUS_AWAITING = 'awaiting';
     const STATUS_IN_PROGRESS = 'in progress';
+    const STATUS_ENDED = 'ended';
 
     /**
      * Tournament constructor.
@@ -52,6 +36,9 @@ class Tournament
         if ($this->id) {
             $this->setPlayers();
         }
+        if ($this->toss) {
+            $this->toss = json_decode($this->toss);
+        }
     }
 
     public function start()
@@ -60,16 +47,12 @@ class Tournament
             $this->setStatus(self::STATUS_IN_PROGRESS);
         }
 
-        $this->setTeams();
-        $this->current_toss = (new Toss($this));
+        $teams = $this->setTeams();
+        $this->toss($teams);
 
-        if (!$this->current_round) {
-            $this->current_round = 1;
-        } else {
-            $this->current_round++;
-        }
+        $this->current_round = 1;
 
-        $round_count = (count($this->players) - (count($this->players)%10))/5;
+        $round_count = (count($this->players) - (count($this->players) % 10)) / 5;
         $this->round_count = $round_count;
 
         $this->save();
@@ -78,67 +61,131 @@ class Tournament
 
     public function next(array $roundResult)
     {
-        foreach($roundResult['loosers'] as $team) {
-            $playerIds = (new PlayersTDG())->getPlayerIdsByTeam($this, $team);
-            foreach ($playerIds as $playerId) {
-                $this->removeLife($playerId);
+        foreach ($roundResult['loosers'] as $team) {
+            $loosers = (new PlayersTDG())->getPlayersByTeam($this, $team);
+            foreach ($loosers as $looser) {
+                $lifes = $looser->getLifes();
+                $looser->setLifes(--$lifes);
+                if ($looser->getLifes() == 0) {
+                    $looser->setTeam('OUT');
+                }
+                $looser->save();
             }
         }
+        $this->setPlayers();
 
-        $this->setTeams();
-        $this->current_toss = (new Toss($this));
+        $alivePlayers = $this->getAlivePlayers();
 
-        if (!$this->current_round) {
-            $this->current_round = 1;
-        } else {
+        if (count($alivePlayers) >= 10) {
+            $teams = $this->setTeams();
+            $this->toss($teams);
             $this->current_round++;
+        } else {
+            $this->setStatus(self::STATUS_ENDED);
         }
-
-        $round_count = (count($this->players) - (count($this->players)%10))/5;
-        $this->round_count = $round_count;
 
         $this->save();
-
     }
 
-    public function setTeams():bool {
+    public function sendHome(array $roundResult)
+    {
+        $goingHomeIds = $roundResult['sendHome'];
+        $goingHomePlayers = (new PlayersTDG())->getPlayersById($this, $goingHomeIds);
+        $waitingPlayers = $this->getWaitingPlayers();
 
-        if(!$this->players) {
-            return false;
+        if (count($waitingPlayers)>=count($goingHomePlayers)){
+            $joiningPlayers = array_slice($waitingPlayers, 0, count($goingHomePlayers));
+            array_map(function($goingHome, $joining) {
+                $goingHome->setLifes(0);
+
+                $team = $goingHome->getTeam();
+                $joining->setTeam($team);
+                $goingHome->setTeam('OUT');
+
+                $joining->save();
+                $goingHome->save();
+
+            }, $goingHomePlayers, $joiningPlayers);
+        } else {
+            foreach ($goingHomePlayers as $goingHome) {
+                $goingHome->setLifes(0);
+                $goingHome->setTeam('OUT');
+                $goingHome->save();
+            }
+            $teams = $this->setTeams();
+            $this->toss($teams);
         }
 
-        shuffle($this->players);
-        $count = count($this->players);
-        $inGame = $count - ($count % 10);
+        $this->save();
+    }
+
+    public function reset()
+    {
+        $this->toss = null;
+        $this->current_round = null;
+        $this->round_count = null;
+        $this->status = self::STATUS_AWAITING;
+        foreach ($this->players as $player) {
+            $player->setLifes(2);
+            $player->setTeam(null);
+            $player->save();
+        }
+
+        $this->save();
+    }
+
+
+
+    public function setTeams()
+    {
+
+        $players = $this->getAlivePlayers();
+
+        $waitingPlayers = $this->getWaitingPlayers();
+
+        if (!empty($waitingPlayers)) {
+            $otherPlayers = array_udiff($players, $waitingPlayers, function ($p1, $p2) {
+                return $p1->getId() - $p2->getId();
+            });
+            shuffle($otherPlayers);
+            $players = array_merge($waitingPlayers, $otherPlayers);
+        } else {
+            shuffle($players);
+        }
 
         //Team names
         $teamNames = array_map('str_getcsv', file(ROOT . '/../Heroes of Dota.csv'));
-        $teamNames = array_column($teamNames,0);
+        $teamNames = array_column($teamNames, 0);
 
-        $teamKeys = array_rand($teamNames, $inGame/5);
+        $teamKeys = array_rand($teamNames, intval(count($players) / 10) * 2);
 
         foreach ($teamKeys as $key) {
-            for($i=0;$i<5;$i++) {
-                $player = current($this->players);
+            for ($i = 0; $i < 5; $i++) {
+                $player = current($players);
                 $player->setTeam($teamNames[$key]);
-                $nextPlayer = next($this->players);
+                $player->save();
+                $nextPlayer = next($players);
             }
         }
 
-        $endPlayer = current(array_slice($this->players, -1));
+        $lastPlayer = current(array_slice($players, -1));
 
-        if ($nextPlayer && $nextPlayer == $endPlayer) {
-            $player = current($this->players);
+        if ($nextPlayer && $nextPlayer == $lastPlayer) {
+            $player = current($players);
             $player->setTeam('WAIT');
+            $player->save();
         } else {
             while ($nextPlayer) {
-                $player = current($this->players);
+                $player = current($players);
                 $player->setTeam('WAIT');
-                $nextPlayer = next($this->players);
+                $player->save();
+                $nextPlayer = next($players);
             }
         }
 
-        return true;
+        $teams = array_intersect_key($teamNames, array_flip($teamKeys));
+
+        return $teams;
     }
 
     public function hydrate(array $values)
@@ -156,7 +203,7 @@ class Tournament
     public function save(): bool
     {
 
-        if($this->id) {
+        if ($this->id) {
             $this->tdg->updateTournament($this);
             return true;
         }
@@ -357,33 +404,79 @@ class Tournament
     }
 
     /**
-     * @param mixed $current_toss
+     * @param mixed $toss
      */
-    public function setCurrentToss($current_toss): void
+    public function setToss($toss): void
     {
-        $this->current_toss = $current_toss;
+        $this->toss = $toss;
     }
 
     /**
      * @return mixed
      */
-    public function getCurrentToss()
+    public function getToss()
     {
-        return $this->current_toss;
+        return $this->toss;
     }
 
-    private function removeLife($Id)
+    public function toss($teams)
     {
-        foreach($this->players as $key => $player) {
-            if($player->getId() == $Id) {
-                $playerLifes = $player->getLifes();
-                $player->setLifes(--$playerLifes);
-                $player->save();
-                if ($player->getLifes() == 0) {
-                    $this->loosers[] = $player;
-                    unset($this->players[$key]);
-                }
+        $toss = array();
+
+        $groupNumber = 'A';
+        $toss[$groupNumber] = array();
+        $group = array();
+        foreach ($teams as $teamName) {
+            if (count($group) < 2) {
+                $group[] = $teamName;
+            } else {
+                $toss[$groupNumber] = $group;
+                $group = array();
+                $groupNumber++;
+                $group[] = $teamName;
             }
         }
+        $toss[$groupNumber] = $group;
+
+        $this->toss = $toss;
+
+        return $toss;
     }
+
+    public function getPlayersByTeam($team)
+    {
+        return (new PlayersTDG())->getPlayersbyTeam($this, $team);
+    }
+
+    public function getWaitingPlayers()
+    {
+        return (new PlayersTDG())->getWaitingPlayers($this);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getLoosers()
+    {
+        return (new PlayersTDG())->getLoosers($this);
+    }
+
+    /**
+     * @param mixed $loosers
+     */
+    public function setLoosers($loosers): void
+    {
+        $this->loosers = $loosers;
+    }
+
+    private function getAlivePlayers()
+    {
+        return (new PlayersTDG())->getAlivePlayers($this);
+    }
+
+    public function getPlayersOrderedByLifes()
+    {
+        return (new PlayersTDG())->getPlayersOrderedByLifes($this);
+    }
+
 }

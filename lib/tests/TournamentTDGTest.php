@@ -31,6 +31,18 @@ class TournamentTDGTest extends \PHPUnit_Framework_TestCase
         $tdg = new TournamentTDG();
         $tournaments = $tdg->getTournamentById(8);
         $result = $tournaments->setTeams();
-        $this->assertSame($result,true);
+        $this->assertNotEmpty($result);
+        return $result;
+    }
+
+    /**
+     * @depends testSetTeams
+     */
+    public function testToss(array $teams) {
+        $tdg = new TournamentTDG();
+        $tournaments = $tdg->getTournamentById(8);
+        $teams = $tournaments->setTeams();
+        $result = $tournaments->toss($teams);
+        $this->assertNotEmpty($result);
     }
 }

@@ -67,10 +67,16 @@ class Players implements \Serializable
             'nickname'=>$this->nickname,
             'tournament_id'=>$this->tournament_id,
         ];
+
         if (isset($this->lifes)) {
             $lifes = ['lifes' => $this->lifes];
             $insertValues = array_merge($insertValues,$lifes);
         }
+        if (isset($this->team)) {
+            $team = ['team' => $this->team];
+            $insertValues = array_merge($insertValues,$team);
+        }
+
         if ($this->getId()) {
             return $this->tdg->updateValues($insertValues, $this->getId()) ? true : false;
         } else {
@@ -162,7 +168,6 @@ class Players implements \Serializable
     public function setTeam($team): void
     {
         $this->team = $team;
-        $this->tdg->setTeam($this);
     }
     /**
      * @return null

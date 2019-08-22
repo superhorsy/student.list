@@ -12,7 +12,7 @@
     <?php if (isset($tournaments) and $tournaments): ?>
         <h1 class="text-center">Список созданных турниров</h1>
         <br>
-        <table class="table table-striped table-responsive container-fluid">
+        <table class="table table-striped container-fluid">
 
             <thead class="thead-light">
             <tr>
@@ -27,15 +27,19 @@
 
             <?php foreach ($tournaments as $number => $tournament): ?>
                 <tr>
-                    <th scope="row"><?= $number ?></th>
+                    <th scope="row"><?= $number+1 ?></th>
                     <td><?= $tournament->getName() ?></td>
                     <td><?= $tournament->getDatetime() ?></td>
                     <td>
-                        <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-success" onclick="window.location.href='/tournament/show/<?=$tournament->getId()?>'">Перейти к турниру</button>
-                            <button type="button" class="btn btn-info">Редактировать данные игроков</button>
-                            <button type="button" class="btn btn-danger">Удалить турнир</button>
-                        </div>
+                        <form method="post" action="/tournament/">
+                            <input name="token_tournament" type="hidden"
+                                   value="<?= htmlspecialchars($_SESSION['token_tournament'], ENT_QUOTES); ?>">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-success" onclick="window.location.href='/tournament/show/<?=$tournament->getId()?>'">Перейти к турниру</button>
+                                <!--<button type="button" class="btn btn-info">Редактировать данные игроков</button>-->
+                                <button type="submit" class="btn btn-danger" name="delete" value="<?= $tournament->getId() ?>"">Удалить турнир</button>
+                            </div>
+                        </form>
                     </td>
                 </tr>
 

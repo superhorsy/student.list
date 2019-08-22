@@ -35,7 +35,18 @@ class TournamentController
     {
         $tournaments = (new TournamentTDG())->getTournamentsByUser($this->user->getId());
 
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!$_POST['token_tournament']) {
+                $errors[] = 'Форма отправлена со стороннего сайта.';
+            } else {
+                if (isset($_POST['delete']) && $_POST['delete']) {
+                    (new TournamentTDG())->deleteTournamentById($_POST['delete']);
+                    $tournaments = (new TournamentTDG())->getTournamentsByUser($this->user->getId());
+                }
+            }
+        }
         $this->view->render('tournament', ['user' => $this->user, 'notify' => $notify, 'tournaments' => $tournaments]);
+
     }
 
     public function actionShow($tournamentId)
@@ -51,29 +62,42 @@ class TournamentController
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if ($_POST['tournament_action'] === 'start') {
-                $tournament->start();
-                $toss = $tournament->getCurrentToss();
-            } elseif ($_POST['tournament_action'] === 'next') {
 
-                if(!(isset($_POST['loosers']) && !empty($_POST['loosers']) && is_array($_POST['loosers']) )) {
-                    $errors[] = 'Не отмечены проигравшие';
-                } elseif (count($_POST['loosers']) != count($tournament->getPlayers())/10)
-                {
-                    $errors[] = 'Отмечены не все победители';
-                }
+            if (!$_POST['token_tournament']) {
+                $errors[] = 'Форма отправлена со стороннего сайта.';
+            } else {
+                if ($_POST['tournament_action'] === 'start') {
+                    $tournament->start();
 
-                if (!$errors) {
-                    $roundResult = [
-                        'loosers' => $_POST['loosers'],
+                } elseif ($_POST['tournament_action'] === 'next') {
+
+                    $playersPlaying = count($tournament->getPlayers()) - count($tournament->getWaitingPlayers()) - count($tournament->getLoosers());
+
+                    if (!(isset($_POST['loosers']) && !empty($_POST['loosers']) && is_array($_POST['loosers']))) {
+                        $errors[] = 'Не отмечены проигравшие';
+                    } elseif (count($_POST['loosers']) != ($playersPlaying) / 10) {
+                        $errors[] = 'Отмечены не все проигравшие';
+                    }
+
+                    if (!$errors) {
+                        $roundResult = [
+                            'loosers' => $_POST['loosers'] ?? '',
+                        ];
+
+                        $tournament->next($roundResult);
+                    }
+                } elseif ($_POST['tournament_action'] === 'reset') {
+                    $tournament->reset();
+                } elseif ($_POST['tournament_action'] === 'send_home') {
+                    $data = [
+                        'sendHome' => $_POST['sendHome'] ?? '',
                     ];
-
-                    $tournament->next($roundResult);
+                    $tournament->sendHome($data);
                 }
             }
         }
 
-        $this->view->render('tournament_show', ['user' => $this->user, 'notify' => $notify, 'tournament' => $tournament, 'toss' => $tournament->getCurrentToss() ?? null, 'errors' => $errors]);
+        $this->view->render('tournament_show', ['user' => $this->user, 'notify' => $notify ?? false, 'tournament' => $tournament, 'errors' => $errors]);
 
     }
 

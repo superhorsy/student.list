@@ -8,11 +8,14 @@
     <h4 class=" text-center">Раунд №<?=$tournament->getCurrentRound(); ?></h4>
     <?php endif;?>
 
-    <?php if($tournament->getRoundCount()):?>
-        <h4 class=" text-center">Всего раундов <?=$tournament->getRoundCount(); ?></h4>
-    <?php endif;?>
-
     <br>
+    <?php if (isset($errors) && $errors): ?>
+        <div class="alert alert-danger" role="alert">
+            <?php foreach ($errors as $error): ?>
+                <span class="error-messages"><?= $error; ?></span><br>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
     <form method="post" action="/tournament/show/<?= $tournament->getId() ?>/">
         <div>
             <input name="token_tournament" type="hidden"
@@ -32,7 +35,7 @@
                     <tbody>
                     <?php foreach ($tournament->getPlayers() as $number => $player): ?>
                         <tr>
-                            <th scope="row"><?= $number ?></th>
+                            <th scope="row"><?= $number+1 ?></th>
                             <td><?= $player->getNickname(); ?></td>
                         </tr>
                     <?php endforeach; ?>
@@ -50,20 +53,20 @@
 
             <?php if ($tournament->getStatus() == 'in progress'): ?>
 
-                <?php foreach ($toss as $pairOfTeams): ?>
+                <?php foreach ($tournament->getToss() as $pairOfTeams): ?>
                     <div class="row container border m-3 p-0">
-                        <?php foreach ($pairOfTeams as $teamName => $team): ?>
-                            <?php if($teamName != 'waiting'):?>
+                        <?php foreach ($pairOfTeams as $team): ?>
+
                             <div class="col row">
                                 <div class="col">
                                     <div class="card">
-                                        <img src="https://dota2.ru/img/heroes/<?= (str_replace([' ', '-'], '_', strtolower($teamName))) ?>/portrait.jpg"
-                                             class="card-img-top" alt="<?= $teamName ?>">
+                                        <img src="https://dota2.ru/img/heroes/<?= (str_replace([' ', '-'], '_', strtolower($team))) ?>/portrait.jpg"
+                                             class="card-img-top" alt="<?= $team ?>">
                                         <div class="card-body">
-                                            <h5 class="card-title text-center">Команда <?= $teamName; ?></h5>
+                                            <h5 class="card-title text-center">Команда <?= $team; ?></h5>
                                             <div class="custom-control custom-switch">
-                                                <input name="loosers[]" value="<?=$teamName;?>" type="checkbox" class="custom-control-input" id="customSwitch<?=$teamName;?>">
-                                                <label class="custom-control-label" for="customSwitch<?=$teamName;?>">Проигравший</label>
+                                                <input name="loosers[]" value="<?=$team;?>" type="checkbox" class="custom-control-input" id="customSwitch<?=$team;?>">
+                                                <label class="custom-control-label" for="customSwitch<?=$team;?>">Проигравший</label>
                                             </div>
                                         </div>
                                     </div>
@@ -80,7 +83,7 @@
                                         </thead>
 
                                         <tbody>
-                                        <?php foreach ($team as $player): ?>
+                                        <?php foreach ($tournament->getPlayersByTeam($team) as $player): ?>
                                             <tr>
                                                 <td><?= $player->getNickname(); ?></td>
                                                 <td>
@@ -107,35 +110,38 @@
                                     </table>
                                 </div>
                             </div>
-                        <?php else:?>
-                                <div class="container-fluid">
-                                    <div>
-                                        <h5 class="text-center">Ожидающие</h5>
-                                        <table class="table table-striped">
-                                            <thead class="thead-light">
-                                            <tr>
-                                                <th scope="col">Ник</th>
-                                                <th scope="col">Жизни</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            <?php foreach ($team as $player): ?>
-                                                <tr>
-                                                    <td><?= $player->getNickname(); ?></td>
-                                                    <td>
-                                                        <span class="badge badge-pill badge-info"><?= $player->getLifes(); ?></span>
-                                                    </td>
-                                                </tr>
-                                            <?php endforeach; ?>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                        <?php endif;?>
                         <?php endforeach; ?>
                     </div>
                 <?php endforeach; ?>
 
+                <!--Ожидающие-->
+                <?php if ($tournament->getWaitingPlayers()): ?>
+                    <div class="container-fluid">
+                        <div>
+                            <h5 class="text-center">Ожидающие</h5>
+                            <table class="table table-striped">
+                                <thead class="thead-light">
+                                <tr>
+                                    <th scope="col">Ник</th>
+                                    <th scope="col">Жизни</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <?php foreach ($tournament->getWaitingPlayers() as $player): ?>
+                                    <tr>
+                                        <td><?= $player->getNickname(); ?></td>
+                                        <td>
+                                            <span class="badge badge-pill badge-info"><?= $player->getLifes(); ?></span>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                <?php endif;?>
+
+            <!--Выбывшие-->
             <?php if($tournament->getLoosers()):?>
             <div class="container-fluid">
                 <div>
@@ -163,18 +169,50 @@
             <?php endif;?>
 
                 <div class="btn-group container-fluid" role="group">
-                    <button name='tournament_action' value='next' type="submit" class="btn btn-success">Следующий
-                        раунд
+                    <button name='tournament_action' value='next' type="submit" class="btn btn-success">Продолжить
                     </button>
-                    <button type="button" class="btn btn-info">Отправить выбранных игроков домой и провести повторную
-                        жеребьевку раунда
+                    <button name='tournament_action' value='send_home' type="submit" class="btn btn-info">Отправить выбранных игроков домой
                     </button>
-                    <button type="button" class="btn btn-danger">Сбросить прогресс турнира</button>
+                    <button name='tournament_action' value='reset' type="submit" class="btn btn-danger">Сбросить прогресс турнира
+                    </button>
+                </div>
+            <?php endif; ?>
+
+            <?php if ($tournament->getStatus() == 'ended'): ?>
+                <table class="table table-striped">
+                    <h4>Участники:</h4>
+                    <br>
+                    <thead class="thead-light">
+                    <tr>
+                        <th scope="col">№</th>
+                        <th scope="col">Ник</th>
+                        <th scope="col">Жизни</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <?php foreach ($tournament->getPlayersOrderedByLifes() as $number => $player): ?>
+                        <tr>
+                            <th scope="row"><?= $number+1 ?></th>
+                            <td><?= $player->getNickname(); ?></td>
+                            <td><?= $player->getLifes(); ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+                <div class="btn-group container-fluid" role="group">
+                    <button type="button" class="btn btn-secondary" onclick="window.location.href='/tournament/'">
+                        Вернуться к перечню турниров
+                    </button>
+                    <button name='tournament_action' value='reset' type="submit" class="btn btn-danger">Сбросить прогресс турнира
+                    </button>
                 </div>
             <?php endif; ?>
         </div>
 
     </form>
+
+
 
 
 

@@ -22,15 +22,47 @@ class PlayersTDG extends TDG
         return true;
     }
 
-    public function getPlayerIdsByTeam(Tournament $tournament, $team)
+    public function getPlayersbyTeam(Tournament $tournament, $team): ?array
     {
-        $sql = "SELECT `id` FROM `$this->table` WHERE `tournament_id` = ? AND `team` = ?";
-        $stmt = $this->connection->prepare($sql);
-        $stmt->bindValue(1, $tournament->getId(),\PDO::PARAM_INT);
-        $stmt->bindValue(2, $team,\PDO::PARAM_STR);
-        $stmt->execute();
-        $playerIds = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
-        return $playerIds;
+        $query = $this->connection->query("SELECT * FROM `$this->table` WHERE `tournament_id` = '{$tournament->getId()}' AND `team` = '$team'");
+        $players = $query->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, '\App\models\Players');
+        return $players ? $players : null;
+    }
+
+    public function getAlivePlayers(Tournament $tournament)
+    {
+        $query = $this->connection->query("SELECT * FROM `$this->table` WHERE `tournament_id` = '{$tournament->getId()}' AND `lifes` > 0");
+        $players = $query->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, '\App\models\Players');
+        return $players ? $players : null;
+    }
+
+    public function getLoosers(Tournament $tournament)
+    {
+        $query = $this->connection->query("SELECT * FROM `$this->table` WHERE `tournament_id` = '{$tournament->getId()}' AND `lifes` <= 0");
+        $players = $query->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, '\App\models\Players');
+        return $players ? $players : null;
+    }
+
+    public function getWaitingPlayers(Tournament $tournament)
+    {
+        $query = $this->connection->query("SELECT * FROM `$this->table` WHERE `tournament_id` = '{$tournament->getId()}' AND `team` = 'WAIT'");
+        $players = $query->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, '\App\models\Players');
+        return $players ? $players : null;
+    }
+    public function getPlayersOrderedByLifes(Tournament $tournament)
+    {
+        $query = $this->connection->query("SELECT * FROM `$this->table` WHERE `tournament_id` = '{$tournament->getId()}' ORDER BY `lifes` DESC");
+        $players = $query->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, '\App\models\Players');
+        return $players ? $players : null;
+    }
+
+    public function getPlayersById(Tournament $tournament, array $ids)
+    {
+        $ids = array_map(function($id){return "'" . $id . "'";},$ids);
+        $ids = '(' . implode(', ', $ids) . ')';
+        $query = $this->connection->query("SELECT * FROM `$this->table` WHERE `tournament_id` = '{$tournament->getId()}' AND `id` IN $ids");
+        $players = $query->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, '\App\models\Players');
+        return $players ? $players : null;
     }
 
 
