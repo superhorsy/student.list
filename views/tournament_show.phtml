@@ -59,11 +59,11 @@
 
                             <div class="col row">
                                 <div class="col">
-                                    <div class="card">
+                                    <div id="team_card" class="card align-middle">
+                                        <div class="card-header"><h5>Команда <?= $team; ?></h5></div>
                                         <img src="https://dota2.ru/img/heroes/<?= (str_replace([' ', '-'], '_', strtolower($team))) ?>/portrait.jpg"
                                              class="card-img-top" alt="<?= $team ?>">
                                         <div class="card-body">
-                                            <h5 class="card-title text-center">Команда <?= $team; ?></h5>
                                             <div class="custom-control custom-switch">
                                                 <input name="loosers[]" value="<?=$team;?>" type="checkbox" class="custom-control-input" id="customSwitch<?=$team;?>">
                                                 <label class="custom-control-label" for="customSwitch<?=$team;?>">Проигравший</label>
@@ -211,9 +211,8 @@
         </div>
 
     </form>
-
-
-
-
-
 </div>
+
+<script>
+    <?php require ROOT. '/js/tournament_show.js';?>
+</script>
