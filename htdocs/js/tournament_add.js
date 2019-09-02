@@ -1,8 +1,9 @@
 $(document).ready(function () {
     var counter = 0;
+    var player = $(".player").clone();
 
     $("#addrow").on("click", function () {
-        $(".player:last").clone().appendTo(".players");
+        player.clone().appendTo(".players");
         counter++;
     });
 
