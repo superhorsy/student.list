@@ -10,7 +10,7 @@ class Tournament
 
     private $id = null;
     private $name = null;
-    private $datetime = null;
+    private $date = null;
     private $owner_id = null;
     private $status;
     private $current_round;
@@ -192,7 +192,7 @@ class Tournament
     {
         $values['id'] ? $this->setId($values['id']) : $this->setId('');
         $values['name'] ? $this->setName($values['name']) : $this->setName('');
-        $values['datetime'] ? $this->setDatetime($values['datetime']) : $this->setDatetime('');
+        $values['date'] ? $this->setDate($values['date']) : $this->setDate('');
         $values['owner_id'] ? $this->setOwnerId($values['owner_id']) : $this->setOwnerId('');
         //Отдельно формируем игроков
         if ($values['players'] && is_array($values['players'])) {
@@ -235,15 +235,15 @@ class Tournament
             $errors[] = 'Наименование турнира не должно превышать 255 символов';
         }
 
-        if (!$this->datetime) {
+        if (!$this->date) {
             $errors[] = 'Отсутствует дата турнира';
         } else {
             try {
-                $datetime = new \DateTime($this->datetime);
+                $date = new \DateTime($this->date);
             } catch (\Throwable $exception) {
                 $errors[] = 'Введена некорректная дата турнира';
             }
-            if ($datetime < new \DateTime()) {
+            if ($date < new \DateTime()) {
                 $errors[] = 'Дата турнира не может быть раньше текущей даты';
             }
         }
@@ -326,17 +326,17 @@ class Tournament
     /**
      * @return null
      */
-    public function getDatetime()
+    public function getDate()
     {
-        return $this->datetime;
+        return $this->date;
     }
 
     /**
-     * @param null $datetime
+     * @param null $date
      */
-    public function setDatetime($datetime): void
+    public function setDate($date): void
     {
-        $this->datetime = $datetime;
+        $this->date = $date;
     }
 
     /**

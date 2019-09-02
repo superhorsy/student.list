@@ -10,7 +10,7 @@ class TournamentTDG extends TDG
     {
         $this->insertValues([
            'name' =>  $tournament->getName(),
-            'datetime' => $tournament->getDatetime(),
+            'date' => $tournament->getDate(),
             'owner_id' => $tournament->getOwnerId()
         ]);
         $id = $this->connection->lastInsertId();

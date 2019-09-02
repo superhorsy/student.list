@@ -17,22 +17,29 @@
         <div class="form-group row">
             <label for="t_name" class="col-sm-2 col-form-label">Название турнира</label>
             <div class="col">
-                <input name="t_name" type="text" class="form-control" id="t_name" placeholder="Название турнира" value="<?= htmlspecialchars($values['t_name'] ?? '')?>">
+                <input name="t_name" type="text" class="form-control" id="t_name" placeholder="Название турнира"
+                       value="<?= htmlspecialchars($values['t_name'] ?? '') ?>">
             </div>
         </div>
 
         <div class="form-group row">
             <label for="t_date" class="col-sm-2 col-form-label">Дата турнира</label>
             <div class="col">
-                <input name="t_date" type="datetime-local" class="form-control" id="t_date" placeholder="Дата турнира" value="<?= htmlspecialchars($values['t_date'] ?? '')?>">
+                <input name="t_date" type="date" class="form-control" id="t_date" placeholder="Дата турнира"
+                       value="<?= htmlspecialchars($values['t_date'] ?? '') ?>">
             </div>
         </div>
 
         <fieldset class="add-player">
-            <div class="form-group row">
+            <div class="players form-group row">
                 <label for="p_nickname" class="col-sm-2 col-form-label">Ник игрока</label>
-                <div class="col">
-                    <input name="p_nickname[]" type="text" class="form-control" id="p_nickname" placeholder="Ник">
+                <div class="player">
+                    <div class="col">
+                        <input name="p_nickname[]" type="text" class="form-control" id="p_nickname" placeholder="Ник">
+                    </div>
+                    <div class="col col-sm-1">
+                        <button type="button" class="btn-sm btn btn-danger deleteRow">Удалить</button>
+                    </div>
                 </div>
             </div>
         </fieldset>
@@ -49,28 +56,7 @@
         </div>
     </form>
 </div>
+
 <script>
-    $(document).ready(function () {
-        var counter = 0;
-
-        $("#addrow").on("click", function () {
-            var newRow = $("<div class=\"form-group row\">");
-            var cols = "<div class=\"col-sm-2\"></div>" +
-                "<div class=\"col\">\n" +
-                "                <input name=\"p_nickname[]\" type=\"text\" class=\"form-control\" id=\"t_date\" placeholder=\"Ник\">\n" +
-                "            </div>\n" +
-                "            <div class=\"col col-sm-1\">\n" +
-                "                <button type=\"button\" class=\"btn-sm btn btn-danger deleteRow\">Удалить</button>\n" +
-                "            </div>";
-            newRow.append(cols);
-            $("fieldset.add-player").append(newRow);
-            counter++;
-        });
-
-        $("fieldset.add-player").on("click", ".deleteRow", function (event) {
-            $(this).closest("div.row").remove();
-            counter -= 1;
-        });
-    });
-
+    <?php require ROOT . '/js/tournament_add.js';?>
 </script>

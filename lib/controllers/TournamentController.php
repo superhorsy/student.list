@@ -14,10 +14,13 @@ class TournamentController
 {
 
     public $view;
+    private $user;
+    private $tdg;
 
     function __construct()
     {
         $this->view = new \App\View();
+        $this->tdg = new TournamentTDG();
         if (!$_SESSION['token_tournament']) {
             $_SESSION['token_tournament'] = md5(uniqid(mt_rand(), true));
         }
@@ -131,6 +134,29 @@ class TournamentController
         }
 
         $this->view->render('tournament_add', ['user' => $this->user, 'errors' => $errors, 'values' => $values]);
+
+    }
+
+    public function actionEdit(int $tournamentId)
+    {
+
+        $values = [];
+
+        $tournament = $this->tdg->getTournamentById($tournamentId);
+        if ($tournament->getOwnerId() !== $this->user->getId()) {
+            $query = http_build_query(['notify' => 'fail']);
+            http_response_code(500);
+            header("Location: /tournament?$query");
+            exit;
+        }
+        $values = [
+            't_name' => $tournament->getName(),
+            't_date' => $tournament->getDate(),
+            'p_niockname' => $tournament->getPlayers()
+        ];
+
+
+        $this->view->render('tournament_add', ['user' => $this->user, 'values' => $values]);
 
     }
 }

@@ -42,7 +42,7 @@ class Utils
 
         return [
             'name' => $values['t_name'] ?? '',
-            'datetime' => $values['t_date'] ?? '',
+            'date' => $values['t_date'] ?? '',
             'players' => $values['p_nickname'] ?? '',
             'owner_id' => $ownerId,
         ];

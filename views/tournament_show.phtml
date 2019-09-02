@@ -2,7 +2,7 @@
 
     <h1 class=" text-center">Турнир <?= htmlspecialchars($tournament->getName()); ?></h1><br>
 
-    <h2 class=" text-center">Дата проведения: <?= $tournament->getDatetime(); ?></h2>
+    <h2 class=" text-center">Дата проведения: <?= $tournament->getDate(); ?></h2>
 
     <?php if($tournament->getCurrentRound()):?>
     <h4 class=" text-center">Раунд №<?=$tournament->getCurrentRound(); ?></h4>
