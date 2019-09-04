@@ -150,9 +150,10 @@ class TournamentController
             exit;
         }
         $values = [
+            't_id' => $tournament->getId(),
             't_name' => $tournament->getName(),
             't_date' => $tournament->getDate(),
-            'p_niockname' => $tournament->getPlayers()
+            'p_nickname' => $tournament->getPlayers()
         ];
 
 
