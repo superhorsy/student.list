@@ -20,6 +20,9 @@ class TournamentTDG extends TDG
     public function updateTournament(Tournament $tournament):void
     {
         $this->updateValues([
+            'name' =>  $tournament->getName(),
+            'date' => $tournament->getDate(),
+            'owner_id' => $tournament->getOwnerId(),
             'status' =>  $tournament->getStatus(),
             'current_round' => $tournament->getCurrentRound(),
             'round_count' => $tournament->getRoundCount(),
