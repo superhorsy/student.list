@@ -134,8 +134,6 @@ class Tournament
         $this->save();
     }
 
-
-
     public function setTeams()
     {
 
@@ -186,6 +184,33 @@ class Tournament
         $teams = array_intersect_key($teamNames, array_flip($teamKeys));
 
         return $teams;
+    }
+
+    public function estimateRounds():array {
+
+        $players = array();
+
+        foreach ($this->players as $player) {
+            $players[] = $player->getLifes(); //each player has 2 lifes at the start
+        }
+
+        $players_min = $players_max = $players;
+
+        $rounds_min = $rounds_max = 0;
+
+        for ($round=0; $players_min>5 || $players_max>5; $round++) {
+
+            if ($players_min > 5) {
+
+            }
+
+            foreach ($players_min as $player) {
+
+            }
+        }
+
+
+        return $rounds;
     }
 
     public function hydrate(array $values)

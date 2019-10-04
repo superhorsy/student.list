@@ -1,12 +1,31 @@
 <div class="container content tournament">
 
-    <h1 class=" text-center">Турнир <?= htmlspecialchars($tournament->getName()); ?></h1><br>
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <h1 class="text-center">Турнир <?= htmlspecialchars($tournament->getName()); ?></h1>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h2 class=" text-center">Дата проведения: <?= $tournament->getDate(); ?></h2>
 
-    <h2 class=" text-center">Дата проведения: <?= $tournament->getDate(); ?></h2>
-
-    <?php if($tournament->getCurrentRound()):?>
-    <h4 class=" text-center">Раунд №<?=$tournament->getCurrentRound(); ?></h4>
-    <?php endif;?>
+                <?php if ($tournament->getCurrentRound()): ?>
+                    <h4 class=" text-center">Раунд №<?= $tournament->getCurrentRound(); ?></h4>
+                <?php endif; ?>
+            </div>
+            <div class="col align-items-center">
+                <div class="row justify-content-center">
+                    <h4>Раунд №<?= $tournament->getCurrentRound(); ?></h4>
+                </div>
+                <div class="row justify-content-center">
+                    <button type="button" class="btn btn-primary" onclick="window.location.href='/tournament/'">
+                        Расписание тура
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <br>
     <?php if (isset($errors) && $errors): ?>
@@ -35,7 +54,7 @@
                     <tbody>
                     <?php foreach ($tournament->getPlayers() as $number => $player): ?>
                         <tr>
-                            <th scope="row"><?= $number+1 ?></th>
+                            <th scope="row"><?= $number + 1 ?></th>
                             <td><?= $player->getNickname(); ?></td>
                         </tr>
                     <?php endforeach; ?>
@@ -65,8 +84,9 @@
                                              class="card-img-top" alt="<?= $team ?>">
                                         <div class="card-body">
                                             <div class="custom-control custom-switch">
-                                                <input name="loosers[]" value="<?=$team;?>" type="checkbox" class="custom-control-input" id="customSwitch<?=$team;?>">
-                                                <label class="custom-control-label" for="customSwitch<?=$team;?>">Проигравший</label>
+                                                <input name="loosers[]" value="<?= $team; ?>" type="checkbox"
+                                                       class="custom-control-input" id="customSwitch<?= $team; ?>">
+                                                <label class="custom-control-label" for="customSwitch<?= $team; ?>">Проигравший</label>
                                             </div>
                                         </div>
                                     </div>
@@ -139,41 +159,43 @@
                             </table>
                         </div>
                     </div>
-                <?php endif;?>
+                <?php endif; ?>
 
-            <!--Выбывшие-->
-            <?php if($tournament->getLoosers()):?>
-            <div class="container-fluid">
-                <div>
-                    <h5 class="text-center">Выбывшие</h5>
-                    <table class="table table-striped">
-                        <thead class="thead-light">
-                        <tr>
-                            <th scope="col">Ник</th>
-                            <th scope="col">Жизни</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <?php foreach ($tournament->getLoosers() as $player): ?>
-                            <tr>
-                                <td><?= $player->getNickname(); ?></td>
-                                <td>
-                                    <span class="badge badge-pill badge-info"><?= $player->getLifes(); ?></span>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <?php endif;?>
+                <!--Выбывшие-->
+                <?php if ($tournament->getLoosers()): ?>
+                    <div class="container-fluid">
+                        <div>
+                            <h5 class="text-center">Выбывшие</h5>
+                            <table class="table table-striped">
+                                <thead class="thead-light">
+                                <tr>
+                                    <th scope="col">Ник</th>
+                                    <th scope="col">Жизни</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <?php foreach ($tournament->getLoosers() as $player): ?>
+                                    <tr>
+                                        <td><?= $player->getNickname(); ?></td>
+                                        <td>
+                                            <span class="badge badge-pill badge-info"><?= $player->getLifes(); ?></span>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                <?php endif; ?>
 
                 <div class="btn-group container-fluid" role="group">
                     <button name='tournament_action' value='next' type="submit" class="btn btn-success">Продолжить
                     </button>
-                    <button name='tournament_action' value='send_home' type="submit" class="btn btn-info">Отправить выбранных игроков домой
+                    <button name='tournament_action' value='send_home' type="submit" class="btn btn-info">Отправить
+                        выбранных игроков домой
                     </button>
-                    <button name='tournament_action' value='reset' type="submit" class="btn btn-danger">Сбросить прогресс турнира
+                    <button name='tournament_action' value='reset' type="submit" class="btn btn-danger">Сбросить
+                        прогресс турнира
                     </button>
                 </div>
             <?php endif; ?>
@@ -193,7 +215,7 @@
                     <tbody>
                     <?php foreach ($tournament->getPlayersOrderedByLifes() as $number => $player): ?>
                         <tr>
-                            <th scope="row"><?= $number+1 ?></th>
+                            <th scope="row"><?= $number + 1 ?></th>
                             <td><?= $player->getNickname(); ?></td>
                             <td><?= $player->getLifes(); ?></td>
                         </tr>
@@ -204,7 +226,8 @@
                     <button type="button" class="btn btn-secondary" onclick="window.location.href='/tournament/'">
                         Вернуться к перечню турниров
                     </button>
-                    <button name='tournament_action' value='reset' type="submit" class="btn btn-danger">Сбросить прогресс турнира
+                    <button name='tournament_action' value='reset' type="submit" class="btn btn-danger">Сбросить
+                        прогресс турнира
                     </button>
                 </div>
             <?php endif; ?>
@@ -214,5 +237,5 @@
 </div>
 
 <script>
-    <?php require ROOT. '/js/tournament_show.js';?>
+    <?php require ROOT . '/js/tournament_show.js';?>
 </script>
