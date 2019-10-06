@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Config;
 use PDO;
 
 abstract class TDG
@@ -16,12 +17,12 @@ abstract class TDG
         $this->table = $this->getTableName();
         global $db;
         if (!isset($db)) {
-            $config = parse_ini_file(ROOT . '/../config.ini');
-            $mysql_host = $config['host'];
-            $mysql_database = $config['database'];
-            $mysql_user = $config['user'];
-            $mysql_password = $config['password'];
-            $type = $config['type'];
+            $config = Config::getInstance();
+            $mysql_host = $config->host;
+            $mysql_database = $config->database;
+            $mysql_user = $config->user;
+            $mysql_password = $config->password;
+            $type = $config->type;
             $dsn = "$type:host=$mysql_host;dbname=$mysql_database;charset=utf8mb4"; // utf8mb4, чтобы создаваемые в ней таблицы поддерживали хранение любых символов Юникода
             $dsn_Options = [
                 PDO::ATTR_ERRMODE               => PDO::ERRMODE_EXCEPTION,                                              // выводит ошибки SQL при взаимодействии с базой

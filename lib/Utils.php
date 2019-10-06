@@ -11,7 +11,7 @@ class Utils
 
     private static function trimValue($value)
     {
-        if(is_array($value)) {
+        if (is_array($value)) {
             array_filter($value, 'self::trimValue');
             return $value;
         }
@@ -46,5 +46,24 @@ class Utils
             'players' => $values['p_nickname'] ?? '',
             'owner_id' => $ownerId,
         ];
+    }
+
+    /** Estimates count of rounds till the end
+     * @param array $players with amount of lifes
+     * @return int
+     */
+    public static function estimateRounds(array $players): int
+    {
+        $p = array_filter($players);
+
+        for ($round = 0; count($p) >= 10; $round++) {
+            shuffle($p);
+            $out = array_splice($p, 0, (count($p) - count($p) % 10) / 2);
+            array_walk($out, function (&$e) {
+                $e--;
+            });
+            $p = array_merge($p, array_filter($out));
+        }
+        return $round;
     }
 }

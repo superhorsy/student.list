@@ -3,18 +3,14 @@
 
 namespace App\controllers;
 
+use App\{Controller, models\Tournament, models\TournamentTDG, models\User, Utils};
 
-use App\models\Tournament;
-use App\models\TournamentTDG;
-use App\models\User;
-use App\models\UserTDG;
-use App\Utils;
-
-class TournamentController
+class TournamentController extends Controller
 {
 
     public $view;
-    private $user;
+    public $is_owner;
+    private $user = null;
     private $tdg;
 
     function __construct()
@@ -26,12 +22,23 @@ class TournamentController
         }
 
         if (!isset($_COOKIE['auth'])) {
-            header("Location: /index");
-            exit;
+            if (!$this->hasAccess()) {
+                header("Location: /index");
+                exit;
+            }
+        } else {
+            $this->user = new User($_COOKIE['auth']);
         }
-        $this->user = new User($_COOKIE['auth']);
+
         $notify = $_GET['notify'] ? strval($_GET['notify']) : '';
 
+    }
+
+    public function access()
+    {
+        return [
+            self::ACCESS_ALL => ['actionShow']
+        ];
     }
 
     public function action()
@@ -58,50 +65,54 @@ class TournamentController
         $tournament = (new TournamentTDG())->getTournamentById($tournamentId);
         $errors = [];
 
-        if (!$tournament || $tournament->getOwnerId() !== $this->user->getId()) {
-            $query = http_build_query(['notify' => 'fail']);
-            http_response_code(500);
-            header("Location: /tournament?$query");
-        }
+        $this->is_owner = $this->user && $tournament->getOwnerId() == $this->user->getId() ? true : false;
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if ($tournament) {
+            if ($this->is_owner) {
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    if (!$_POST['token_tournament']) {
+                        $errors[] = 'Форма отправлена со стороннего сайта.';
+                    } else {
+                        switch ($_POST['tournament_action']) {
+                            case 'start':
+                                $tournament->start();
+                                break;
+                            case 'next':
+                                if ($tournament->getStatus() == Tournament::STATUS_IN_PROGRESS) {
+                                    $playersPlaying = count($tournament->getPlayers()) - count($tournament->getWaitingPlayers()) - count($tournament->getLoosers());
 
-            if (!$_POST['token_tournament']) {
-                $errors[] = 'Форма отправлена со стороннего сайта.';
-            } else {
-                if ($_POST['tournament_action'] === 'start') {
-                    $tournament->start();
-
-                } elseif ($_POST['tournament_action'] === 'next') {
-
-                    $playersPlaying = count($tournament->getPlayers()) - count($tournament->getWaitingPlayers()) - count($tournament->getLoosers());
-
-                    if (!(isset($_POST['loosers']) && !empty($_POST['loosers']) && is_array($_POST['loosers']))) {
-                        $errors[] = 'Не отмечены проигравшие';
-                    } elseif (count($_POST['loosers']) != ($playersPlaying) / 10) {
-                        $errors[] = 'Отмечены не все проигравшие';
+                                    if (!(isset($_POST['loosers']) && !empty($_POST['loosers']) && is_array($_POST['loosers'])) || count($_POST['loosers']) != ($playersPlaying) / 10) {
+                                        $errors[] = 'Отмечены не все проигравшие';
+                                    }
+                                    if (!$errors) {
+                                        $roundResult = [
+                                            'loosers' => $_POST['loosers'] ?? '',
+                                        ];
+                                        $tournament->next($roundResult);
+                                    }
+                                }
+                                break;
+                            case 'reset':
+                                $tournament->reset();
+                                break;
+                            case 'send_home':
+                                $data = [
+                                    'sendHome' => $_POST['sendHome'] ?? '',
+                                ];
+                                $tournament->sendHome($data);
+                                break;
+                        }
                     }
-
-                    if (!$errors) {
-                        $roundResult = [
-                            'loosers' => $_POST['loosers'] ?? '',
-                        ];
-
-                        $tournament->next($roundResult);
-                    }
-                } elseif ($_POST['tournament_action'] === 'reset') {
-                    $tournament->reset();
-                } elseif ($_POST['tournament_action'] === 'send_home') {
-                    $data = [
-                        'sendHome' => $_POST['sendHome'] ?? '',
-                    ];
-                    $tournament->sendHome($data);
                 }
+                $this->view->render('tournament_show', ['tournament' => $tournament, 'is_owner' => $this->is_owner,
+                    'notify' => $notify ?? false, 'errors' => $errors]);
+            } else {
+                $this->view->render('tournament_show', ['tournament' => $tournament, 'is_owner' => $this->is_owner]);
             }
+        } else {
+            header("Location: /index");
+            exit;
         }
-
-        $this->view->render('tournament_show', ['user' => $this->user, 'notify' => $notify ?? false, 'tournament' => $tournament, 'errors' => $errors]);
-
     }
 
     public function actionAdd(array $errors = null, array $values = null)

@@ -4,6 +4,8 @@
 namespace App\models;
 
 
+use App\Utils;
+
 class Tournament
 {
     private $tdg;
@@ -45,57 +47,61 @@ class Tournament
     {
         if ($this->status != self::STATUS_IN_PROGRESS) {
             $this->setStatus(self::STATUS_IN_PROGRESS);
+
+
+            $teams = $this->setTeams();
+            $this->toss($teams);
+
+            $this->current_round = 1;
+
+            $round_count = (count($this->players) - (count($this->players) % 10)) / 5;
+            $this->round_count = $round_count;
+
+            $this->save();
+
         }
-
-        $teams = $this->setTeams();
-        $this->toss($teams);
-
-        $this->current_round = 1;
-
-        $round_count = (count($this->players) - (count($this->players) % 10)) / 5;
-        $this->round_count = $round_count;
-
-        $this->save();
 
     }
 
     public function next(array $roundResult)
     {
-        foreach ($roundResult['loosers'] as $team) {
-            $loosers = (new PlayersTDG())->getPlayersByTeam($this, $team);
-            foreach ($loosers as $looser) {
-                $lifes = $looser->getLifes();
-                $looser->setLifes(--$lifes);
-                if ($looser->getLifes() == 0) {
-                    $looser->setTeam('OUT');
+        if ($this->status == self::STATUS_IN_PROGRESS) {
+            foreach ($roundResult['loosers'] as $team) {
+                $loosers = (new PlayersTDG())->getPlayersByTeam($this, $team);
+                foreach ($loosers as $looser) {
+                    $lifes = $looser->getLifes();
+                    $looser->setLifes(--$lifes);
+                    if ($looser->getLifes() == 0) {
+                        $looser->setTeam('OUT');
+                    }
+                    $looser->save();
                 }
-                $looser->save();
             }
+            $this->setPlayers();
+
+            $alivePlayers = $this->getAlivePlayers();
+
+            if (count($alivePlayers) >= 10) {
+                $teams = $this->setTeams();
+                $this->toss($teams);
+                $this->current_round++;
+            } else {
+                $this->setStatus(self::STATUS_ENDED);
+            }
+
+            $this->save();
+
         }
-        $this->setPlayers();
-
-        $alivePlayers = $this->getAlivePlayers();
-
-        if (count($alivePlayers) >= 10) {
-            $teams = $this->setTeams();
-            $this->toss($teams);
-            $this->current_round++;
-        } else {
-            $this->setStatus(self::STATUS_ENDED);
-        }
-
-        $this->save();
     }
 
     public function sendHome(array $roundResult)
     {
-        $goingHomeIds = $roundResult['sendHome'];
-        $goingHomePlayers = (new PlayersTDG())->getPlayersById($this, $goingHomeIds);
+        $goingHomePlayers = (new PlayersTDG())->getPlayersById($this, $roundResult['sendHome']);
         $waitingPlayers = $this->getWaitingPlayers();
 
-        if (count($waitingPlayers)>=count($goingHomePlayers)){
+        if (count($waitingPlayers) >= count($goingHomePlayers)) {
             $joiningPlayers = array_slice($waitingPlayers, 0, count($goingHomePlayers));
-            array_map(function($goingHome, $joining) {
+            array_map(function ($goingHome, $joining) {
                 $goingHome->setLifes(0);
 
                 $team = $goingHome->getTeam();
@@ -186,31 +192,19 @@ class Tournament
         return $teams;
     }
 
-    public function estimateRounds():array {
-
-        $players = array();
-
+    public function getEstimation(): int
+    {
         foreach ($this->players as $player) {
             $players[] = $player->getLifes(); //each player has 2 lifes at the start
         }
 
-        $players_min = $players_max = $players;
+        $cycles = 15;
 
-        $rounds_min = $rounds_max = 0;
-
-        for ($round=0; $players_min>5 || $players_max>5; $round++) {
-
-            if ($players_min > 5) {
-
-            }
-
-            foreach ($players_min as $player) {
-
-            }
+        for ($i = 1; $i <= $cycles; $i++) {
+            $estimation[] = Utils::estimateRounds($players);
         }
 
-
-        return $rounds;
+        return intdiv(array_sum($estimation), $cycles);
     }
 
     public function hydrate(array $values)

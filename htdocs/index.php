@@ -1,4 +1,7 @@
 <?php
+
+use App\Router;
+
 //Bootstrap file
 require_once dirname(__FILE__) . '/../bootstrap.php';
 
@@ -11,10 +14,7 @@ include ROOT  . '/../errors.php';*/
 //Cессия
 session_start();
 
-// подключаем конфигурацию URL
-$routes = ROOT . '/../routes.php';
-
 // запускаем роутер
-$router = new App\Router($routes);
+$router = Router::getInstance();
 $router->run();
 

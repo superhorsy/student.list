@@ -2,62 +2,92 @@
 
 namespace App;
 
-class Router {
+class Router
+{
+
+    private static $_instance = null;
+
+    public static function getInstance()
+    {
+        if (is_null(self::$_instance)) {
+            self::$_instance = new self();
+        }
+        return self::$_instance;
+    }
+
     // Хранит конфигурацию маршрутов.
     private $routes;
 
-    function __construct($routesPath){
+    private $action;
+
+    private function __construct()
+    {
+        $routes = Config::getInstance()->routes;
         // Получаем конфигурацию из файла.
-        $this->routes = include($routesPath);
+        $this->routes = include($routes);
     }
 
-    /**Метод получает URI. Несколько вариантов представлены для надёжности.
+    /**
+     * @return mixed
+     */
+    public function getAction()
+    {
+        return $this->action;
+    }
+
+    protected function __clone()
+    {
+    }
+
+    /**
+     * Метод получает URI. Несколько вариантов представлены для надёжности.
      * @return string
      */
-    function getPath(){
-        if(!empty($_SERVER['REQUEST_URI'])) {
+    public function getPath()
+    {
+        if (!empty($_SERVER['REQUEST_URI'])) {
             return trim($_SERVER['REQUEST_URI'], '/');
         }
 
-        if(!empty($_SERVER['PATH_INFO'])) {
+        if (!empty($_SERVER['PATH_INFO'])) {
             return trim($_SERVER['PATH_INFO'], '/');
         }
 
-        if(!empty($_SERVER['QUERY_STRING'])) {
+        if (!empty($_SERVER['QUERY_STRING'])) {
             return trim($_SERVER['QUERY_STRING'], '/');
         }
     }
 
-    function run(){
-
+    function run()
+    {
         // Parse URL
-        $path = $this->getpath();
+        $path = $this->getPath();
 
         // Пытаемся применить к нему правила из конфигуации.
-        foreach($this->routes as $pattern => $route){
+        foreach ($this->routes as $pattern => $route) {
             // Если правило совпало.
-            if(preg_match("~$pattern~", $path)){
+            if (preg_match("~$pattern~", $path)) {
                 // Получаем внутренний путь из внешнего согласно правилу.
                 $internalRoute = preg_replace("~$pattern~", $route, $path);
                 // Разбиваем внутренний путь на сегменты.
                 $segments = explode('/', $internalRoute);
                 // Первый сегмент — контроллер.
-                $controller = 'App\\Controllers\\'.ucfirst(array_shift($segments)).'Controller';
+                $controller = 'App\\Controllers\\' . ucfirst(array_shift($segments)) . 'Controller';
                 // Второй — действие.
-                    $action = 'action'.ucfirst(array_shift($segments));
+                $this->action = 'action' . ucfirst(array_shift($segments));
                 // Остальные сегменты — параметры.
                 $parameters = $segments;
 
                 // Если не загружен нужный класс контроллера или в нём нет
                 // нужного метода — 404
-                if(!is_callable(array($controller, $action))){
+                if (!is_callable(array($controller, $this->action))) {
                     header("HTTP/1.0 404 Not Found");
                     return;
                 }
                 //Создаем объект контроллера
                 $controllerObject = new $controller;
                 // Вызываем действие контроллера с параметрами
-                call_user_func_array(array($controllerObject, $action), $parameters);
+                call_user_func_array(array($controllerObject, $this->action), $parameters);
                 return;
             }
         }
