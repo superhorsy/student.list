@@ -1,7 +1,7 @@
 ﻿--
 -- Скрипт сгенерирован Devart dbForge Studio for MySQL, Версия 7.4.201.0
 -- Домашняя страница продукта: http://www.devart.com/ru/dbforge/mysql/studio
--- Дата скрипта: 22.08.2019 19:24:17
+-- Дата скрипта: 07.10.2019 18:57:29
 -- Версия сервера: 5.6.41
 -- Версия клиента: 4.1
 --
@@ -75,17 +75,18 @@ ADD UNIQUE INDEX user_login_uindex (username);
 CREATE TABLE tournament (
   id int(11) NOT NULL AUTO_INCREMENT,
   name varchar(255) NOT NULL,
-  datetime datetime DEFAULT NULL,
+  date date DEFAULT NULL,
   owner_id int(11) NOT NULL,
   status enum ('awaiting', 'in progress', 'ended') NOT NULL DEFAULT 'awaiting',
   current_round int(11) DEFAULT NULL,
   round_count int(11) DEFAULT NULL,
   toss blob DEFAULT NULL COMMENT 'serilization of TOSS method result',
+  prize_pool int(11) DEFAULT NULL,
   PRIMARY KEY (id)
 )
 ENGINE = INNODB,
-AUTO_INCREMENT = 9,
-AVG_ROW_LENGTH = 16384,
+AUTO_INCREMENT = 14,
+AVG_ROW_LENGTH = 8192,
 CHARACTER SET utf8mb4,
 COLLATE utf8mb4_general_ci;
 
@@ -105,11 +106,12 @@ CREATE TABLE players (
   nickname varchar(50) NOT NULL,
   tournament_id int(11) DEFAULT NULL,
   lifes int(1) DEFAULT 2,
+  is_suspended tinyint(1) DEFAULT 0,
   PRIMARY KEY (id)
 )
 ENGINE = INNODB,
-AUTO_INCREMENT = 29,
-AVG_ROW_LENGTH = 744,
+AUTO_INCREMENT = 141,
+AVG_ROW_LENGTH = 682,
 CHARACTER SET utf8mb4,
 COLLATE utf8mb4_general_ci;
 
@@ -130,34 +132,37 @@ INSERT INTO user VALUES
 -- Вывод данных для таблицы tournament
 --
 INSERT INTO tournament VALUES
-(8, 'Tournament', '2019-10-10 20:00:00', 14, 'awaiting', NULL, NULL, x'6E756C6C');
+(8, 'Tournament', '2019-10-14', 14, 'ended', 4, 4, x'7B2241223A5B22416E74692D4D616765222C224172632057617264656E225D7D', NULL),
+(13, 'Test1', '2019-10-10', 14, 'awaiting', NULL, NULL, x'6E756C6C', NULL);
 
 -- 
 -- Вывод данных для таблицы players
 --
 INSERT INTO players VALUES
-(7, 'Mirana', 'Player1', 8, 2),
-(8, 'WAIT', 'Player2', 8, 2),
-(9, 'OUT', 'Player3', 8, 2),
-(10, 'OUT', 'Player4', 8, 2),
-(11, 'OUT', 'Player5', 8, 2),
-(12, 'OUT', 'Player6', 8, 2),
-(13, 'Leshrac', 'Player7', 8, 2),
-(14, 'OUT', 'Player8', 8, 2),
-(15, 'Leshrac', 'Player9', 8, 2),
-(16, 'OUT', 'Player10', 8, 2),
-(17, 'OUT', 'Player11', 8, 2),
-(18, 'Leshrac', 'Player12', 8, 2),
-(19, 'OUT', 'Player13', 8, 2),
-(20, 'OUT', 'Player14', 8, 2),
-(21, 'OUT', 'Player15', 8, 2),
-(22, 'OUT', 'Player16', 8, 2),
-(23, 'OUT', 'Player17', 8, 2),
-(24, 'Leshrac', 'Player18', 8, 2),
-(25, 'OUT', 'Player19', 8, 2),
-(26, 'Leshrac', 'Player20', 8, 2),
-(27, 'OUT', 'Player21', 8, 2),
-(28, 'OUT', 'Player22', 8, 2);
+(7, 'OUT', 'Женя', 8, 0, 0),
+(8, 'OUT', 'Андрей', 8, 0, 0),
+(9, 'OUT', 'Player3', 8, 0, 0),
+(10, 'Arc Warden', 'Player4', 8, 1, 0),
+(11, 'OUT', 'Player5', 8, 0, 0),
+(12, 'OUT', 'Player6', 8, 0, 0),
+(13, 'Arc Warden', 'Player7', 8, 1, 0),
+(14, 'OUT', 'Player8', 8, 0, 0),
+(15, 'Arc Warden', 'Player9', 8, 1, 0),
+(16, 'OUT', 'Player10', 8, 0, 0),
+(17, 'Anti-Mage', 'Player11', 8, 1, 0),
+(18, 'WAIT', 'Player12', 8, 2, 0),
+(19, 'OUT', 'Player13', 8, 0, 0),
+(20, 'OUT', 'Player14', 8, 0, 0),
+(21, 'OUT', 'Player15', 8, 0, 0),
+(22, 'OUT', 'Player16', 8, 0, 0),
+(23, 'Anti-Mage', 'Player17', 8, 1, 0),
+(24, 'OUT', 'Player18', 8, 0, 0),
+(25, 'Arc Warden', 'Player19', 8, 2, 0),
+(26, 'Arc Warden', 'Player20', 8, 2, 0),
+(27, 'OUT', 'Player21', 8, 0, 0),
+(28, 'OUT', 'Player22', 8, 0, 0),
+(139, NULL, 'asdf', 13, 2, 0),
+(140, NULL, '1234', 13, 2, 0);
 
 -- 
 -- Восстановить предыдущий режим SQL (SQL mode)

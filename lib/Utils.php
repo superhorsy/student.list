@@ -4,21 +4,8 @@
 namespace App;
 
 
-use App\models\UserTDG;
-
 class Utils
 {
-
-    private static function trimValue($value)
-    {
-        if (is_array($value)) {
-            array_filter($value, 'self::trimValue');
-            return $value;
-        }
-
-        $value = strval($value);
-        return trim($value);
-    }
 
     public static function getUserValues(array $postData): array
     {

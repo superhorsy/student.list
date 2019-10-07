@@ -49,8 +49,8 @@
                     <?php foreach ($values['p_nickname'] as $player):?>
                     <div class="player row col">
                         <div class="col">
-                            <input name="p_nickname[]" type="text" class="form-control" id="p_nickname"
-                                   placeholder="Ник" value="<?=$player->getNickname() ?? '';?>">
+                            <input name="p_nickname[<?=$player ? $player->getId() : '';?>]" type="text" class="form-control" id="p_nickname"
+                                   placeholder="Ник" value="<?=$player ? $player->getNickname() : '';?>">
                         </div>
                         <div class="col-sm-1">
                             <button type="button" class="btn-sm btn btn-danger deleteRow">Удалить</button>

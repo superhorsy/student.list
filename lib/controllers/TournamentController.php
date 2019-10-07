@@ -96,10 +96,14 @@ class TournamentController extends Controller
                                 $tournament->reset();
                                 break;
                             case 'send_home':
-                                $data = [
-                                    'sendHome' => $_POST['sendHome'] ?? '',
-                                ];
-                                $tournament->sendHome($data);
+                                if (isset($_POST['sendHome']) && $_POST['sendHome']) {
+                                    $data = [
+                                        'sendHome' => $_POST['sendHome'] ?? '',
+                                    ];
+                                    $tournament->sendHome($data);
+                                } else {
+                                    $errors[] = 'Не отмечены игроки';
+                                }
                                 break;
                         }
                     }
@@ -118,19 +122,28 @@ class TournamentController extends Controller
     public function actionAdd(array $errors = null, array $values = null)
     {
 
-        $values = [];
-        $errors = [];
+        $values = $errors = [];
 
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (!$_POST['token_tournament']) {
-                $errors[] = 'Форма отправлена со стороннего сайта.';
+                $errors = 'Форма отправлена со стороннего сайта.';
             } else {
                 $values = Utils::getTournamentValues($_POST, $this->user->getId());
-                $tournament = new Tournament();
-                $tournament->hydrate($values);
-                $errors = $tournament->isValid();
+                if ($_POST['t_id']) {
+                    $tournament = $this->tdg->getTournamentById((int)$_POST['t_id']);
+                    if (!$tournament || !$tournament->getOwnerId() == $this->user->getId()) {
+                        $errors = 'Ошибка доступа к турниру.';
+                    } else {
+                        $tournament->hydrate($values);
+                        $errors = $tournament->isValid();
+                    }
+                } else {
+                    $tournament = new Tournament();
+                    $tournament->hydrate($values);
+                    $errors = $tournament->isValid();
+                }
             }
-            if (!$errors) {
+            if (empty($errors)) {
                 if (!($tournament->save())) {
                     $query = http_build_query(['notify' => 'fail']);
                     http_response_code(500);
@@ -142,6 +155,15 @@ class TournamentController extends Controller
                 header("Location: /tournament?$query");
                 exit;
             }
+        }
+
+        if ($tournament) {
+            $values = [
+                't_id' => $tournament->getId(),
+                't_name' => $tournament->getName(),
+                't_date' => $tournament->getDate(),
+                'p_nickname' => $tournament->getPlayers()
+            ];
         }
 
         $this->view->render('tournament_add', ['user' => $this->user, 'errors' => $errors, 'values' => $values]);
