@@ -29,7 +29,7 @@ class Tournament
     const STATUS_ENDED = 'ended';
 
     /**
-     * Tournament constructor.
+     *
      * @param $tdg
      */
     public function __construct()
