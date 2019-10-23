@@ -3,9 +3,19 @@
 
 namespace App;
 
-
 class Utils
 {
+
+    private static function trimValue($value)
+    {
+        if (is_array($value)) {
+            array_filter($value, 'self::trimValue');
+            return $value;
+        }
+
+        $value = strval($value);
+        return trim($value);
+    }
 
     public static function getUserValues(array $postData): array
     {
@@ -30,6 +40,7 @@ class Utils
         return [
             'name' => $values['t_name'] ?? '',
             'date' => $values['t_date'] ?? '',
+            'prize_pool' => $values['t_prize_pool'] ?? '',
             'players' => $values['p_nickname'] ?? '',
             'owner_id' => $ownerId,
         ];

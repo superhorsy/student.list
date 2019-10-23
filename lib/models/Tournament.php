@@ -18,6 +18,7 @@ class Tournament
     private $current_round;
     private $round_count;
     private $toss;
+    private $prize_pool;
 
     private $players = array();
     private $loosers = array();
@@ -33,8 +34,7 @@ class Tournament
      */
     public function __construct()
     {
-        $tdg = new TournamentTDG();
-        $this->tdg = $tdg;
+        $this->tdg = new TournamentTDG();
         if ($this->id) {
             $this->setPlayers();
         }
@@ -252,43 +252,41 @@ class Tournament
 
     public function hydrate(array $values)
     {
-        if ($values['id']) {
-            $this->setId($values['id']);
-        }
         $values['name'] ? $this->setName($values['name']) : $this->setName('');
         $values['date'] ? $this->setDate($values['date']) : $this->setDate('');
+        $values['prize_pool'] ? $this->setPrizePool($values['prize_pool']) : $this->setPrizePool(null);
         $values['owner_id'] ? $this->setOwnerId($values['owner_id']) : $this->setOwnerId('');
-        //Отдельно формируем игроков
-        if ($values['players'] && is_array($values['players'])) {
-            if ($this->players) {
-                $this->players = array();
-                foreach ($values['players'] as $id => $nickname) {
-                    $player = (new PlayersTDG())->getPlayersbyTournamentID($this->id, $id)[0];
-                    $player->setNickname($nickname);
-                    $this->players[]=$player;
-                }
-            } else {
-                $this->setPlayers($values['players']);
-            }
-        }
+        if(isset($values['players']) && $values['players']) {
+            $this->setPlayers($values['players']);
+        };
     }
 
-    public function save(): bool
+    public function save(int $mode = 1): bool
     {
         if ($this->id) {
             $this->tdg->updateTournament($this);
         } else {
             $tournamentId = $this->tdg->saveTournament($this);
-
             if (!$tournamentId) {
                 return false;
             }
             $this->id = $tournamentId;
         }
 
-        foreach ($this->players as $player) {
-            $player->setTournamentId($this->id);
-            $player->save();
+        switch ($mode) {
+            case 1: // стандартное сохранение/удаление
+                foreach ($this->players as $player) {
+                    $player->setTournamentId($this->id);
+                    $player->save();
+                };
+                break;
+            case 2: //редактирование турнира с удалением игроков
+                (new PlayersTDG())->deleteAllPlayers($this);
+                foreach ($this->players as $player) {
+                    $player->setTournamentId($this->id);
+                    $player->save();
+                };
+                break;
         }
 
         return $this->id ? true : false;
@@ -317,18 +315,21 @@ class Tournament
             }
         }
 
-        $playerNicknames = array();
-        foreach ($this->players as $player) {
-            $playerNicknames[] = $player->getNickname();
-            $playerErrors = $player->isValid();
-            if ($playerErrors) {
-                $errors = array_merge($errors, $playerErrors);
-            };
+        if (!$this->players) {
+            $errors[] = 'Отсутствуют имена игроков';
+        } else {
+            $playerNicknames = array();
+            foreach ($this->players as $player) {
+                $playerNicknames[] = $player->getNickname();
+                $playerErrors = $player->isValid();
+                if ($playerErrors) {
+                    $errors = array_merge($errors, $playerErrors);
+                };
+            }
+            if (count($playerNicknames) !== count(array_unique($playerNicknames))) {
+                $errors[] = 'Никнэймы игроков не могут дублироваться';
+            }
         }
-        if (count($playerNicknames) !== count(array_unique($playerNicknames))) {
-            $errors[] = 'Никнэймы игроков не могут дублироваться';
-        }
-
 
         return $errors ? $errors : null;
     }
@@ -347,12 +348,9 @@ class Tournament
     public function setPlayers(array $nicknames = array()): void
     {
         if ($nicknames) {
-            $players = [];
+            $this->players = array();
             foreach ($nicknames as $nickname) {
-                $player = new Players();
-                $playerData = ['nickname' => $nickname];
-                $player->hydrate($playerData);
-                $this->players[] = $player;
+                $this->players[] = new Players(['nickname' => $nickname]);
             }
         } elseif ($this->id) {
             $this->players = (new PlayersTDG())->getPlayersbyTournamentID($this->id);
@@ -545,6 +543,22 @@ class Tournament
     public function getPlayersOrderedByLifes()
     {
         return (new PlayersTDG())->getPlayersOrderedByLifes($this);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPrizePool()
+    {
+        return $this->prize_pool;
+    }
+
+    /**
+     * @param mixed $prize_pool
+     */
+    public function setPrizePool($prize_pool): void
+    {
+        $this->prize_pool = $prize_pool;
     }
 
 }

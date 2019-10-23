@@ -129,19 +129,9 @@ class TournamentController extends Controller
                 $errors = 'Форма отправлена со стороннего сайта.';
             } else {
                 $values = Utils::getTournamentValues($_POST, $this->user->getId());
-                if ($_POST['t_id']) {
-                    $tournament = $this->tdg->getTournamentById((int)$_POST['t_id']);
-                    if (!$tournament || !$tournament->getOwnerId() == $this->user->getId()) {
-                        $errors = 'Ошибка доступа к турниру.';
-                    } else {
-                        $tournament->hydrate($values);
-                        $errors = $tournament->isValid();
-                    }
-                } else {
-                    $tournament = new Tournament();
-                    $tournament->hydrate($values);
-                    $errors = $tournament->isValid();
-                }
+                $tournament = new Tournament();
+                $tournament->hydrate($values);
+                $errors = $tournament->isValid();
             }
             if (empty($errors)) {
                 if (!($tournament->save())) {
@@ -157,40 +147,40 @@ class TournamentController extends Controller
             }
         }
 
-        if ($tournament) {
-            $values = [
-                't_id' => $tournament->getId(),
-                't_name' => $tournament->getName(),
-                't_date' => $tournament->getDate(),
-                'p_nickname' => $tournament->getPlayers()
-            ];
-        }
-
-        $this->view->render('tournament_add', ['user' => $this->user, 'errors' => $errors, 'values' => $values]);
+        $this->view->render('tournament_add', ['user' => $this->user, 'errors' => $errors, 'tournament' => $tournament]);
 
     }
 
     public function actionEdit(int $tournamentId)
     {
-
-        $values = [];
-
         $tournament = $this->tdg->getTournamentById($tournamentId);
-        if ($tournament->getOwnerId() !== $this->user->getId()) {
-            $query = http_build_query(['notify' => 'fail']);
-            http_response_code(500);
-            header("Location: /tournament?$query");
-            exit;
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            if (!$_POST['token_tournament']) {
+                $errors = 'Форма отправлена со стороннего сайта.';
+            } else {
+                $values = Utils::getTournamentValues($_POST, $this->user->getId());
+                if (!$tournament || !$tournament->getOwnerId() == $this->user->getId()) {
+                    $errors = 'Ошибка доступа к турниру.';
+                } else {
+                    $tournament->hydrate($values);
+                    $errors = $tournament->isValid();
+                }
+            }
+            if (empty($errors)) {
+                if (!($tournament->save(2))) {
+                    $query = http_build_query(['notify' => 'fail']);
+                    http_response_code(500);
+                    header("Location: /tournament?$query");
+                    exit;
+                }
+                http_response_code(302);
+                $query = http_build_query(['notify' => 'success']);
+                header("Location: /tournament?$query");
+                exit;
+            }
         }
-        $values = [
-            't_id' => $tournament->getId(),
-            't_name' => $tournament->getName(),
-            't_date' => $tournament->getDate(),
-            'p_nickname' => $tournament->getPlayers()
-        ];
 
-
-        $this->view->render('tournament_add', ['user' => $this->user, 'values' => $values]);
+        $this->view->render('tournament_add', ['user' => $this->user, 'errors' => $errors, 'tournament' => $tournament]);
 
     }
 }

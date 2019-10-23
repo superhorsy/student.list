@@ -6,9 +6,19 @@ namespace App\models;
 
 class PlayersTDG extends TDG
 {
-    public function getPlayersbyTournamentID($tournamentID): ?array
+    public function getPlayersbyTournamentID($tournamentID, $ids = null): ?array
     {
-        $query = $this->connection->query("SELECT * FROM `$this->table` WHERE `tournament_id` = '$tournamentID'");
+        if ($ids) {
+            if (is_array($ids)) {
+                $ids = array_map(function($ids){return "'" . $ids . "'";},$ids);
+                $ids = '(' . implode(', ', $ids) . ')';
+            } else {
+                $ids = '(' . $ids . ')';
+            }
+            $query = $this->connection->query("SELECT * FROM `$this->table` WHERE `tournament_id` = '$tournamentID' AND `id` IN $ids");
+        } else {
+            $query = $this->connection->query("SELECT * FROM `$this->table` WHERE `tournament_id` = '$tournamentID'");
+        }
         $players = $query->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, '\App\models\Players');
         return $players ? $players : null;
     }
@@ -56,14 +66,16 @@ class PlayersTDG extends TDG
         return $players ? $players : null;
     }
 
-    public function getPlayersById(Tournament $tournament, array $ids)
+    public function resetSuspension(Tournament $tournament)
     {
-        $ids = array_map(function($id){return "'" . $id . "'";},$ids);
-        $ids = '(' . implode(', ', $ids) . ')';
-        $query = $this->connection->query("SELECT * FROM `$this->table` WHERE `tournament_id` = '{$tournament->getId()}' AND `id` IN $ids");
-        $players = $query->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, '\App\models\Players');
-        return $players ? $players : null;
+        $query = $this->connection->query("UPDATE `$this->table` SET `is_suspended` = false WHERE `tournament_id` = {$tournament->getId()}");
+        return $query ? true : false;
     }
 
+    public function deleteAllPlayers(Tournament $tournament)
+    {
+        $query = $this->connection->query("DELETE FROM `$this->table` WHERE `tournament_id` = {$tournament->getId()}");
+        return $query ? true : false;
+    }
 
 }

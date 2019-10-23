@@ -1,6 +1,6 @@
 $(document).ready(function () {
     var counter = 0;
-    var player = $(".player:last").clone().find("input").val("").end();
+    var player = $(".player:last").clone().find("input").attr('value','').attr('name','p_nickname[new]').end();
 
     $("#addrow").on("click", function () {
         player.clone().appendTo(".players");

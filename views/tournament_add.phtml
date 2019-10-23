@@ -1,20 +1,14 @@
 <div class="container content">
-    <form method="post" action="/tournament/add/" class="tournament">
+    <form method="post" action="/tournament/<?= (isset($tournament) && $tournament->getId()) ? "edit/{$tournament->getId()}":"add";?>/" class="tournament">
 
         <input name="token_tournament" type="hidden"
                value="<?= htmlspecialchars($_SESSION['token_tournament'], ENT_QUOTES); ?>">
 
-        <?php if ($values['t_id']):?>
-            <input name="t_id" type="hidden"
-                   value="<?= htmlspecialchars($values['t_id'], ENT_QUOTES); ?>">
-        <?php endif;?>
-
-
-        <?php if ($values['t_id']):?>
+        <?php if (isset($tournament) && $tournament->getId()): ?>
             <h1>Редактирование турнира</h1><br>
-        <?php else:?>
+        <?php else: ?>
             <h1>Создание турнира</h1><br>
-        <?php endif;?>
+        <?php endif; ?>
 
 
         <?php if (isset($errors) && $errors): ?>
@@ -29,7 +23,7 @@
             <label for="t_name" class="col-sm-2 col-form-label">Название турнира</label>
             <div class="col">
                 <input name="t_name" type="text" class="form-control" id="t_name" placeholder="Название турнира"
-                       value="<?= htmlspecialchars($values['t_name'] ?? '') ?>">
+                       value="<?= htmlspecialchars(isset($tournament) && $tournament->getName() ? $tournament->getName() : '') ?>">
             </div>
         </div>
 
@@ -37,39 +31,47 @@
             <label for="t_date" class="col-sm-2 col-form-label">Дата турнира</label>
             <div class="col">
                 <input name="t_date" type="date" class="form-control" id="t_date" placeholder="Дата турнира"
-                       value="<?= htmlspecialchars($values['t_date'] ?? '') ?>">
+                       value="<?= htmlspecialchars(isset($tournament) && $tournament->getDate() ? $tournament->getDate() : '') ?>">
             </div>
         </div>
 
+        <div class="form-group row">
+            <label for="t_date" class="col-sm-2 col-form-label">Призовой фонд</label>
+            <div class="col">
+                <input name="t_prize_pool" type="number" class="form-control" id="t_prize_pool" placeholder="Призовой фонд"
+                       value="<?= htmlspecialchars(isset($tournament) && $tournament->getPrizePool() ? $tournament->getPrizePool() : '') ?>">
+            </div>
+        </div>
 
-            <div class="form-group row">
-                <label for="p_nickname" class="col-sm-2 col-form-label">Ник игрока</label>
-                <div class="col players">
-                    <?php if ($values['p_nickname']):?>
-                    <?php foreach ($values['p_nickname'] as $player):?>
-                    <div class="player row col">
-                        <div class="col">
-                            <input name="p_nickname[<?=$player ? $player->getId() : '';?>]" type="text" class="form-control" id="p_nickname"
-                                   placeholder="Ник" value="<?=$player ? $player->getNickname() : '';?>">
-                        </div>
-                        <div class="col-sm-1">
-                            <button type="button" class="btn-sm btn btn-danger deleteRow">Удалить</button>
-                        </div>
-                    </div>
-                    <?php endforeach;?>
-                    <?php else:?>
+        <div class="form-group row">
+            <label for="p_nickname" class="col-sm-2 col-form-label">Ник игрока</label>
+            <div class="col players">
+                <?php if (isset($tournament) && $tournament->getPlayers()): ?>
+                    <?php foreach ($tournament->getPlayers() as $player): ?>
                         <div class="player row col">
                             <div class="col">
-                                <input name="p_nickname[]" type="text" class="form-control" id="p_nickname"
-                                       placeholder="Ник">
+                                <input name="p_nickname[]" type="text"
+                                       class="form-control" id="p_nickname"
+                                       placeholder="Ник" value="<?= $player ? $player->getNickname() : ''; ?>">
                             </div>
                             <div class="col-sm-1">
                                 <button type="button" class="btn-sm btn btn-danger deleteRow">Удалить</button>
                             </div>
                         </div>
-                    <?php endif;?>
-                </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="player row col">
+                        <div class="col">
+                            <input name="p_nickname[]" type="text" class="form-control" id="p_nickname"
+                                   placeholder="Ник">
+                        </div>
+                        <div class="col-sm-1">
+                            <button type="button" class="btn-sm btn btn-danger deleteRow">Удалить</button>
+                        </div>
+                    </div>
+                <?php endif; ?>
             </div>
+        </div>
 
 
         <div class="form-group row">

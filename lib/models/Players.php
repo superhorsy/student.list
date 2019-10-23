@@ -3,7 +3,7 @@
 
 namespace App\models;
 
-class Players implements \Serializable
+class Players
 {
     private $tdg;
 
@@ -12,53 +12,23 @@ class Players implements \Serializable
     private $team;
     private $tournament_id;
     private $lifes;
+    private $is_suspended;
+
+    //Player status
+    const STATUS_WAIT = 'WAIT';
+    const STATUS_OUT = 'OUT';
 
     /**
      * Players constructor.
      * @param $tdg
      */
-    public function __construct()
+    public function __construct(array $data = array())
     {
         $tdg = new PlayersTDG();
+        if ($data) {
+            $this->hydrate($data);
+        }
         $this->tdg = $tdg;
-    }
-
-    /**
-     * String representation of object
-     * @link https://php.net/manual/en/serializable.serialize.php
-     * @return string the string representation of the object or null
-     * @since 5.1.0
-     */
-    public function serialize()
-    {
-       return serialize(
-            $this->id,
-            $this->nickname,
-            $this->tournament_id,
-            $this->lifes
-        );
-    }
-
-    /**
-     * Constructs the object
-     * @link https://php.net/manual/en/serializable.unserialize.php
-     * @param string $serialized <p>
-     * The string representation of the object.
-     * </p>
-     * @return void
-     * @since 5.1.0
-     */
-    public function unserialize($serialized)
-    {
-        $tdg = new PlayersTDG();
-        $this->tdg = $tdg;
-        list(
-            $this->id,
-            $this->nickname,
-            $this->tournament_id,
-            $this->lifes
-            ) = unserialize($serialized);
-
     }
 
     public function save()
@@ -75,6 +45,10 @@ class Players implements \Serializable
         if (isset($this->team)) {
             $team = ['team' => $this->team];
             $insertValues = array_merge($insertValues,$team);
+        }
+        if (isset($this->is_suspended)) {
+            $is_suspended = ['is_suspended' => $this->is_suspended];
+            $insertValues = array_merge($insertValues,$is_suspended);
         }
 
         if ($this->getId()) {
@@ -183,5 +157,21 @@ class Players implements \Serializable
     public function setLifes($lifes): void
     {
         $this->lifes = $lifes;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getIsSuspended()
+    {
+        return $this->is_suspended;
+    }
+
+    /**
+     * @param mixed $is_suspended
+     */
+    public function setIsSuspended($is_suspended): void
+    {
+        $this->is_suspended = $is_suspended;
     }
 }
