@@ -11,7 +11,10 @@ abstract class TDG
     protected $connection = null;
     protected $table = null;
 
-// Подключение к базе данных
+    /**
+     * TDG constructor.
+     * Подключение к базе данных.
+     */
     public function __construct()
     {
         $this->table = $this->getTableName();
@@ -41,7 +44,11 @@ abstract class TDG
         return $matches[1];
     }
 
-    //Подсчет строк
+    /**
+     * Подсчет строк
+     * @param string $where
+     * @return int
+     */
     public function getCount(string $where = ''): int
     {
         $object = $this->connection->query("COUNT * FROM `$this->table` $where");
@@ -49,14 +56,21 @@ abstract class TDG
         return $pagesCount[0];
     }
 
-    //Подгрузка всех значений из БД
+    /**
+     * Подгрузка всех значений из БД
+     * @return array
+     */
     public function getAll():array
     {
         $dataArray = $this->connection->query("SELECT * FROM `$this->table`")->fetchAll(PDO::FETCH_ASSOC);
         return $dataArray;
     }
 
-    //Insert values with array [column => data]
+    /**
+     * Insert values with array [column => data]
+     * @param array $values
+     * @return bool
+     */
     public function insertValues(array $values)
     {
         if (!$values) {

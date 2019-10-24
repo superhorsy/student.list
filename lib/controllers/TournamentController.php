@@ -3,7 +3,13 @@
 
 namespace App\controllers;
 
-use App\{Controller, models\Tournament, models\TournamentTDG, models\User, Utils};
+use App\{Controller,
+    models\exception\TournamentException,
+    models\Tournament,
+    models\TournamentFactory,
+    models\TournamentTDG,
+    models\User,
+    Utils};
 
 class TournamentController extends Controller
 {
@@ -111,6 +117,7 @@ class TournamentController extends Controller
                 $this->view->render('tournament_show', ['tournament' => $tournament, 'is_owner' => $this->is_owner,
                     'notify' => $notify ?? false, 'errors' => $errors]);
             } else {
+
                 $this->view->render('tournament_show', ['tournament' => $tournament, 'is_owner' => $this->is_owner]);
             }
         } else {
@@ -129,9 +136,13 @@ class TournamentController extends Controller
                 $errors = 'Форма отправлена со стороннего сайта.';
             } else {
                 $values = Utils::getTournamentValues($_POST, $this->user->getId());
-                $tournament = new Tournament();
-                $tournament->hydrate($values);
-                $errors = $tournament->isValid();
+                try {
+                    $tournament = TournamentFactory::factory((int)$_POST['t_type']);
+                    $tournament->hydrate($values);
+                    $errors = $tournament->isValid();
+                } catch (TournamentException $e) {
+                    $errors[] = $e->getMessage();
+                }
             }
             if (empty($errors)) {
                 if (!($tournament->save())) {

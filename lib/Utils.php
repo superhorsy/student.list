@@ -43,6 +43,7 @@ class Utils
             'prize_pool' => $values['t_prize_pool'] ?? '',
             'players' => $values['p_nickname'] ?? '',
             'owner_id' => $ownerId,
+            'type' => (int) $values['t_type'],
         ];
     }
 

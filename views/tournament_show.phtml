@@ -206,6 +206,9 @@
                         <th scope="col">№</th>
                         <th scope="col">Ник</th>
                         <th scope="col">Жизни</th>
+                        <?php if ($tournament->getPrizePool()): ?>
+                        <th scope="col">Награда</th>
+                        <?php endif; ?>
                     </tr>
                     </thead>
 
@@ -215,6 +218,9 @@
                             <th scope="row"><?= $number + 1 ?></th>
                             <td><?= $player->getNickname(); ?></td>
                             <td><?= $player->getLifes(); ?></td>
+                            <?php if ($tournament->getPrizePool()): ?>
+                                <td><?= $player->getPrize(); ?></td>
+                            <?php endif; ?>
                         </tr>
                     <?php endforeach; ?>
                     </tbody>

@@ -6,7 +6,11 @@ namespace App\models;
 
 use App\Utils;
 
-class Tournament
+/**
+ * Class Tournament
+ * @package App\models
+ */
+class Tournament implements TournamentInterface
 {
     private $tdg;
 
@@ -19,6 +23,7 @@ class Tournament
     private $round_count;
     private $toss;
     private $prize_pool;
+    private $type;
 
     private $players = array();
     private $loosers = array();
@@ -90,6 +95,7 @@ class Tournament
                 $this->current_round++;
             } else {
                 $this->setStatus(self::STATUS_ENDED);
+                $this->reward();
             }
 
             $this->save();
@@ -159,10 +165,7 @@ class Tournament
         $this->round_count = null;
         $this->status = self::STATUS_AWAITING;
         foreach ($this->players as $player) {
-            $player->setLifes(2);
-            $player->setTeam(null);
-            $player->setIsSuspended(0);
-            $player->save();
+            $player->reset();
         }
 
         $this->save();
@@ -256,6 +259,7 @@ class Tournament
         $values['date'] ? $this->setDate($values['date']) : $this->setDate('');
         $values['prize_pool'] ? $this->setPrizePool($values['prize_pool']) : $this->setPrizePool(null);
         $values['owner_id'] ? $this->setOwnerId($values['owner_id']) : $this->setOwnerId('');
+        $values['type'] ? $this->setType($values['type']) : $this->setType(null);
         if(isset($values['players']) && $values['players']) {
             $this->setPlayers($values['players']);
         };
@@ -328,6 +332,14 @@ class Tournament
             }
             if (count($playerNicknames) !== count(array_unique($playerNicknames))) {
                 $errors[] = 'Никнэймы игроков не могут дублироваться';
+            }
+        }
+
+        if (!$this->type) {
+            $errors[] = 'Отсутствуют тип турнира';
+        } else {
+            if (!in_array($this->type, TournamentFactory::TOURNAMENT_TYPE)) {
+                $errors[] = 'Указан некорректный тип турнира';
             }
         }
 
@@ -559,6 +571,69 @@ class Tournament
     public function setPrizePool($prize_pool): void
     {
         $this->prize_pool = $prize_pool;
+    }
+
+    public function reward() {
+        if ($this->prize_pool) {
+            $alive = (new PlayersTDG())->getAlivePlayers($this);
+            $lifes_1 = array();
+            $lifes_2 = array();
+
+            if ($alive) {
+                foreach ($alive as $player) {
+                    if ($player->getLifes() == 2) {
+                        $lifes_2[] = $player;
+                    } elseif ($player->getLifes() == 1) {
+                        $lifes_1[] = $player;
+                    }
+                }
+
+                $prize_2_lifes = [];
+                $prize_1_lifes = [];
+
+                if (!count($lifes_1)) {
+                    $prize_2_lifes = $this->prize_pool / count($lifes_2);
+                } elseif (!count($lifes_2)) {
+                    $prize_1_lifes = $this->prize_pool / count($lifes_1);
+                } else {
+                    $prize_2_lifes = ($this->prize_pool * 0.75)/count($lifes_2);
+                    $prize_1_lifes = ($this->prize_pool * 0.25)/count($lifes_1);
+                    //Если выигрыш игрока с 1 жизнью больше половины от выигрыша игрока с двумя
+                    if ($prize_1_lifes > $prize_2_lifes/2) {
+                        $prize_1_lifes = $prize_2_lifes/2;
+                        $winners_pool = $this->prize_pool - count($lifes_1)*$prize_1_lifes;
+                        $prize_2_lifes = $winners_pool / count($lifes_2);
+                    }
+                }
+
+                //Раздаем призы
+                foreach ($lifes_1 as $player) {
+                    $player->setPrize($prize_1_lifes);
+                    $player->save();
+                }
+                foreach ($lifes_2 as $player) {
+                    $player->setPrize($prize_2_lifes);
+                    $player->save();
+                }
+            }
+        }
+        $this->setPlayers();
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getType()
+    {
+        return $this->type;
+    }
+
+    /**
+     * @param mixed $type
+     */
+    public function setType($type): void
+    {
+        $this->type = $type;
     }
 
 }

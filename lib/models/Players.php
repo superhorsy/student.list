@@ -13,6 +13,7 @@ class Players
     private $tournament_id;
     private $lifes;
     private $is_suspended;
+    private $prize = null;
 
     //Player status
     const STATUS_WAIT = 'WAIT';
@@ -31,6 +32,10 @@ class Players
         $this->tdg = $tdg;
     }
 
+    /**
+     * Сохраняет текущие параметры игрока в базу
+     * @return bool
+     */
     public function save()
     {
         $insertValues = [
@@ -39,17 +44,18 @@ class Players
         ];
 
         if (isset($this->lifes)) {
-            $lifes = ['lifes' => $this->lifes];
-            $insertValues = array_merge($insertValues,$lifes);
+            $insertValues = array_merge($insertValues, ['lifes' => $this->lifes]);
         }
-        if (isset($this->team)) {
-            $team = ['team' => $this->team];
-            $insertValues = array_merge($insertValues,$team);
-        }
+
+            $insertValues = array_merge($insertValues, ['team' => $this->team]);
+
         if (isset($this->is_suspended)) {
-            $is_suspended = ['is_suspended' => $this->is_suspended];
-            $insertValues = array_merge($insertValues,$is_suspended);
+            $insertValues = array_merge($insertValues, ['is_suspended' => $this->is_suspended]);
         }
+
+
+            $insertValues = array_merge($insertValues, ['prize' => $this->prize ? $this->prize : null ]);
+
 
         if ($this->getId()) {
             return $this->tdg->updateValues($insertValues, $this->getId()) ? true : false;
@@ -64,6 +70,15 @@ class Players
         $values['id'] ? $this->setId($values['id']) : $this->setId('');
         $values['nickname'] ? $this->setNickname($values['nickname']) : $this->setNickname('');
         $values['tournament_id'] ? $this->setTournamentId($values['tournament_id']) : $this->setTournamentId('');
+        $values['prize'] ? $this->setPrize($values['prize']) : $this->setPrize('');
+    }
+
+    public function reset() {
+        $this->setLifes(2);
+        $this->setTeam(null);
+        $this->setIsSuspended(0);
+        $this->setPrize(null);
+        $this->save();
     }
 
     public function isValid(): ?array
@@ -173,5 +188,21 @@ class Players
     public function setIsSuspended($is_suspended): void
     {
         $this->is_suspended = $is_suspended;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPrize()
+    {
+        return $this->prize;
+    }
+
+    /**
+     * @param mixed $prize
+     */
+    public function setPrize($prize): void
+    {
+        $this->prize = $prize;
     }
 }

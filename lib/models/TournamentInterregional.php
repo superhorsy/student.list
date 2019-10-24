@@ -4,7 +4,7 @@
 namespace App\models;
 
 
-class InterregionalTournament extends Tournament
+class TournamentInterregional extends Tournament  implements TournamentInterface
 {
     public function __construct()
     {
