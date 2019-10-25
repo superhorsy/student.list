@@ -41,8 +41,9 @@
             <label for="t_type" class="col-sm-2 col-form-label">Тип турнира</label>
             <div class="col">
                 <select class="form-control" id="t_type" name="t_type">
-                    <option value="1">Обычный турнир</option>
-                    <option value="2">Межрегиональный турнир</option>
+                    <option value="1" <?= $tournament->getType() == "1" ? 'selected' : ''; ?>>Обычный турнир</option>
+                    <option value="2" <?= $tournament->getType() == "2" ? 'selected' : ''; ?>>Межрегиональный турнир
+                    </option>
                 </select>
             </div>
         </div>
@@ -57,19 +58,20 @@
         </div>
 
         <div class="form-group row">
-            <label for="p_nickname" class="col-sm-2 col-form-label">Ник игрока</label>
-            <div class="col players">
+            <label for="p_nickname" class="col-sm-2 col-form-label">Данные игроков</label>
+            <div class="col w-100 players  no-gutters">
                 <?php if (isset($tournament) && $tournament->getPlayers()): ?>
                     <?php foreach ($tournament->getPlayers() as $player): ?>
-                        <div class="player row col">
+                        <div class="player row mr-auto col no-gutters">
                             <div class="col">
                                 <input name="p_nickname[]" type="text"
                                        class="form-control" id="p_nickname"
                                        placeholder="Ник" value="<?= $player ? $player->getNickname() : ''; ?>">
                             </div>
-                            <div class="col-sm-1">
-                                <button type="button" class="btn-sm btn btn-danger deleteRow">Удалить</button>
+                            <div class="col-3">
+                                <button type="button" class="w-100 btn btn-danger deleteRow">Удалить</button>
                             </div>
+
                         </div>
                     <?php endforeach; ?>
                 <?php else: ?>
@@ -78,8 +80,8 @@
                             <input name="p_nickname[]" type="text" class="form-control" id="p_nickname"
                                    placeholder="Ник">
                         </div>
-                        <div class="col-sm-1">
-                            <button type="button" class="btn-sm btn btn-danger deleteRow">Удалить</button>
+                        <div class="col">
+                            <button type="button" class="btn btn-danger deleteRow">Удалить</button>
                         </div>
                     </div>
                 <?php endif; ?>

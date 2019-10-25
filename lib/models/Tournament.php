@@ -5,6 +5,8 @@ namespace App\models;
 
 
 use App\Utils;
+use DateTime;
+use Throwable;
 
 /**
  * Class Tournament
@@ -12,21 +14,21 @@ use App\Utils;
  */
 class Tournament implements TournamentInterface
 {
-    private $tdg;
+    protected $tdg;
 
-    private $id = null;
-    private $name = null;
-    private $date = null;
-    private $owner_id = null;
-    private $status;
-    private $current_round;
-    private $round_count;
-    private $toss;
-    private $prize_pool;
-    private $type;
+    protected $id = null;
+    protected $name = null;
+    protected $date = null;
+    protected $owner_id = null;
+    protected $status;
+    protected $current_round;
+    protected $round_count;
+    protected $toss;
+    protected $prize_pool;
+    protected $type;
 
-    private $players = array();
-    private $loosers = array();
+    protected $players = array();
+    protected $loosers = array();
 
     /*Статусы турнира*/
     const STATUS_AWAITING = 'awaiting';
@@ -44,7 +46,7 @@ class Tournament implements TournamentInterface
             $this->setPlayers();
         }
         if ($this->toss) {
-            $this->toss = json_decode($this->toss);
+            $this->taoss = json_decode($this->toss);
         }
     }
 
@@ -171,6 +173,10 @@ class Tournament implements TournamentInterface
         $this->save();
     }
 
+    /**
+     * Присваивает игрокам команды
+     * @return array Массив с командами для жеребьевки
+     */
     public function setTeams()
     {
 
@@ -185,6 +191,7 @@ class Tournament implements TournamentInterface
         }
 
         $waitingPlayers = array();
+        /** @var Players $player */
         foreach ($this->getWaitingPlayers() as $player) {
             if (!$player->getIsSuspended()) {
                 $waitingPlayers[] = $player;
@@ -260,7 +267,7 @@ class Tournament implements TournamentInterface
         $values['prize_pool'] ? $this->setPrizePool($values['prize_pool']) : $this->setPrizePool(null);
         $values['owner_id'] ? $this->setOwnerId($values['owner_id']) : $this->setOwnerId('');
         $values['type'] ? $this->setType($values['type']) : $this->setType(null);
-        if(isset($values['players']) && $values['players']) {
+        if (isset($values['players']) && $values['players']) {
             $this->setPlayers($values['players']);
         };
     }
@@ -310,11 +317,11 @@ class Tournament implements TournamentInterface
             $errors[] = 'Отсутствует дата турнира';
         } else {
             try {
-                $date = new \DateTime($this->date);
-            } catch (\Throwable $exception) {
+                $date = new DateTime($this->date);
+            } catch (Throwable $exception) {
                 $errors[] = 'Введена некорректная дата турнира';
             }
-            if ($date < new \DateTime()) {
+            if ($date < new DateTime()) {
                 $errors[] = 'Дата турнира не может быть раньше текущей даты';
             }
         }
@@ -369,6 +376,11 @@ class Tournament implements TournamentInterface
         }
     }
 
+    /**
+     * Проводит жеребьевку среди комманд
+     * @param $teams array Массив с коммандами
+     * @return array
+     */
     public function toss($teams)
     {
         $toss = array();
@@ -547,7 +559,7 @@ class Tournament implements TournamentInterface
         $this->loosers = $loosers;
     }
 
-    private function getAlivePlayers()
+    protected function getAlivePlayers()
     {
         return (new PlayersTDG())->getAlivePlayers($this);
     }
@@ -573,7 +585,8 @@ class Tournament implements TournamentInterface
         $this->prize_pool = $prize_pool;
     }
 
-    public function reward() {
+    public function reward()
+    {
         if ($this->prize_pool) {
             $alive = (new PlayersTDG())->getAlivePlayers($this);
             $lifes_1 = array();
@@ -596,12 +609,12 @@ class Tournament implements TournamentInterface
                 } elseif (!count($lifes_2)) {
                     $prize_1_lifes = $this->prize_pool / count($lifes_1);
                 } else {
-                    $prize_2_lifes = ($this->prize_pool * 0.75)/count($lifes_2);
-                    $prize_1_lifes = ($this->prize_pool * 0.25)/count($lifes_1);
+                    $prize_2_lifes = ($this->prize_pool * 0.75) / count($lifes_2);
+                    $prize_1_lifes = ($this->prize_pool * 0.25) / count($lifes_1);
                     //Если выигрыш игрока с 1 жизнью больше половины от выигрыша игрока с двумя
-                    if ($prize_1_lifes > $prize_2_lifes/2) {
-                        $prize_1_lifes = $prize_2_lifes/2;
-                        $winners_pool = $this->prize_pool - count($lifes_1)*$prize_1_lifes;
+                    if ($prize_1_lifes > $prize_2_lifes / 2) {
+                        $prize_1_lifes = $prize_2_lifes / 2;
+                        $winners_pool = $this->prize_pool - count($lifes_1) * $prize_1_lifes;
                         $prize_2_lifes = $winners_pool / count($lifes_2);
                     }
                 }
