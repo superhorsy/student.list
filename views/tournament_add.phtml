@@ -41,10 +41,20 @@
             <label for="t_type" class="col-sm-2 col-form-label">Тип турнира</label>
             <div class="col">
                 <select class="form-control" id="t_type" name="t_type">
-                    <option value="1" <?= $tournament->getType() == "1" ? 'selected' : ''; ?>>Обычный турнир</option>
-                    <option value="2" <?= $tournament->getType() == "2" ? 'selected' : ''; ?>>Межрегиональный турнир
+                    <option value="1" <?= $tournament && $tournament->getType() == "1" ? 'selected' : ''; ?>>Обычный
+                        турнир
+                    </option>
+                    <option value="2" <?= $tournament && $tournament->getType() == "2" ? 'selected' : ''; ?>>
+                        Межрегиональный турнир
                     </option>
                 </select>
+            </div>
+        </div>
+
+        <div id="regions_row" class="form-group row">
+            <label for="t_regions" class="col-sm-2 col-form-label">Регионы</label>
+            <div class="col">
+                <textarea class="form-control" id="t_regions" placeholder="Введите названия регионов через запятую"></textarea>
             </div>
         </div>
 
@@ -59,29 +69,43 @@
 
         <div class="form-group row">
             <label for="p_nickname" class="col-sm-2 col-form-label">Данные игроков</label>
-            <div class="col w-100 players  no-gutters">
+            <div class="col w-100 players no-gutters">
                 <?php if (isset($tournament) && $tournament->getPlayers()): ?>
                     <?php foreach ($tournament->getPlayers() as $player): ?>
-                        <div class="player row mr-auto col no-gutters">
-                            <div class="col">
-                                <input name="p_nickname[]" type="text"
-                                       class="form-control" id="p_nickname"
-                                       placeholder="Ник" value="<?= $player ? $player->getNickname() : ''; ?>">
+                        <div class="player col">
+                            <div class="row mb-2">
+                                <div class="col">
+                                    <input name="p_nickname[]" type="text"
+                                           class="form-control" id="p_nickname"
+                                           placeholder="Ник" value="<?= $player ? $player->getNickname() : ''; ?>">
+                                </div>
+                                <div class="col" class="p_region" hidden>
+                                    <select name="p_region" class="form-control" disabled>
+                                        <option value="" disabled selected>Регион</option>
+                                    </select>
+                                </div>
+                                <div class="col-2">
+                                    <button type="button" class="w-100 btn-sm btn-danger deleteRow">Удалить</button>
+                                </div>
                             </div>
-                            <div class="col-3">
-                                <button type="button" class="w-100 btn btn-danger deleteRow">Удалить</button>
-                            </div>
-
                         </div>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <div class="player row col">
-                        <div class="col">
-                            <input name="p_nickname[]" type="text" class="form-control" id="p_nickname"
-                                   placeholder="Ник">
-                        </div>
-                        <div class="col">
-                            <button type="button" class="btn btn-danger deleteRow">Удалить</button>
+                    <div class="player col">
+                        <div class="row mb-2">
+                            <div class="col">
+                                <input name="p_nickname[]" type="text"
+                                       class="form-control" id="p_nickname"
+                                       placeholder="Ник">
+                            </div>
+                            <div class="col" class="p_region" hidden>
+                                <select name="p_region" class="form-control" disabled>
+                                    <option value="" disabled selected>Регион</option>
+                                </select>
+                            </div>
+                            <div class="col-2">
+                                <button type="button" class="w-100 btn-sm btn-danger deleteRow">Удалить</button>
+                            </div>
                         </div>
                     </div>
                 <?php endif; ?>
