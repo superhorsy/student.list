@@ -46,7 +46,7 @@ class Tournament implements TournamentInterface
             $this->setPlayers();
         }
         if ($this->toss) {
-            $this->taoss = json_decode($this->toss);
+            $this->toss = json_decode($this->toss);
         }
     }
 
@@ -260,6 +260,10 @@ class Tournament implements TournamentInterface
         return intdiv(array_sum($estimation), $cycles);
     }
 
+    /**
+     * Наполняет объект свойствами
+     * @param array $values
+     */
     public function hydrate(array $values)
     {
         $values['name'] ? $this->setName($values['name']) : $this->setName('');
@@ -287,6 +291,7 @@ class Tournament implements TournamentInterface
         switch ($mode) {
             case 1: // стандартное сохранение/удаление
                 foreach ($this->players as $player) {
+                    /** @var Players $player */
                     $player->setTournamentId($this->id);
                     $player->save();
                 };
@@ -364,12 +369,12 @@ class Tournament implements TournamentInterface
     /**
      * @param array $data
      */
-    public function setPlayers(array $nicknames = array()): void
+    public function setPlayers(array $players = array()): void
     {
-        if ($nicknames) {
+        if ($players) {
             $this->players = array();
-            foreach ($nicknames as $nickname) {
-                $this->players[] = new Players(['nickname' => $nickname]);
+            foreach ($players as $player) {
+                $this->players[] = new Players(['nickname' => $player['nickname']]);
             }
         } elseif ($this->id) {
             $this->players = (new PlayersTDG())->getPlayersbyTournamentID($this->id);

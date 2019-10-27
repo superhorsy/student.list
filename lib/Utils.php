@@ -41,13 +41,15 @@ class Utils
             'name' => $values['t_name'] ?? '',
             'date' => $values['t_date'] ?? '',
             'prize_pool' => $values['t_prize_pool'] ?? '',
-            'players' => $values['p_nickname'] ?? '',
             'owner_id' => $ownerId,
             'type' => (int) $values['t_type'],
+            'regions' => $values['t_regions'] ? explode(',', $values['t_regions']) : null,
+            'players' => $values['players'] ?? '',
         ];
     }
 
-    /** Estimates count of rounds till the end
+    /**
+     * Estimates count of rounds till the end
      * @param array $players with amount of lifes
      * @return int
      */

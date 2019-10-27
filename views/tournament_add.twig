@@ -1,31 +1,31 @@
 <div class="container content">
     <form method="post"
-          action="/tournament/<?= (isset($tournament) && $tournament->getId()) ? "edit/{$tournament->getId()}" : "add"; ?>/"
+          action="{% if tournament.getId %}edit{% else %}add{% endif %}"
           class="tournament">
 
         <input name="token_tournament" type="hidden"
-               value="<?= htmlspecialchars($_SESSION['token_tournament'], ENT_QUOTES); ?>">
+               value="{{ session.token_tournament }}">
 
-        <?php if (isset($tournament) && $tournament->getId()): ?>
+        {% if tournament.getId %}
             <h1>Редактирование турнира</h1><br>
-        <?php else: ?>
+        {% else %}
             <h1>Создание турнира</h1><br>
-        <?php endif; ?>
+        {% endif %}
 
 
-        <?php if (isset($errors) && $errors): ?>
+        {% if errors %}
             <div class="alert alert-danger" role="alert">
-                <?php foreach ($errors as $error): ?>
-                    <span class="error-messages"><?= $error; ?></span><br>
-                <?php endforeach; ?>
+                {% for error in errors %}
+                    <span class="error-messages">{{ error }}</span><br>
+                {% endfor %}
             </div>
-        <?php endif; ?>
+        {% endif %}
 
         <div class="form-group row">
             <label for="t_name" class="col-sm-2 col-form-label">Название турнира</label>
             <div class="col">
                 <input name="t_name" type="text" class="form-control" id="t_name" placeholder="Название турнира"
-                       value="<?= htmlspecialchars(isset($tournament) && $tournament->getName() ? $tournament->getName() : '') ?>">
+                       value="{{ tournament.getName }}">
             </div>
         </div>
 
@@ -33,7 +33,7 @@
             <label for="t_date" class="col-sm-2 col-form-label">Дата турнира</label>
             <div class="col">
                 <input name="t_date" type="date" class="form-control" id="t_date" placeholder="Дата турнира"
-                       value="<?= htmlspecialchars(isset($tournament) && $tournament->getDate() ? $tournament->getDate() : '') ?>">
+                       value="{{ tournament.getDate }}">
             </div>
         </div>
 
@@ -41,10 +41,10 @@
             <label for="t_type" class="col-sm-2 col-form-label">Тип турнира</label>
             <div class="col">
                 <select class="form-control" id="t_type" name="t_type">
-                    <option value="1" <?= $tournament && $tournament->getType() == "1" ? 'selected' : ''; ?>>Обычный
-                        турнир
+                    <option value="1" {% if tournament.type == 1 %} selected {% endif %}>
+                        Обычный турнир
                     </option>
-                    <option value="2" <?= $tournament && $tournament->getType() == "2" ? 'selected' : ''; ?>>
+                    <option value="2" {% if tournament.type == 2 %} selected {% endif %}>
                         Межрегиональный турнир
                     </option>
                 </select>
@@ -54,7 +54,8 @@
         <div id="regions_row" class="form-group row">
             <label for="t_regions" class="col-sm-2 col-form-label">Регионы</label>
             <div class="col">
-                <textarea class="form-control" id="t_regions" placeholder="Введите названия регионов через запятую"></textarea>
+            <textarea name="t_regions" class="form-control" id="t_regions"
+                      placeholder="Введите названия регионов через запятую"></textarea>
             </div>
         </div>
 
@@ -63,25 +64,30 @@
             <div class="col">
                 <input name="t_prize_pool" type="number" class="form-control" id="t_prize_pool"
                        placeholder="Призовой фонд"
-                       value="<?= htmlspecialchars(isset($tournament) && $tournament->getPrizePool() ? $tournament->getPrizePool() : '') ?>">
+                       value="{{ tournament.prizepool }}">
             </div>
         </div>
 
         <div class="form-group row">
             <label for="p_nickname" class="col-sm-2 col-form-label">Данные игроков</label>
             <div class="col w-100 players no-gutters">
-                <?php if (isset($tournament) && $tournament->getPlayers()): ?>
-                    <?php foreach ($tournament->getPlayers() as $player): ?>
+                {% if tournament.players %}
+                    {% for player in tournament.players %}
                         <div class="player col">
                             <div class="row mb-2">
                                 <div class="col">
-                                    <input name="p_nickname[]" type="text"
+                                    <input name="players[{{ loop.index0 }}][nickname]" type="text"
                                            class="form-control" id="p_nickname"
-                                           placeholder="Ник" value="<?= $player ? $player->getNickname() : ''; ?>">
+                                           placeholder="Ник" value="{{ player.nickname }}">
                                 </div>
-                                <div class="col" class="p_region" hidden>
-                                    <select name="p_region" class="form-control" disabled>
-                                        <option value="" disabled selected>Регион</option>
+                                <div class="col p_region" style="display: none">
+                                    <select name="players[{{ loop.index0 }}][region]" class="form-control" disabled>
+                                        <option value="" disabled selected>Выберите регион</option>
+                                        {% if tournament.regions %}
+                                            {% for region in tournament.getRegions %}
+                                                <option value='{{ region }}' class='new_option'>{{ region }}</option>
+                                            {% endfor %}
+                                        {% endif %}
                                     </select>
                                 </div>
                                 <div class="col-2">
@@ -89,18 +95,18 @@
                                 </div>
                             </div>
                         </div>
-                    <?php endforeach; ?>
-                <?php else: ?>
+                    {% endfor %}
+                {% else %}
                     <div class="player col">
                         <div class="row mb-2">
                             <div class="col">
-                                <input name="p_nickname[]" type="text"
+                                <input name="players[0][nickname]" type="text"
                                        class="form-control" id="p_nickname"
                                        placeholder="Ник">
                             </div>
-                            <div class="col" class="p_region" hidden>
-                                <select name="p_region" class="form-control" disabled>
-                                    <option value="" disabled selected>Регион</option>
+                            <div class="col p_region" style="display: none">
+                                <select name="players[0][region]" class="form-control" disabled>
+                                    <option value="" disabled selected>Выберите регион</option>
                                 </select>
                             </div>
                             <div class="col-2">
@@ -108,7 +114,7 @@
                             </div>
                         </div>
                     </div>
-                <?php endif; ?>
+                {% endif %}
             </div>
         </div>
 
@@ -126,5 +132,5 @@
 </div>
 
 <script>
-    <?php require ROOT . '/js/tournament_add.js';?>
+    {{ source('/js/tournament_add.js')|raw }}
 </script>

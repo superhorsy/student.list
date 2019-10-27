@@ -14,6 +14,7 @@ class Players
     private $lifes;
     private $is_suspended;
     private $prize = null;
+    private $region = null;
 
     //Player status
     const STATUS_WAIT = 'WAIT';
@@ -39,22 +40,22 @@ class Players
     public function save()
     {
         $insertValues = [
-            'nickname'=>$this->nickname,
-            'tournament_id'=>$this->tournament_id,
+            'nickname' => $this->nickname,
+            'region' => $this->region,
+            'tournament_id' => $this->tournament_id,
         ];
 
         if (isset($this->lifes)) {
             $insertValues = array_merge($insertValues, ['lifes' => $this->lifes]);
         }
 
-            $insertValues = array_merge($insertValues, ['team' => $this->team]);
+        $insertValues = array_merge($insertValues, ['team' => $this->team]);
 
         if (isset($this->is_suspended)) {
             $insertValues = array_merge($insertValues, ['is_suspended' => $this->is_suspended]);
         }
 
-
-            $insertValues = array_merge($insertValues, ['prize' => $this->prize ? $this->prize : null ]);
+        $insertValues = array_merge($insertValues, ['prize' => $this->prize ? $this->prize : null]);
 
 
         if ($this->getId()) {
@@ -73,7 +74,8 @@ class Players
         $values['prize'] ? $this->setPrize($values['prize']) : $this->setPrize('');
     }
 
-    public function reset() {
+    public function reset()
+    {
         $this->setLifes(2);
         $this->setTeam(null);
         $this->setIsSuspended(0);
@@ -158,6 +160,7 @@ class Players
     {
         $this->team = $team;
     }
+
     /**
      * @return null
      */
@@ -204,5 +207,21 @@ class Players
     public function setPrize($prize): void
     {
         $this->prize = $prize;
+    }
+
+    /**
+     * @return null
+     */
+    public function getRegion()
+    {
+        return $this->region;
+    }
+
+    /**
+     * @param null $region
+     */
+    public function setRegion($region): void
+    {
+        $this->region = $region;
     }
 }
