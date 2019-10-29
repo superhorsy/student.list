@@ -1,6 +1,6 @@
 <div class="container content">
     <form method="post"
-          action="{% if tournament.id %}edit{% else %}add{% endif %}"
+          action="/tournament/{% if tournament.id %}edit/{{ tournament.id }}{% else %}add/{% endif %}"
           class="tournament">
 
         <input name="token_tournament" type="hidden"
@@ -40,7 +40,7 @@
         <div class="form-group row">
             <label for="t_type" class="col-sm-2 col-form-label">Тип турнира</label>
             <div class="col">
-                <select class="form-control" id="t_type" name="t_type">
+                <select name="t_type" class="form-control" id="t_type">
                     <option value="1" {% if tournament.type == 1 %} selected {% endif %}>
                         Обычный турнир
                     </option>
@@ -54,7 +54,7 @@
         <div id="regions_row" class="form-group row">
             <label for="t_regions" class="col-sm-2 col-form-label">Регионы</label>
             <div class="col">
-                <textarea class="form-control" id="t_regions"
+                <textarea name="t_regions" class="form-control" id="t_regions"
                           placeholder="Введите названия регионов через запятую"></textarea>
             </div>
         </div>
