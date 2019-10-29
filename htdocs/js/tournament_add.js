@@ -1,10 +1,11 @@
 var Tournament = {
     init: function () {
-        this.counter = 0;
         this.player = $(".player:last").clone()
             .find("input")
             .attr({value: ''})
             .end();
+        var name = Tournament.player.find('input').attr('name');
+        this.counter = parseInt(name);
 
         this.deletePlayerRow();
         this.addPlayerRow();
@@ -14,20 +15,21 @@ var Tournament = {
     deletePlayerRow: function () {
         $(".players").on("click", ".deleteRow", function (event) {
             $(this).closest(".player").remove();
-            Tournament.counter -= 1;
+            if (Tournament.counter !== null) {
+                Tournament.counter -= 1;
+            }
         });
     },
     addPlayerRow: function () {
         $("#addrow").on("click", function () {
-            Tournament.player
-                .clone()
-                .find("name").each(function () {
-                $(this).attr("name", $(this).attr("name").replace(/(\d+)/, function (match, number) {
-                    return parseInt(number) + 1;
-                }));
-            })
-                .appendTo(".players");
-            Tournament.counter++;
+            var newPlayer = Tournament.player.clone();
+            newPlayer.find('input, select').attr("name", function (i, name) {
+                Tournament.counter++;
+                return name.replace(/(\d+)/, function ($0, $1) {
+                    return Tournament.counter;
+                });
+            });
+            newPlayer.appendTo(".players");
             Tournament.toogleRegionField();
             Tournament.updateRegion();
         });
@@ -49,14 +51,14 @@ var Tournament = {
             }
         }
     },
-    showRegionFiled: function() {
+    showRegionFiled: function () {
         this.toogleRegionField();
-        $('#t_type').on("change",function (e) {
+        $('#t_type').on("change", function (e) {
             Tournament.toogleRegionField();
         });
 
     },
-    toogleRegionField: function(){
+    toogleRegionField: function () {
         type = +$('#t_type').children('option:selected').val();
         if (type === 2) {
             $('#regions_row,.p_region').show();
