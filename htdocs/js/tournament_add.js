@@ -4,9 +4,7 @@ var Tournament = {
             .find("input")
             .attr({value: ''})
             .end();
-        var name = Tournament.player.find('input').attr('name');
-        this.counter = parseInt(name);
-
+        this.counter = +Tournament.player.find('input').attr('name').match(/\d/)[0];
         this.deletePlayerRow();
         this.addPlayerRow();
         this.addRegions();
@@ -15,16 +13,13 @@ var Tournament = {
     deletePlayerRow: function () {
         $(".players").on("click", ".deleteRow", function (event) {
             $(this).closest(".player").remove();
-            if (Tournament.counter !== null) {
-                Tournament.counter -= 1;
-            }
         });
     },
     addPlayerRow: function () {
         $("#addrow").on("click", function () {
             var newPlayer = Tournament.player.clone();
+            Tournament.counter++;
             newPlayer.find('input, select').attr("name", function (i, name) {
-                Tournament.counter++;
                 return name.replace(/(\d+)/, function ($0, $1) {
                     return Tournament.counter;
                 });

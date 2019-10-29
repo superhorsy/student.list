@@ -1,12 +1,12 @@
 <div class="container content">
     <form method="post"
-          action="{% if tournament.getId %}edit{% else %}add{% endif %}"
+          action="{% if tournament.id %}edit{% else %}add{% endif %}"
           class="tournament">
 
         <input name="token_tournament" type="hidden"
                value="{{ session.token_tournament }}">
 
-        {% if tournament.getId %}
+        {% if tournament.id %}
             <h1>Редактирование турнира</h1><br>
         {% else %}
             <h1>Создание турнира</h1><br>
@@ -25,7 +25,7 @@
             <label for="t_name" class="col-sm-2 col-form-label">Название турнира</label>
             <div class="col">
                 <input name="t_name" type="text" class="form-control" id="t_name" placeholder="Название турнира"
-                       value="{{ tournament.getName }}">
+                       value="{{ tournament.name }}">
             </div>
         </div>
 
@@ -33,7 +33,7 @@
             <label for="t_date" class="col-sm-2 col-form-label">Дата турнира</label>
             <div class="col">
                 <input name="t_date" type="date" class="form-control" id="t_date" placeholder="Дата турнира"
-                       value="{{ tournament.getDate }}">
+                       value="{{ tournament.date }}">
             </div>
         </div>
 
@@ -54,13 +54,13 @@
         <div id="regions_row" class="form-group row">
             <label for="t_regions" class="col-sm-2 col-form-label">Регионы</label>
             <div class="col">
-            <textarea name="t_regions" class="form-control" id="t_regions"
-                      placeholder="Введите названия регионов через запятую"></textarea>
+                <textarea class="form-control" id="t_regions"
+                          placeholder="Введите названия регионов через запятую"></textarea>
             </div>
         </div>
 
         <div class="form-group row">
-            <label for="t_date" class="col-sm-2 col-form-label">Призовой фонд</label>
+            <label for="t_prize_pool" class="col-sm-2 col-form-label">Призовой фонд</label>
             <div class="col">
                 <input name="t_prize_pool" type="number" class="form-control" id="t_prize_pool"
                        placeholder="Призовой фонд"
@@ -84,7 +84,7 @@
                                     <select name="players[{{ loop.index0 }}][region]" class="form-control" disabled>
                                         <option value="" disabled selected>Выберите регион</option>
                                         {% if tournament.regions %}
-                                            {% for region in tournament.getRegions %}
+                                            {% for region in tournament.regions %}
                                                 <option value='{{ region }}' class='new_option'>{{ region }}</option>
                                             {% endfor %}
                                         {% endif %}
