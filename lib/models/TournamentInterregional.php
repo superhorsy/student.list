@@ -111,6 +111,19 @@ class TournamentInterregional extends Tournament implements TournamentInterface
 
         $teamKeys = array_rand($teamNames, intval(count($players) / 10) * 2);
 
+        //Получаем игроков для каждого региона
+        $playersByRegion = [];
+        foreach ($players as $player) {
+            $playersByRegion[$player->getRegion()] = $player;
+        }
+
+        //Игроки, оставшиеся вне команд по 5 человек
+        $leftovers = [];
+        //Раскручиваем каждый регион
+        foreach ($playersByRegion as $region) {
+            $full_team_players = array_splice($region, count($))
+        }
+
         foreach ($teamKeys as $key) {
             for ($i = 0; $i < 5; $i++) {
                 $player = current($players);

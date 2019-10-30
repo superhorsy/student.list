@@ -46,7 +46,7 @@ class Tournament implements TournamentInterface
             $this->setPlayers();
         }
         if ($this->toss) {
-            $this->toss = json_decode($this->toss);
+            $this->toss = json_decode($this->toss,true);
         }
     }
 
@@ -244,6 +244,7 @@ class Tournament implements TournamentInterface
 
         return $teams;
     }
+
 
     public function getEstimation(): int
     {

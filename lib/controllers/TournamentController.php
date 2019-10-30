@@ -166,7 +166,7 @@ class TournamentController extends Controller
     {
 
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $tournament = $this->tdg->getTournamentById($tournamentId)
+            $tournament = $this->tdg->getTournamentById($tournamentId, (int) $_POST['t_type']);
             if (!$_POST['token_tournament']) {
                 $errors = 'Форма отправлена со стороннего сайта.';
             } else {

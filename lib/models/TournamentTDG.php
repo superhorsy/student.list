@@ -29,7 +29,7 @@ class TournamentTDG extends TDG
             'status' => $tournament->getStatus(),
             'current_round' => $tournament->getCurrentRound(),
             'round_count' => $tournament->getRoundCount(),
-            'toss' => json_encode($tournament->getToss(), JSON_UNESCAPED_UNICODE|JSON_FORCE_OBJECT),
+            'toss' => json_encode($tournament->getToss(), JSON_UNESCAPED_UNICODE),
             'prize_pool' => $tournament->getPrizePool(),
             'type' => $tournament->getType(),
             'regions' => json_encode($tournament->getRegions(),JSON_UNESCAPED_UNICODE),
@@ -53,20 +53,24 @@ class TournamentTDG extends TDG
         return $tournaments_array ? $tournaments_array : null;
     }
 
-    public function getTournamentById(int $tournamentID): ?TournamentInterface
+    public function getTournamentById(int $tournamentID, int $type = null): ?TournamentInterface
     {
         $stmt = $this->connection->prepare("SELECT id, type FROM `tournament` WHERE `id` = ?");
         $stmt->bindValue(1, $tournamentID, PDO::PARAM_INT);
         $stmt->execute();
         $tournament = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        if (in_array((int)$tournament[0]['type'], TournamentFactory::TOURNAMENT_TYPE)) {
-            $tournament = $this->getObj((int)$tournament[0]['id'], (int)$tournament[0]['type']);
+        if (!$type) {
+            if (in_array((int)$tournament[0]['type'], TournamentFactory::TOURNAMENT_TYPE)) {
+                $tournament = $this->getObj((int)$tournament[0]['id'], (int)$tournament[0]['type']);
+            }
+        } else {
+            $tournament = $this->getObj((int)$tournament[0]['id'], (int)$type);
         }
         return $tournament ? $tournament : null;
     }
 
-    public function deleteTournamentById(string $tournamentID)
+    public function deleteTournamentById(string $tournamentID): bool
     {
         $stmt = $this->connection->prepare("DELETE FROM `{$this->table}` WHERE `id` = ?");
         $stmt->bindValue(1, $tournamentID, PDO::PARAM_INT);

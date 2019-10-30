@@ -1,29 +1,30 @@
+{% set t = tournament %}
 <div class="container content tournament">
     <div class="jumbotron">
-        <h1 class="display-4">Турнир <?= htmlspecialchars($tournament->getName()); ?></h1>
-        <p class="lead">Дата проведения: <?= $tournament->getDate(); ?></p>
+        <h1 class="display-4">Турнир {{ t.name }}</h1>
+        <p class="lead">Дата проведения: {{ t.date }}</p>
         <hr class="my-4">
-        <p>Текущий раунд: <?= $tournament->getCurrentRound(); ?></p>
-        <p>Оценка количества раундов до конца турнира: <?= $tournament->getEstimation(); ?></p>
+        <p>Текущий раунд: {{ t.currentRound }}</p>
+        <p>Оценка количества раундов до конца турнира: {{ t.estimation }}</p>
         <p class="lead">
             <a class="btn btn-secondary schedule" role="button">Скопировать ссылку на расписание турнира</a>
         </p>
     </div>
 
     <br>
-    <?php if (isset($errors) && $errors): ?>
+    {% if errors %}
         <div class="alert alert-danger" role="alert">
-            <?php foreach ($errors as $error): ?>
-                <span class="error-messages"><?= $error; ?></span><br>
-            <?php endforeach; ?>
+            {% for error in errors %}
+                <span class="error-messages">{{ error }}</span><br>
+            {% endfor %}
         </div>
-    <?php endif; ?>
-    <form method="post" action="/tournament/show/<?= $tournament->getId() ?>/">
+    {% endif %}
+    <form method="post" action="/tournament/show/{{ t.id }}/">
         <div>
             <input name="token_tournament" type="hidden"
-                   value="<?= htmlspecialchars($_SESSION['token_tournament'], ENT_QUOTES); ?>">
+                   value="{{ session.token_tournament }}">
 
-            <?php if ($tournament->getStatus() == 'awaiting'): ?>
+            {% if t.status == 'awaiting' %}
                 <div class="btn-group container-fluid" role="group">
                     <button name='tournament_action' value='start' class="btn btn-success" type="submit">Начать
                         турнир
@@ -39,42 +40,50 @@
                     <tr>
                         <th scope="col">№</th>
                         <th scope="col">Ник</th>
+                        {% if t.type == 2 %}
+                            <th scope="col">Регион</th>
+                        {% endif %}
                     </tr>
                     </thead>
 
                     <tbody>
-                    <?php foreach ($tournament->getPlayers() as $number => $player): ?>
+                    {% for k,p in t.players %}
                         <tr>
-                            <th scope="row"><?= $number + 1 ?></th>
-                            <td><?= $player->getNickname(); ?></td>
+                            <th scope="row">{{ k+1 }}</th>
+                            <td>{{ p.nickname }}</td>
+                            {% if t.type == 2 %}
+                                <td>{{ p.region }}</td>
+                            {% endif %}
                         </tr>
-                    <?php endforeach; ?>
+                    {% endfor %}
                     </tbody>
                 </table>
-            <?php endif; ?>
+            {% endif %}
 
-            <?php if ($tournament->getStatus() == 'in progress'): ?>
-            <!--Кнопки управления-->
-                <?php if ($is_owner): ?>
+            {% if t.status == 'in progress' %}
+                <!--Кнопки управления-->
+                {% if is_owner %}
                     <div class="btn-group container-fluid" role="group">
                         <button name='tournament_action' value='next' type="submit" class="btn btn-success">Продолжить
                         </button>
-                        <button name='tournament_action' value='send_home' type="submit" class="btn btn-info">Применить действия и повторить жеребьевку
+                        <button name='tournament_action' value='send_home' type="submit" class="btn btn-info">Применить
+                            действия и повторить жеребьевку
                         </button>
-                        <button id="tournament_reset" name='tournament_action' value='reset' type="submit" class="btn btn-danger">Сбросить
+                        <button id="tournament_reset" name='tournament_action' value='reset' type="submit"
+                                class="btn btn-danger">Сбросить
                             прогресс турнира
                         </button>
                     </div>
-                <? endif; ?>
-                <?php foreach ($tournament->getToss() as $pairOfTeams): ?>
+                {% endif %}
+                {% for pair in t.getToss %}
                     <div class="row border m-3 p-0 no-gutters">
-                        <?php foreach ($pairOfTeams as $k => $team): ?>
+                        {% for k,team in pair %}
                             <div class="col row">
                                 <div class="col ">
                                     <div id="team_card" class="card align-middle">
-                                        <div class="card-header text-center"><h5>Команда <?= $team; ?></h5></div>
-                                        <img src="https://dota2.ru/img/heroes/<?= (str_replace([' ', '-'], '_', strtolower($team))) ?>/portrait.jpg"
-                                             class="card-img-top" alt="<?= $team ?>">
+                                        <div class="card-header text-center"><h5>Команда {{ team }}</h5></div>
+                                        <img src="https://dota2.ru/img/heroes/{{ team|lower|replace({' ': '_', '-':'_'}) }}/portrait.jpg"
+                                             class="card-img-top" alt="{{ team }}">
                                     </div>
                                 </div>
                                 <div class="col">
@@ -83,23 +92,29 @@
                                         <thead class="thead-light">
                                         <tr>
                                             <th scope="col">Ник</th>
+                                            {% if t.type == 2 %}
+                                                <th scope="col">Регион</th>
+                                            {% endif %}
                                             <th scope="col">Жизни</th>
-                                            <?php if ($is_owner): ?>
+                                            {% if is_owner %}
                                                 <th scope="col">Действия</th>
-                                            <? endif; ?>
+                                            {% endif %}
                                         </tr>
                                         </thead>
 
                                         <tbody>
-                                        <?php foreach ($tournament->getPlayersByTeam($team) as $player): ?>
+                                        {% for p in t.playersByTeam(team) %}
                                             <tr>
-                                                <td><?= $player->getNickname(); ?></td>
+                                                <td>{{ p.nickname }}</td>
+                                                {% if t.type == 2 %}
+                                                    <td>{{ p.region }}</td>
+                                                {% endif %}
                                                 <td>
-                                                    <span class="badge badge-pill badge-info"><?= $player->getLifes(); ?></span>
+                                                    <span class="badge badge-pill badge-info">{{ p.lifes }}</span>
                                                 </td>
-                                                <?php if ($is_owner): ?>
+                                                {% if is_owner %}
                                                     <td>
-                                                        <select name="sendHome[<?= $player->getId(); ?>]"
+                                                        <select name="sendHome[{{ p.id }}]"
                                                                 class="custom-select custom-select-sm mb-3">
                                                             <option disabled selected>Выбрать опции</option>
                                                             <option value="1">Cнять с посева</option>
@@ -107,29 +122,29 @@
                                                             <option value="3">Дисквалифицировать</option>
                                                         </select>
                                                     </td>
-                                                <? endif; ?>
+                                                {% endif %}
                                             </tr>
-                                        <?php endforeach; ?>
+                                        {% endfor %}
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
-                            <?php if ($is_owner && isset($pairOfTeams[$k + 1])): ?>
+                            {% if is_owner and pair[k+1] %}
                                 <div class="col">
                                     <select name="loosers[]" class="custom-select custom-select-lg mb-3">
                                         <option value="" disabled selected>Выбрать победителя</option>
-                                        <?php foreach ($pairOfTeams as $t): ?>
-                                            <option value="<?= $t ?>"><?= $t ?></option>
-                                        <?php endforeach; ?>
+                                        {% for team in pair %}
+                                            <option value="{{ team }}">{{ team }}</option>
+                                        {% endfor %}
                                     </select>
                                 </div>
-                            <?php endif; ?>
-                        <?php endforeach; ?>
+                            {% endif %}
+                        {% endfor %}
                     </div>
-                <?php endforeach; ?>
+                {% endfor %}
 
                 <!--Ожидающие-->
-                <?php if ($tournament->getWaitingPlayers()): ?>
+                {% if t.waitingPlayers %}
                     <div class="container-fluid">
                         <div>
                             <h5 class="text-center">Ожидающие</h5>
@@ -142,27 +157,27 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                <?php foreach ($tournament->getWaitingPlayers() as $player): ?>
+                                {% for p in t.waitingPlayers %}
                                     <tr>
-                                        <td><?= $player->getNickname(); ?></td>
+                                        <td>{{ p.nickname }}</td>
                                         <td>
-                                            <span class="badge badge-pill badge-info"><?= $player->getLifes(); ?></span>
+                                            <span class="badge badge-pill badge-info">{{ p.lifes }}</span>
                                         </td>
                                         <td>
-                                            <?php if($player->getIsSuspended()): ?>
-                                            <span class="badge badge-pill badge-danger">Отстранен от раунда</span>
-                                            <?php endif; ?>
+                                            {% if p.isSuspended %}
+                                                <span class="badge badge-pill badge-danger">Отстранен от раунда</span>
+                                            {% endif %}
                                         </td>
                                     </tr>
-                                <?php endforeach; ?>
+                                {% endfor %}
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                <?php endif; ?>
+                {% endif %}
 
                 <!--Выбывшие-->
-                <?php if ($tournament->getLoosers()): ?>
+                {% if t.loosers %}
                     <div class="container-fluid">
                         <div>
                             <h5 class="text-center">Выбывшие</h5>
@@ -174,22 +189,22 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                <?php foreach ($tournament->getLoosers() as $player): ?>
+                                {% for p in t.loosers %}
                                     <tr>
-                                        <td><?= $player->getNickname(); ?></td>
+                                        <td>{{ p.nickname }}</td>
                                         <td>
-                                            <span class="badge badge-pill badge-info"><?= $player->getLifes(); ?></span>
+                                            <span class="badge badge-pill badge-info">{{ p.lifes }}</span>
                                         </td>
                                     </tr>
-                                <?php endforeach; ?>
+                                {% endfor %}
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                <?php endif; ?>
-            <?php endif; ?>
+                {% endif %}
+            {% endif %}
 
-            <?php if ($tournament->getStatus() == 'ended'): ?>
+            {% if t.status == 'ended' %}
                 <div class="btn-group container-fluid" role="group">
                     <button type="button" class="btn btn-secondary" onclick="window.location.href='/tournament/'">
                         Вернуться к перечню турниров
@@ -206,26 +221,32 @@
                         <th scope="col">№</th>
                         <th scope="col">Ник</th>
                         <th scope="col">Жизни</th>
-                        <?php if ($tournament->getPrizePool()): ?>
-                        <th scope="col">Награда</th>
-                        <?php endif; ?>
+                        {% if t.prizePool %}
+                            <th scope="col">Награда</th>
+                        {% endif %}
+                        {% if t.type == 2 %}
+                            <th scope="col">Регион</th>
+                        {% endif %}
                     </tr>
                     </thead>
 
                     <tbody>
-                    <?php foreach ($tournament->getPlayersOrderedByLifes() as $number => $player): ?>
+                    {% for number,p in t.playersOrderedByLifes %}
                         <tr>
-                            <th scope="row"><?= $number + 1 ?></th>
-                            <td><?= $player->getNickname(); ?></td>
-                            <td><?= $player->getLifes(); ?></td>
-                            <?php if ($tournament->getPrizePool()): ?>
-                                <td><?= $player->getPrize(); ?></td>
-                            <?php endif; ?>
+                            <th scope="row">{{ number+1 }}</th>
+                            <td>{{ p.nickname }}</td>
+                            <td>{{ p.lifes }}</td>
+                            {% if t.prizePool %}
+                                <td>{{ p.prize }}</td>
+                            {% endif %}
+                            {% if t.type == 2 %}
+                                <td>{{ p.region }}</td>
+                            {% endif %}
                         </tr>
-                    <?php endforeach; ?>
+                    {% endfor %}
                     </tbody>
                 </table>
-            <?php endif; ?>
+            {% endif %}
         </div>
 
     </form>
@@ -233,5 +254,5 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.5.10/clipboard.min.js"></script>
 <script>
-    <?php require ROOT . '/js/tournament_show.js';?>
+    {{ source('/js/tournament_show.js')|raw }}
 </script>
