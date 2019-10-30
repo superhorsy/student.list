@@ -67,4 +67,11 @@ class Utils
         }
         return $round;
     }
+
+    public static function getDotaTeamNames()
+    {
+        $teamNames = array_map('str_getcsv', file(ROOT . '/../Heroes of Dota.csv'));
+        $teamNames = array_column($teamNames, 0);
+        return $teamNames;
+    }
 }

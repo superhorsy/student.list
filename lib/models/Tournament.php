@@ -6,6 +6,7 @@ namespace App\models;
 
 use App\Utils;
 use DateTime;
+use Exception;
 use Throwable;
 
 /**
@@ -209,8 +210,7 @@ class Tournament implements TournamentInterface
         }
 
         //Team names
-        $teamNames = array_map('str_getcsv', file(ROOT . '/../Heroes of Dota.csv'));
-        $teamNames = array_column($teamNames, 0);
+        $teamNames = Utils::getDotaTeamNames();
 
         $teamKeys = array_rand($teamNames, intval(count($players) / 10) * 2);
 
@@ -312,7 +312,7 @@ class Tournament implements TournamentInterface
     /**
      * Валидирует объект, возвращает массив с ошибками или null.
      * @return array|null
-     * @throws \Exception
+     * @throws Exception
      */
     public function isValid(): ?array
     {

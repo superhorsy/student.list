@@ -4,6 +4,8 @@
 namespace App\models;
 
 
+use App\Utils;
+
 class TournamentInterregional extends Tournament implements TournamentInterface
 {
     private $regions = [];
@@ -76,81 +78,79 @@ class TournamentInterregional extends Tournament implements TournamentInterface
      */
     public function setTeams()
     {
-
-        $players = array();
+        $waited = $suspended = $other = [];
         foreach ($this->getAlivePlayers() as $player) {
-            if (!$player->getIsSuspended()) {
-                $players[] = $player;
+            if ($player->getIsSuspended()) {
+                $suspended[] = $player;
+            } else if ($player->getTeam() == Players::STATUS_WAIT) {
+                $waited[] = $player;
             } else {
-                $player->setTeam(Players::STATUS_WAIT);
-                $player->save();
+                $other[] = $player;
             }
         }
 
-        $waitingPlayers = array();
-        /** @var Players $player */
-        foreach ($this->getWaitingPlayers() as $player) {
-            if (!$player->getIsSuspended()) {
-                $waitingPlayers[] = $player;
-            }
+        foreach ($suspended as $player) {
+            $player->setTeam(Players::STATUS_WAIT);
+            $player->save();
         }
 
-        if (!empty($waitingPlayers)) {
-            $otherPlayers = array_udiff($players, $waitingPlayers, function ($p1, $p2) {
-                return $p1->getId() - $p2->getId();
-            });
-            shuffle($otherPlayers);
-            $players = array_merge($waitingPlayers, $otherPlayers);
-        } else {
-            shuffle($players);
-        }
-
-        //Team names
-        $teamNames = array_map('str_getcsv', file(ROOT . '/../Heroes of Dota.csv'));
-        $teamNames = array_column($teamNames, 0);
-
-        $teamKeys = array_rand($teamNames, intval(count($players) / 10) * 2);
+        //Имена комманд
+        $teamNames = Utils::getDotaTeamNames();
+        shuffle($teamNames);
 
         //Получаем игроков для каждого региона
         $playersByRegion = [];
-        foreach ($players as $player) {
-            $playersByRegion[$player->getRegion()] = $player;
+        //Сначала ждавщие
+        foreach ($waited as $player) {
+            $playersByRegion[$player->getRegion()][] = $player;
+        }
+        //Затем остальные
+        foreach ($other as $player) {
+            $playersByRegion[$player->getRegion()][] = $player;
         }
 
         //Игроки, оставшиеся вне команд по 5 человек
         $leftovers = [];
+
+        $teams = [];
+        $i = 1;
+
         //Раскручиваем каждый регион
-        foreach ($playersByRegion as $region) {
-            $full_team_players = array_splice($region, count($))
-        }
-
-        foreach ($teamKeys as $key) {
-            for ($i = 0; $i < 5; $i++) {
-                $player = current($players);
-                $player->setTeam($teamNames[$key]);
+        foreach ($playersByRegion as $name => $region) {
+            $leftovers = array_merge($leftovers, array_splice($region, -(count($region) % 5)));
+            foreach ($region as $player) {
+                $player->setTeam(current($teamNames));
                 $player->save();
-                $nextPlayer = next($players);
+                if ($i == 5) {
+                    $i = 1;
+                    $teams[$name][] = current($teamNames);
+                    next($teamNames);
+                }
+                $i++;
             }
         }
-
-        $lastPlayer = current(array_slice($players, -1));
-
-        if ($nextPlayer && $nextPlayer == $lastPlayer) {
-            $player = current($players);
-            $player->setTeam('WAIT');
+        if (count($leftovers) > 5) {
+            $last = array_splice($region, -(count($leftovers) % 5));
+        }
+        //Команды для игроков из неполных команд
+        foreach ($leftovers as $player) {
+            $player->setTeam(current($teamNames));
             $player->save();
-        } else {
-            while ($nextPlayer) {
-                $player = current($players);
-                $player->setTeam('WAIT');
+            if ($i == 5) {
+                $i = 1;
+                $teams['MIX'][] = current($teamNames);
+                next($teamNames);
+            }
+            $i++;
+        }
+        //Последние игроки
+        if (isset($last)) {
+            $teams['MIX'][] = current($teamNames);
+            foreach ($last as $player) {
+                $player->setTeam(current($teamNames));
                 $player->save();
-                $nextPlayer = next($players);
             }
         }
-
-        $teams = array_intersect_key($teamNames, array_flip($teamKeys));
-
-        $this->setPlayers();
 
         return $teams;
     }
