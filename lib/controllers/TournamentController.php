@@ -164,8 +164,9 @@ class TournamentController extends Controller
 
     public function actionEdit(int $tournamentId)
     {
-        $tournament = $this->tdg->getTournamentById($tournamentId);
+
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $tournament = $this->tdg->getTournamentById($tournamentId)
             if (!$_POST['token_tournament']) {
                 $errors = 'Форма отправлена со стороннего сайта.';
             } else {
@@ -189,6 +190,8 @@ class TournamentController extends Controller
                 header("Location: /tournament?$query");
                 exit;
             }
+        } else {
+            $tournament = $this->tdg->getTournamentById($tournamentId);
         }
 
         $this->view->render('tournament_add', ['user' => $this->user, 'errors' => $errors, 'tournament' => $tournament]);

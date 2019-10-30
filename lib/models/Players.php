@@ -72,6 +72,7 @@ class Players
         $values['nickname'] ? $this->setNickname($values['nickname']) : $this->setNickname('');
         $values['tournament_id'] ? $this->setTournamentId($values['tournament_id']) : $this->setTournamentId('');
         $values['prize'] ? $this->setPrize($values['prize']) : $this->setPrize('');
+        $values['region'] ? $this->setRegion($values['region']) : $this->setRegion(null);
     }
 
     public function reset()

@@ -308,6 +308,11 @@ class Tournament implements TournamentInterface
         return $this->id ? true : false;
     }
 
+    /**
+     * Валидирует объект, возвращает массив с ошибками или null.
+     * @return array|null
+     * @throws \Exception
+     */
     public function isValid(): ?array
     {
         $errors = [];

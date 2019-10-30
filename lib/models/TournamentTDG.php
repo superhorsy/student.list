@@ -14,6 +14,7 @@ class TournamentTDG extends TDG
             'owner_id' => $tournament->getOwnerId(),
             'prize_pool' => $tournament->getPrizePool(),
             'type' => $tournament->getType(),
+            'regions' => json_encode($tournament->getRegions(),JSON_UNESCAPED_UNICODE),
         ]);
         $id = $this->connection->lastInsertId();
         return $id ? $id : null;
@@ -28,9 +29,10 @@ class TournamentTDG extends TDG
             'status' => $tournament->getStatus(),
             'current_round' => $tournament->getCurrentRound(),
             'round_count' => $tournament->getRoundCount(),
-            'toss' => json_encode($tournament->getToss()),
+            'toss' => json_encode($tournament->getToss(), JSON_UNESCAPED_UNICODE|JSON_FORCE_OBJECT),
             'prize_pool' => $tournament->getPrizePool(),
             'type' => $tournament->getType(),
+            'regions' => json_encode($tournament->getRegions(),JSON_UNESCAPED_UNICODE),
         ], $tournament->getId());
     }
 

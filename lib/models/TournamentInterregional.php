@@ -27,13 +27,14 @@ class TournamentInterregional extends Tournament implements TournamentInterface
         $values['prize_pool'] ? $this->setPrizePool($values['prize_pool']) : $this->setPrizePool(null);
         $values['owner_id'] ? $this->setOwnerId($values['owner_id']) : $this->setOwnerId('');
         $values['type'] ? $this->setType($values['type']) : $this->setType(null);
-        if (isset($values['players']) && $values['players']) {
-            $this->setPlayers($values['players'], $values['t_regions']);
-        };
-        if ($values['t_regions'] && !empty($values['t_regions'])) {
-            array_map('trim', $values['t_regions']);
-            $this->setRegions($values['t_regions']);
+        if ($values['regions'] && !empty($values['regions'])) {
+            array_map('trim', $values['regions']);
+            $this->setRegions($values['regions']);
         }
+        if (isset($values['players']) && $values['players']) {
+            $this->setPlayers($values['players'], $values['regions']);
+        };
+
     }
 
     /**
@@ -58,8 +59,8 @@ class TournamentInterregional extends Tournament implements TournamentInterface
         if ($this->players) {
             $regions = $this->getRegions();
             foreach ($this->players as $player) {
-                if (!in_array($regions, $player->getRegion())) {
-                    $errors[] = "Для игрока {$player->getName()} указан некорректный регион";
+                if (!in_array($player->getRegion(), $regions)) {
+                    $errors[] = "Для игрока {$player->getNickname()} указан некорректный регион";
                 }
             }
         }
@@ -171,9 +172,9 @@ class TournamentInterregional extends Tournament implements TournamentInterface
     }
 
     /**
-     * @return array
+     * @return array|null
      */
-    public function getRegions(): array
+    public function getRegions(): ?array
     {
         return $this->regions;
     }
