@@ -1,3 +1,4 @@
 ﻿vendor/composer
 vendor
 .idea
+views/cache
