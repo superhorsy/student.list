@@ -1,4 +1,2 @@
-﻿vendor/composer
-vendor
-.idea
+﻿.idea
 views/cache
