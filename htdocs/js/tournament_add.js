@@ -24,24 +24,25 @@ var Tournament = {
                     return Tournament.counter;
                 });
             });
+            newPlayer.attr({value: ''});
             newPlayer.appendTo(".players");
             Tournament.toogleRegionField();
-            Tournament.updateRegion();
+            Tournament.updateRegion($(".player:last"));
         });
 
     },
     addRegions: function () {
         $('#t_regions').on("change", function (e) {
-            Tournament.updateRegion();
+            Tournament.updateRegion($('.p_region'));
         });
     },
-    updateRegion: function () {
-        $('.new_option').remove();
+    updateRegion: function (element) {
+        element.find('.new_option').remove();
         cities = $('#t_regions').val().trim().split(',');
         if (Array.isArray(cities) && cities.length) {
             for (let city of cities) {
                 if (city.length > 0) {
-                    $('.p_region select').append("<option value='" + city + "' class='new_option'>" + city + "</option>");
+                    element.find('select').append("<option value='" + city + "' class='new_option'>" + city + "</option>");
                 }
             }
         }
