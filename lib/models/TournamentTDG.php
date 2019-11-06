@@ -8,21 +8,25 @@ class TournamentTDG extends TDG
 {
     public function saveTournament(TournamentInterface $tournament): ?int
     {
-        $this->insertValues([
+        $values = [
             'name' => $tournament->getName(),
             'date' => $tournament->getDate(),
             'owner_id' => $tournament->getOwnerId(),
             'prize_pool' => $tournament->getPrizePool(),
             'type' => $tournament->getType(),
-            'regions' => json_encode($tournament->getRegions(),JSON_UNESCAPED_UNICODE),
-        ]);
+        ];
+        if (method_exists('getRegions', $tournament)) {
+            $values = array_merge($values, ['regions' => json_encode($tournament->getRegions(),JSON_UNESCAPED_UNICODE)]);
+        }
+
+        $this->insertValues($values);
         $id = $this->connection->lastInsertId();
         return $id ? $id : null;
     }
 
     public function updateTournament(TournamentInterface $tournament): void
     {
-        $this->updateValues([
+        $values = [
             'name' => $tournament->getName(),
             'date' => $tournament->getDate(),
             'owner_id' => $tournament->getOwnerId(),
@@ -32,8 +36,13 @@ class TournamentTDG extends TDG
             'toss' => json_encode($tournament->getToss(), JSON_UNESCAPED_UNICODE),
             'prize_pool' => $tournament->getPrizePool(),
             'type' => $tournament->getType(),
-            'regions' => json_encode($tournament->getRegions(),JSON_UNESCAPED_UNICODE),
-        ], $tournament->getId());
+        ];
+
+        if (method_exists('getRegions', $tournament)) {
+            $values = array_merge($values, ['regions' => json_encode($tournament->getRegions(),JSON_UNESCAPED_UNICODE)]);
+        }
+
+        $this->updateValues($values, $tournament->getId());
     }
 
     /**

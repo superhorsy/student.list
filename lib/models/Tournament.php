@@ -155,8 +155,17 @@ class Tournament implements TournamentInterface
             }
         }
 
-        $teams = $this->setTeams();
-        $this->toss($teams);
+        $this->setPlayers();
+
+        $alivePlayers = $this->getAlivePlayers();
+
+        if (count($alivePlayers) >= 10) {
+            $teams = $this->setTeams();
+            $this->toss($teams);
+        } else {
+            $this->setStatus(self::STATUS_ENDED);
+            $this->reward();
+        }
 
         $this->save();
     }
@@ -277,7 +286,7 @@ class Tournament implements TournamentInterface
         };
     }
 
-    public function save(int $mode = 1): bool
+    public function save($mode = 1): bool
     {
         if ($this->id) {
             $this->tdg->updateTournament($this);

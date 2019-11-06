@@ -166,29 +166,34 @@ class TournamentInterregional extends Tournament implements TournamentInterface
     public function toss($teams)
     {
         $regions = array_keys($teams);
+        //Команды попадающие в игру
         $sortedTeams = [];
-        foreach ($teams as $region => &$regionalTeams) {
-            $k = null;
+        //Расформированные команды
+        $removedTeams = [];
+
+        foreach ($teams as $region => $regionalTeams) {
             foreach ($regionalTeams as $key => $team1) {
-                $k = $key;
-                if ($team2 = $this->removeTeamByKey($teams, array_diff($regions, [$region]))) {
-                    $sortedTeams[] = $team1;
-                    $sortedTeams[] = $team2;
-                } elseif ($team2 = $this->removeTeamByKey($teams, ['MIX'])) {
-                    $sortedTeams[] = $team1;
-                    $sortedTeams[] = $team2;
-                } elseif ($team2 = $this->removeTeamByKey($teams, [$region], $team1)) {
-                    $sortedTeams[] = $team1;
-                    $sortedTeams[] = $team2;
-                } else {
-                    $players = $this->getPlayersByTeam($team1);
-                    foreach ($players as $player) {
-                        $player->setTeam(Players::STATUS_WAIT);
-                        $player->save();
+                if (!in_array($team1, array_merge($removedTeams, $sortedTeams))) {
+                    $excludedTeams = array_merge([$team1], $sortedTeams, $removedTeams);
+                    if ($team2 = $this->findTeamByRegions($teams, array_diff($regions, [$region]), $excludedTeams)) {
+                        $sortedTeams[] = $team1;
+                        $sortedTeams[] = $team2;
+                    } elseif ($team2 = $this->findTeamByRegions($teams, ['MIX'], $excludedTeams)) {
+                        $sortedTeams[] = $team1;
+                        $sortedTeams[] = $team2;
+                    } elseif ($team2 = $this->findTeamByRegions($teams, [$region], $excludedTeams)) {
+                        $sortedTeams[] = $team1;
+                        $sortedTeams[] = $team2;
+                    } else {
+                        $players = $this->getPlayersByTeam($team1);
+                        foreach ($players as $player) {
+                            $player->setTeam(Players::STATUS_WAIT);
+                            $player->save();
+                        }
+                        $removedTeams[] = $team1;
                     }
                 }
             }
-            unset($regionalTeams[$k]);
         }
 
         //Распределяем команды по группам
@@ -236,19 +241,13 @@ class TournamentInterregional extends Tournament implements TournamentInterface
      * @param array $acceptableKeys
      * @return array|bool|mixed
      */
-    private function removeTeamByKey(array &$array, array $acceptableKeys, $excludedValue = null)
+    private function findTeamByRegions(array $array, array $acceptableKeys, $excludedValues = [])
     {
-        foreach ($array as $key => &$item) {
-            if (in_array($key, $acceptableKeys)) {
-                if (!empty($item)) {
-                    if ($excludedValue) {
-                        foreach ($item as $index => $team) {
-                            if ($team !== $excludedValue) {
-                                return array_splice($item, $index, 1);
-                            }
-                        }
-                    } else {
-                        return array_shift($item);
+        foreach ($array as $key => $item) {
+            if (!empty($item) && in_array($key, $acceptableKeys)) {
+                foreach ($item as $index => $team) {
+                    if (!in_array($team, $excludedValues)) {
+                        return $team;
                     }
                 }
             }
