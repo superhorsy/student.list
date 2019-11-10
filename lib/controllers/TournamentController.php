@@ -9,7 +9,8 @@ use App\{Controller,
     models\TournamentFactory,
     models\TournamentTDG,
     models\User,
-    Utils};
+    Utils,
+    View};
 
 class TournamentController extends Controller
 {
@@ -21,7 +22,7 @@ class TournamentController extends Controller
 
     function __construct()
     {
-        $this->view = new \App\View();
+        $this->view = new View();
         $this->tdg = new TournamentTDG();
         if (!$_SESSION['token_tournament']) {
             $_SESSION['token_tournament'] = md5(uniqid(mt_rand(), true));
@@ -82,19 +83,21 @@ class TournamentController extends Controller
                         switch ($_POST['tournament_action']) {
                             case 'start':
                                 $tournament->start();
+                                Utils::log($tournament);
                                 break;
                             case 'next':
                                 if ($tournament->getStatus() == Tournament::STATUS_IN_PROGRESS) {
                                     $playersPlaying = count($tournament->getPlayers()) - count($tournament->getWaitingPlayers()) - count($tournament->getLoosers());
 
-                                    if (!(isset($_POST['loosers']) && !empty($_POST['loosers']) && is_array($_POST['loosers'])) || count($_POST['loosers']) != ($playersPlaying) / 10) {
-                                        $errors[] = 'Отмечены не все проигравшие';
+                                    if (!(isset($_POST['winners']) && !empty($_POST['winners']) && is_array($_POST['winners'])) || count($_POST['winners']) != ($playersPlaying) / 10) {
+                                        $errors[] = 'Отмечены не все победители';
                                     }
                                     if (!$errors) {
                                         $roundResult = [
-                                            'loosers' => $_POST['loosers'] ?? '',
+                                            'winners' => $_POST['winners'] ?? '',
                                         ];
                                         $tournament->next($roundResult);
+                                        Utils::log($tournament);
                                     }
                                 }
                                 break;

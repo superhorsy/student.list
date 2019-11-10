@@ -15,6 +15,8 @@ class Players
     private $is_suspended;
     private $prize = null;
     private $region = null;
+    private $wins = null;
+    private $games_played = null;
 
     //Player status
     const STATUS_WAIT = 'WAIT';
@@ -33,6 +35,12 @@ class Players
         $this->tdg = $tdg;
     }
 
+    public function __toString()
+    {
+        return "Ник - {$this->nickname}, жизней - {$this->lifes}, игр - {$this->games_played}, побед - {$this->wins}, 
+        отстранен - {$this->is_suspended}";
+    }
+
     /**
      * Сохраняет текущие параметры игрока в базу
      * @return bool
@@ -47,6 +55,14 @@ class Players
 
         if (isset($this->lifes)) {
             $insertValues = array_merge($insertValues, ['lifes' => $this->lifes]);
+        }
+
+        if (isset($this->wins)) {
+            $insertValues = array_merge($insertValues, ['wins' => $this->wins]);
+        }
+
+        if (isset($this->games_played)) {
+            $insertValues = array_merge($insertValues, ['games_played' => $this->games_played]);
         }
 
         $insertValues = array_merge($insertValues, ['team' => $this->team]);
@@ -78,6 +94,8 @@ class Players
     public function reset()
     {
         $this->setLifes(2);
+        $this->setGamesPlayed(0);
+        $this->setWins(0);
         $this->setTeam(null);
         $this->setIsSuspended(0);
         $this->setPrize(null);
@@ -224,5 +242,37 @@ class Players
     public function setRegion($region): void
     {
         $this->region = $region;
+    }
+
+    /**
+     * @return null
+     */
+    public function getWins()
+    {
+        return $this->wins;
+    }
+
+    /**
+     * @param null $wins
+     */
+    public function setWins($wins): void
+    {
+        $this->wins = $wins;
+    }
+
+    /**
+     * @return null
+     */
+    public function getGamesPlayed()
+    {
+        return $this->games_played;
+    }
+
+    /**
+     * @param null $games_played
+     */
+    public function setGamesPlayed($games_played): void
+    {
+        $this->games_played = $games_played;
     }
 }

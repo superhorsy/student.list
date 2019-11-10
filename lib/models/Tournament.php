@@ -71,23 +71,40 @@ class Tournament implements TournamentInterface
 
     }
 
+    /**
+     * Подводим результаты раунда
+     * @param array $roundResult
+     */
     public function next(array $roundResult)
     {
         if ($this->status == self::STATUS_IN_PROGRESS) {
 
             (new PlayersTDG())->resetSuspension($this);
 
-            foreach ($roundResult['loosers'] as $team) {
-                $loosers = (new PlayersTDG())->getPlayersByTeam($this, $team);
-                foreach ($loosers as $looser) {
-                    $lifes = $looser->getLifes();
-                    $looser->setLifes(--$lifes);
-                    if ($looser->getLifes() == 0) {
-                        $looser->setTeam('OUT');
+            /** @var Players $player */
+            foreach ($this->players as $player) {
+                $team = $player->getTeam();
+                $lifes = $player->getLifes();
+                $wins = $player->getWins();
+                $gamesPlayed = $player->getGamesPlayed();
+
+                //Победители
+                if (in_array($team, $roundResult['winners'])) {
+                    $player->setWins(++$wins);
+                    $player->setGamesPlayed(++$gamesPlayed);
+                    $player->save();
+                    //Проигравшие
+                } elseif (!in_array($team, [Players::STATUS_WAIT, Players::STATUS_OUT]) && !$player->getIsSuspended()) {
+                    $player->setGamesPlayed(++$gamesPlayed);
+                    $player->setLifes(--$lifes);
+                    if ($player->getLifes() <= 0) {
+                        $player->setLifes(0);
+                        $player->setTeam(Players::STATUS_OUT);
                     }
-                    $looser->save();
+                    $player->save();
                 }
             }
+
             $this->setPlayers();
 
             $alivePlayers = $this->getAlivePlayers();

@@ -3,8 +3,40 @@
 
 namespace App;
 
+use App\models\TournamentInterface;
+
 class Utils
 {
+
+    /**
+     * Пишем параметры раунда в лог
+     * @param TournamentInterface
+     */
+    public static function log($tournament)
+    {
+        $logsPath = ROOT . DIRECTORY_SEPARATOR . 'tournament_logs';
+        if (!is_dir($logsPath)) {
+            mkdir($logsPath);
+        }
+        $filePath = $logsPath . DIRECTORY_SEPARATOR . date('y-m-d') . '_tournament_log.txt';
+
+        $date = date('Y-m-d H:i:s');
+        $data = <<<TEXT
+$date {$tournament->getName()}
+Раунд {$tournament->getCurrentRound()}
+Текущее распределение команд:
+TEXT;
+        foreach ($tournament->getToss() as $pair) {
+            $data .= $pair[0] . '-' . $pair[1] . PHP_EOL;
+        }
+        foreach ($tournament->getPlayers() as $player) {
+            $data .= $player . PHP_EOL;
+        }
+        $data .= "______________________________________" . PHP_EOL;
+
+
+        file_put_contents($filePath, $data . PHP_EOL, FILE_APPEND | LOCK_EX);
+    }
 
     private static function trimValue($value)
     {
@@ -42,7 +74,7 @@ class Utils
             'date' => $values['t_date'] ?? '',
             'prize_pool' => $values['t_prize_pool'] ?? '',
             'owner_id' => $ownerId,
-            'type' => (int) $values['t_type'],
+            'type' => (int)$values['t_type'],
             'regions' => $values['t_regions'] ? explode(',', $values['t_regions']) : null,
             'players' => $values['players'] ?? '',
         ];
