@@ -263,4 +263,102 @@ class TournamentInterregional extends Tournament implements TournamentInterface
         }
         return false;
     }
+
+    /**
+     * Применяет выбранные действия к игрокам без жеребьевки
+     * @param array $roundResult
+     */
+    public function sendHomeWithoutToss(array $roundResult)
+    {
+        $changePlayers = (new PlayersTDG())->getPossibleChangePlayers($this);
+
+        foreach ($roundResult['sendHome'] as $id => $action) {
+            /** @var Players $player */
+            $player = (new PlayersTDG())->getPlayersbyTournamentID($this->id, $id)[0];
+            $team = $player->getTeam();
+            $region = $player->getRegion();
+
+            $join = false;
+            if ($changePlayers && !in_array($region, [Players::STATUS_OUT, Players::STATUS_WAIT])) {
+                /** @var Players $changePlayer */
+                foreach ($changePlayers as $key => $changePlayer) {
+                    $playerRegion = $changePlayer->getRegion();
+                    if ($playerRegion == $region) {
+                        $join = $changePlayer;
+                        unset($changePlayers[$key]);
+                        break;
+                    }
+                }
+            }
+            if (!$join && $changePlayers) {
+                shuffle($changePlayers);
+                $join = array_shift($changePlayers);
+            }
+
+            switch ($action) {
+                case '1': //Убрать с посева
+                    if ($join) {
+                        $join->setTeam($team);
+                    }
+                    $player->setTeam(Players::STATUS_WAIT);
+                    $player->setIsSuspended(true);
+                    break;
+                case '2': //Убрать жизнь и снять с посева
+                    if ($join) {
+                        $join->setTeam($team);
+                    }
+                    $player->setLifes($player->getLifes() - 1);
+                    if ($player->getLifes() < 1) {
+                        $player->setTeam(Players::STATUS_OUT);
+                    } else {
+                        $player->setTeam(Players::STATUS_WAIT);
+                    }
+                    $player->setIsSuspended(true);
+                    break;
+                case '3': //Дисквалифицировать
+                    if ($join) {
+                        $join->setTeam($team);
+                    }
+                    $player->setLifes(0);
+                    $player->setTeam(Players::STATUS_OUT);
+                    $player->setIsSuspended(true);
+                    break;
+                default:
+                    continue 2;
+            }
+            $player->save();
+
+            if ($join) {
+                $join->save();
+            } else { //если не нашлось замены - шлем всю команду на банку
+                if(!($team == Players::STATUS_WAIT && $team == Players::STATUS_OUT)) {
+                    foreach ($this->toss as $key => $pair) {
+                        if (in_array($team, $pair)) {
+                            foreach($pair as $team) {
+                                $players = $this->getPlayersByTeam($team);
+                                foreach ($players as $player) {
+                                    $player->setTeam(Players::STATUS_WAIT);
+                                    $player->save();
+                                }
+                            }
+                            unset($this->toss[$key]);
+                            break;
+                        }
+                    }
+
+                }
+            }
+        }
+
+        $this->setPlayers();
+
+        $playersInGame = (new PlayersTDG())->getPlayersInGame($this);
+
+        if (!count($playersInGame) >= 10) {
+            $this->setStatus(self::STATUS_ENDED);
+            $this->reward();
+        }
+
+        $this->save();
+    }
 }

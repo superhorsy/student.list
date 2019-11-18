@@ -83,4 +83,32 @@ class PlayersTDG extends TDG
         return $query ? true : false;
     }
 
+    /**
+     * Получает игроков, которые не в ожидающих
+     * @param TournamentInterface $tournament
+     * @return array
+     */
+    public function getPlayersInGame(TournamentInterface $tournament)
+    {
+        $wait = Players::STATUS_WAIT;
+        $out = Players::STATUS_OUT;
+        $query = $this->connection->query("SELECT * FROM {$this->table} WHERE tournament_id = '{$tournament->getId()}' AND team NOT IN ('$wait', '$out')");
+        $players = $query->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, '\App\models\Players');
+        return $players ? $players : null;
+    }
+
+    /**
+     * Получает игроков, которые могут выйти на замену - ждущие, за исключением  отстраненных
+     * @param TournamentInterface $tournament
+     * @return array
+     */
+    public function getPossibleChangePlayers(TournamentInterface $tournament)
+    {
+        $wait = Players::STATUS_WAIT;
+        $out = Players::STATUS_OUT;
+        $query = $this->connection->query("SELECT * FROM {$this->table} WHERE tournament_id = '{$tournament->getId()}' AND team = '$wait' AND is_suspended != 1");
+        $players = $query->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, '\App\models\Players');
+        return $players ? $players : null;
+    }
+
 }

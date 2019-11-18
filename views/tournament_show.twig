@@ -72,6 +72,10 @@
                     <div class="fixed-bottom btn-group container-fluid" role="group">
                         <button name='tournament_action' value='next' type="submit" class="btn btn-success">Продолжить
                         </button>
+                        <button name='tournament_action' value='send_home_without_toss' type="submit"
+                                class="btn btn-secondary">Применить
+                            действия без жеребьевки
+                        </button>
                         <button name='tournament_action' value='send_home' type="submit" class="btn btn-info">Применить
                             действия и повторить жеребьевку
                         </button>
@@ -85,60 +89,61 @@
                     <div class="row border m-3 p-0 no-gutters">
                         {% for k,team in pair %}
                             <div class="col">
-                                        <div id="team_card" class="card align-middle bg-dark text-white">
-                                            <img src="https://dota2.ru/img/heroes/{{ team|lower|replace({' ': '_', '-':'_'}) }}/portrait.jpg"
-                                                 class="card-img" alt="{{ team }}" style="opacity: 0.4">
-                                            <div class="card-img-overlay">
-                                                <div class="card-title text-center"><h5><b>Команда {{ team }}</b></h5></div>
-                                                <div>
-                                                    <table class="table text-white">
+                                <div id="team_card" class="card align-middle bg-dark text-white">
+                                    <img src="https://dota2.ru/img/heroes/{{ team|lower|replace({' ': '_', '-':'_'}) }}/portrait.jpg"
+                                         class="card-img" alt="{{ team }}" style="opacity: 0.4">
+                                    <div class="card-img-overlay">
+                                        <div class="card-title text-center"><h5><b>Команда {{ team }}</b></h5></div>
+                                        <div>
+                                            <table class="table text-white">
 
-                                                        <thead class="thead">
-                                                        <tr>
-                                                            <th scope="col">Ник</th>
-                                                            {% if t.type == 2 %}
-                                                                <th scope="col">Регион</th>
-                                                            {% endif %}
-                                                            <th scope="col">Жизни</th>
-                                                            {% if is_owner %}
-                                                                <th scope="col">Действия</th>
-                                                            {% endif %}
-                                                            <th scope="col">Побед</th>
-                                                            <th scope="col">Игр</th>
+                                                <thead class="thead">
+                                                <tr>
+                                                    <th scope="col">Ник</th>
+                                                    {% if t.type == 2 %}
+                                                        <th scope="col">Регион</th>
+                                                    {% endif %}
+                                                    <th scope="col">Жизни</th>
+                                                    {% if is_owner %}
+                                                        <th scope="col">Действия</th>
+                                                    {% endif %}
+                                                    <th scope="col">Побед</th>
+                                                    <th scope="col">Игр</th>
 
-                                                        </tr>
-                                                        </thead>
+                                                </tr>
+                                                </thead>
 
-                                                        <tbody>
-                                                        {% for p in t.playersByTeam(team) %}
-                                                            <tr>
-                                                                <td>{{ p.nickname }}</td>
-                                                                {% if t.type == 2 %}
-                                                                    <td>{{ p.region }}</td>
-                                                                {% endif %}
-                                                                <td>
-                                                                    <span class="badge badge-pill badge-info">{{ p.lifes }}</span>
-                                                                </td>
-                                                                {% if is_owner %}
-                                                                    <td>
-                                                                        <select name="sendHome[{{ p.id }}]"
-                                                                                class="custom-select custom-select-sm">
-                                                                            <option disabled selected>Выбрать опции</option>
-                                                                            <option value="1">Cнять с посева</option>
-                                                                            <option value="2">Убрать жизнь и снять с посева</option>
-                                                                            <option value="3">Дисквалифицировать</option>
-                                                                        </select>
-                                                                    </td>
-                                                                {% endif %}
-                                                                <td>{{ p.wins }}</td>
-                                                                <td>{{ p.getGamesPlayed|default(0) }}</td>
-                                                            </tr>
-                                                        {% endfor %}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
+                                                <tbody>
+                                                {% for p in t.playersByTeam(team) %}
+                                                    <tr>
+                                                        <td>{{ p.nickname }}</td>
+                                                        {% if t.type == 2 %}
+                                                            <td>{{ p.region }}</td>
+                                                        {% endif %}
+                                                        <td>
+                                                            <span class="badge badge-pill badge-info">{{ p.lifes }}</span>
+                                                        </td>
+                                                        {% if is_owner %}
+                                                            <td>
+                                                                <select name="sendHome[{{ p.id }}]"
+                                                                        class="custom-select custom-select-sm">
+                                                                    <option disabled selected>Выбрать опции</option>
+                                                                    <option value="1">Cнять с посева</option>
+                                                                    <option value="2">Убрать жизнь и снять с посева
+                                                                    </option>
+                                                                    <option value="3">Дисквалифицировать</option>
+                                                                </select>
+                                                            </td>
+                                                        {% endif %}
+                                                        <td>{{ p.wins }}</td>
+                                                        <td>{{ p.getGamesPlayed|default(0) }}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                                </tbody>
+                                            </table>
                                         </div>
+                                    </div>
+                                </div>
                             </div>
                             {% if is_owner and pair[k+1] %}
                                 <div class="col-sm-1">
@@ -163,6 +168,9 @@
                                 <thead class="thead-light">
                                 <tr>
                                     <th scope="col">Ник</th>
+                                    {% if t.type == 2 %}
+                                        <th scope="col">Регион</th>
+                                    {% endif %}
                                     <th scope="col">Жизни</th>
                                     <th scope="col">Побед</th>
                                     <th scope="col">Игр сыграно</th>
@@ -173,11 +181,14 @@
                                 {% for p in t.waitingPlayers %}
                                     <tr>
                                         <td>{{ p.nickname }}</td>
+                                        {% if t.type == 2 %}
+                                            <td>{{ p.region }}</td>
+                                        {% endif %}
                                         <td>
                                             <span class="badge badge-pill badge-info">{{ p.lifes }}</span>
                                         </td>
                                         <td>{{ p.wins }}</td>
-                                        <td>{{ p.gamesPlayed|default(0) }}</td>
+                                        <td>{{ p.gamesPlayed }}</td>
                                         <td>
                                             {% if p.isSuspended %}
                                                 <span class="badge badge-pill badge-danger">Отстранен от раунда</span>
@@ -200,6 +211,9 @@
                                 <thead class="thead-light">
                                 <tr>
                                     <th scope="col">Ник</th>
+                                    {% if t.type == 2 %}
+                                        <th scope="col">Регион</th>
+                                    {% endif %}
                                     <th scope="col">Жизни</th>
                                     <th scope="col">Побед</th>
                                     <th scope="col">Игр сыграно</th>
@@ -209,11 +223,12 @@
                                 {% for p in t.loosers %}
                                     <tr>
                                         <td>{{ p.nickname }}</td>
-                                        <td>
-                                            <span class="badge badge-pill badge-info">{{ p.lifes }}</span>
-                                        </td>
+                                        {% if t.type == 2 %}
+                                            <td>{{ p.region }}</td>
+                                        {% endif %}
+                                        <td>{{ p.lifes }}</td>
                                         <td>{{ p.wins }}</td>
-                                        <td>{{ p.gamesPlayed|default(0) }}</td>
+                                        <td>{{ p.gamesPlayed }}</td>
                                     </tr>
                                 {% endfor %}
                                 </tbody>
@@ -239,14 +254,14 @@
                     <tr>
                         <th scope="col">№</th>
                         <th scope="col">Ник</th>
+                        {% if t.type == 2 %}
+                            <th scope="col">Регион</th>
+                        {% endif %}
                         <th scope="col">Жизни</th>
                         <th scope="col">Побед</th>
                         <th scope="col">Игр</th>
                         {% if t.prizePool %}
                             <th scope="col">Награда</th>
-                        {% endif %}
-                        {% if t.type == 2 %}
-                            <th scope="col">Регион</th>
                         {% endif %}
                     </tr>
                     </thead>

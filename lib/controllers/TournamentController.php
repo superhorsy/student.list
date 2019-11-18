@@ -114,6 +114,16 @@ class TournamentController extends Controller
                                     $errors[] = 'Не отмечены игроки';
                                 }
                                 break;
+                            case 'send_home_without_toss':
+                                if (isset($_POST['sendHome']) && $_POST['sendHome']) {
+                                    $data = [
+                                        'sendHome' => $_POST['sendHome'] ?? '',
+                                    ];
+                                    $tournament->sendHomeWithoutToss($data);
+                                } else {
+                                    $errors[] = 'Не отмечены игроки';
+                                }
+                                break;
                         }
                     }
                 }
