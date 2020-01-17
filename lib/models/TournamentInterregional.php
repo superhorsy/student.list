@@ -3,7 +3,7 @@
 
 namespace App\models;
 
-
+use App\components\TournamentInterface;
 use App\Utils;
 
 class TournamentInterregional extends Tournament implements TournamentInterface
@@ -70,6 +70,22 @@ class TournamentInterregional extends Tournament implements TournamentInterface
         $errors = $validation ? array_merge($validation, $errors) : $errors;
 
         return empty($errors) ? null : $errors;
+    }
+
+    /**
+     * @return array|null
+     */
+    public function getRegions(): ?array
+    {
+        return $this->regions;
+    }
+
+    /**
+     * @param array $regions
+     */
+    public function setRegions(array $regions): void
+    {
+        $this->regions = $regions;
     }
 
     /**
@@ -228,22 +244,6 @@ class TournamentInterregional extends Tournament implements TournamentInterface
     }
 
     /**
-     * @return array|null
-     */
-    public function getRegions(): ?array
-    {
-        return $this->regions;
-    }
-
-    /**
-     * @param array $regions
-     */
-    public function setRegions(array $regions): void
-    {
-        $this->regions = $regions;
-    }
-
-    /**
      * Забирает допустимое значение из массива с командами
      * @param array $teams
      * @param array $acceptableRegions
@@ -331,10 +331,10 @@ class TournamentInterregional extends Tournament implements TournamentInterface
             if ($join) {
                 $join->save();
             } else { //если не нашлось замены - шлем всю команду на банку
-                if(!($team == Players::STATUS_WAIT && $team == Players::STATUS_OUT)) {
+                if (!($team == Players::STATUS_WAIT && $team == Players::STATUS_OUT)) {
                     foreach ($this->toss as $key => $pair) {
                         if (in_array($team, $pair)) {
-                            foreach($pair as $team) {
+                            foreach ($pair as $team) {
                                 $players = $this->getPlayersByTeam($team);
                                 foreach ($players as $player) {
                                     $player->setTeam(Players::STATUS_WAIT);

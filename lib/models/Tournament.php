@@ -4,6 +4,7 @@
 namespace App\models;
 
 
+use App\components\TournamentInterface;
 use App\Utils;
 use DateTime;
 use Exception;
@@ -356,7 +357,6 @@ class Tournament implements TournamentInterface
 
         return $teams;
     }
-
 
     public function getEstimation(): int
     {

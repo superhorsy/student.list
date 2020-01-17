@@ -4,6 +4,8 @@
 namespace App\models;
 
 
+use App\components\TournamentInterface;
+
 class PlayersTDG extends TDG
 {
     public function getPlayersbyTournamentID($tournamentID, $ids = null): ?array

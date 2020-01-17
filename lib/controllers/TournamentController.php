@@ -3,8 +3,8 @@
 
 namespace App\controllers;
 
-use App\{Controller,
-    models\exception\TournamentException,
+use App\{components\exceptions\TournamentException,
+    Controller,
     models\Tournament,
     models\TournamentFactory,
     models\TournamentTDG,
@@ -19,6 +19,11 @@ class TournamentController extends Controller
     public $is_owner;
     private $user = null;
     private $tdg;
+    /**
+     * Сообщение из реквеста
+     * @var
+     */
+    private $notification = "";
 
     function __construct()
     {
@@ -37,14 +42,14 @@ class TournamentController extends Controller
             $this->user = new User($_COOKIE['auth']);
         }
 
-        $notify = $_GET['notify'] ? strval($_GET['notify']) : '';
+        $this->notification = $_GET['notify'] ?? strval($_GET['notify']);
 
     }
 
     public function access()
     {
         return [
-            self::ACCESS_ALL => ['actionShow']
+            static::ACCESS_ALL => ['actionShow']
         ];
     }
 
@@ -62,7 +67,7 @@ class TournamentController extends Controller
                 }
             }
         }
-        $this->view->render('tournament', ['user' => $this->user, 'notify' => $notify, 'tournaments' => $tournaments]);
+        $this->view->render('tournament', ['user' => $this->user, 'notify' => $this->notification, 'tournaments' => $tournaments]);
 
     }
 

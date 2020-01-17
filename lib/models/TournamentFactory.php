@@ -4,7 +4,7 @@
 namespace App\models;
 
 
-use App\models\exception\TournamentException;
+use App\components\exceptions\TournamentException;
 
 class TournamentFactory
 {
