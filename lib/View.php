@@ -30,6 +30,7 @@ class View
     function fetchPartial($template, $params = array())
     {
         $params = array_merge($params, ['session' => $_SESSION]);
+
         if (file_exists(VIEWS_BASEDIR . $template . '.phtml')) {
             extract($params);
             ob_start();

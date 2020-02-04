@@ -4,20 +4,10 @@ namespace App;
 
 class Router
 {
-
     private static $_instance = null;
-
-    public static function getInstance()
-    {
-        if (is_null(self::$_instance)) {
-            self::$_instance = new self();
-        }
-        return self::$_instance;
-    }
-
-    // Хранит конфигурацию маршрутов.
     private $routes;
 
+    // Хранит конфигурацию маршрутов.
     private $action;
 
     private function __construct()
@@ -25,6 +15,14 @@ class Router
         $routes = Config::getInstance()->routes;
         // Получаем конфигурацию из файла.
         $this->routes = include($routes);
+    }
+
+    public static function getInstance()
+    {
+        if (is_null(self::$_instance)) {
+            self::$_instance = new self();
+        }
+        return self::$_instance;
     }
 
     /**
@@ -35,30 +33,7 @@ class Router
         return $this->action;
     }
 
-    protected function __clone()
-    {
-    }
-
-    /**
-     * Метод получает URI. Несколько вариантов представлены для надёжности.
-     * @return string
-     */
-    public function getPath()
-    {
-        if (!empty($_SERVER['REQUEST_URI'])) {
-            return trim($_SERVER['REQUEST_URI'], '/');
-        }
-
-        if (!empty($_SERVER['PATH_INFO'])) {
-            return trim($_SERVER['PATH_INFO'], '/');
-        }
-
-        if (!empty($_SERVER['QUERY_STRING'])) {
-            return trim($_SERVER['QUERY_STRING'], '/');
-        }
-    }
-
-    function run()
+    public function run()
     {
         // Parse URL
         $path = $this->getPath();
@@ -80,7 +55,7 @@ class Router
 
                 // Если не загружен нужный класс контроллера или в нём нет
                 // нужного метода — 404
-                if (!is_callable(array($controller, $this->action))) {
+                if (!is_callable([$controller, $this->action])) {
                     header("HTTP/1.0 404 Not Found");
                     return;
                 }
@@ -95,5 +70,24 @@ class Router
         // Ничего не применилось. 404.
         header("HTTP/1.0 404 Not Found");
         return;
+    }
+
+    /**
+     * Метод получает URI. Несколько вариантов представлены для надёжности.
+     * @return string
+     */
+    public function getPath()
+    {
+        if (!empty($_SERVER['REQUEST_URI'])) {
+            return trim($_SERVER['REQUEST_URI'], '/');
+        }
+
+        if (!empty($_SERVER['PATH_INFO'])) {
+            return trim($_SERVER['PATH_INFO'], '/');
+        }
+
+        if (!empty($_SERVER['QUERY_STRING'])) {
+            return trim($_SERVER['QUERY_STRING'], '/');
+        }
     }
 }

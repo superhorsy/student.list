@@ -1,20 +1,17 @@
 <?php
-
 use App\Router;
 
-//Bootstrap file
-require_once dirname(__FILE__) . '/../bootstrap.php';
+define('ROOT', __DIR__);
+define('VIEWS_BASEDIR', dirname(__DIR__) . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR);
 
-//Обработчик исключений
+error_reporting(1);
 
-/*(new \App\ErrorHandler())->run();
+//Composer autoload
+require_once dirname(__DIR__)  . DIRECTORY_SEPARATOR . 'vendor'  . DIRECTORY_SEPARATOR . 'autoload.php';
 
-include ROOT  . '/../errors.php';*/
-
-//Cессия
+//Session
 session_start();
 
-// запускаем роутер
+//Router
 $router = Router::getInstance();
 $router->run();
-
