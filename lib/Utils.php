@@ -106,4 +106,20 @@ TEXT;
         $teamNames = array_column($teamNames, 0);
         return $teamNames;
     }
+
+    public static function responseFail()
+    {
+        $query = http_build_query(['notify' => 'fail']);
+        http_response_code(500);
+        header("Location: /tournament?$query");
+        exit;
+    }
+
+    public static function responseSuccess()
+    {
+        http_response_code(302);
+        $query = http_build_query(['notify' => 'success']);
+        header("Location: /tournament?$query");
+        exit;
+    }
 }

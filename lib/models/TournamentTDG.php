@@ -13,8 +13,8 @@ class TournamentTDG extends TDG
             'name' => $tournament->getName(),
             'date' => $tournament->getDate(),
             'owner_id' => $tournament->getOwnerId(),
-            'prize_pool' => $tournament->getPrizePool(),
-            'type' => $tournament->getType(),
+            'prize_pool' => $tournament->prize_pool,
+            'type' => $tournament->type,
         ];
         if (method_exists('getRegions', $tournament)) {
             $values = array_merge($values, ['regions' => json_encode($tournament->getRegions(),JSON_UNESCAPED_UNICODE)]);
@@ -35,8 +35,8 @@ class TournamentTDG extends TDG
             'current_round' => $tournament->getCurrentRound(),
             'round_count' => $tournament->getRoundCount(),
             'toss' => json_encode($tournament->getToss(), JSON_UNESCAPED_UNICODE),
-            'prize_pool' => $tournament->getPrizePool(),
-            'type' => $tournament->getType(),
+            'prize_pool' => $tournament->prize_pool,
+            'type' => $tournament->type,
         ];
 
         if (method_exists('getRegions', $tournament)) {

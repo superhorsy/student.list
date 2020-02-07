@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App\controllers;
+namespace App\Controllers;
 
 use App\{components\exceptions\TournamentException,
     Controller,
@@ -10,7 +10,8 @@ use App\{components\exceptions\TournamentException,
     models\TournamentTDG,
     models\User,
     Utils,
-    View};
+    View
+};
 
 class TournamentController extends Controller
 {
@@ -73,7 +74,6 @@ class TournamentController extends Controller
 
     public function actionShow($tournamentId)
     {
-
         $tournament = (new TournamentTDG())->getTournamentById($tournamentId);
         $errors = [];
 
@@ -164,15 +164,9 @@ class TournamentController extends Controller
             }
             if (empty($errors)) {
                 if (!($tournament->save())) {
-                    $query = http_build_query(['notify' => 'fail']);
-                    http_response_code(500);
-                    header("Location: /tournament?$query");
-                    exit;
+                    Utils::responseFail();
                 }
-                http_response_code(302);
-                $query = http_build_query(['notify' => 'success']);
-                header("Location: /tournament?$query");
-                exit;
+                Utils::responseSuccess();
             }
         }
 
@@ -184,7 +178,7 @@ class TournamentController extends Controller
     {
 
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $tournament = $this->tdg->getTournamentById($tournamentId, (int) $_POST['t_type']);
+            $tournament = $this->tdg->getTournamentById($tournamentId, (int)$_POST['t_type']);
             if (!$_POST['token_tournament']) {
                 $errors = 'Форма отправлена со стороннего сайта.';
             } else {
@@ -198,15 +192,9 @@ class TournamentController extends Controller
             }
             if (empty($errors)) {
                 if (!($tournament->save(2))) {
-                    $query = http_build_query(['notify' => 'fail']);
-                    http_response_code(500);
-                    header("Location: /tournament?$query");
-                    exit;
+                    Utils::responseFail();
                 }
-                http_response_code(302);
-                $query = http_build_query(['notify' => 'success']);
-                header("Location: /tournament?$query");
-                exit;
+                Utils::responseSuccess();
             }
         } else {
             $tournament = $this->tdg->getTournamentById($tournamentId);

@@ -271,14 +271,14 @@
                         <tr>
                             <th scope="row">{{ number+1 }}</th>
                             <td>{{ p.nickname }}</td>
+                            {% if t.type == 2 %}
+                                <td>{{ p.region }}</td>
+                            {% endif %}
                             <td>{{ p.lifes }}</td>
                             <td>{{ p.wins }}</td>
                             <td>{{ p.gamesPlayed|default(0) }}</td>
                             {% if t.prizePool %}
                                 <td>{{ p.prize }}</td>
-                            {% endif %}
-                            {% if t.type == 2 %}
-                                <td>{{ p.region }}</td>
                             {% endif %}
                         </tr>
                     {% endfor %}

@@ -3,6 +3,7 @@
 
 namespace App\models;
 
+use App\components\EndConditions;
 use App\components\TournamentInterface;
 use App\Utils;
 
@@ -360,5 +361,19 @@ class TournamentInterregional extends Tournament implements TournamentInterface
         }
 
         $this->save();
+    }
+
+    protected function checkIfTournamentShouldContinue(): bool
+    {
+        $alivePlayers = $this->getAlivePlayers();
+
+        if (count($alivePlayers) <10) {
+            return false;
+        }
+
+        $playersRegions = array_column($alivePlayers,'region');
+        $countPlayersByRegions = array_count_values($playersRegions);
+
+        return EndConditions::checkIfShouldContinueTournament($countPlayersByRegions);
     }
 }

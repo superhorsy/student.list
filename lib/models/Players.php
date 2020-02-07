@@ -42,6 +42,28 @@ class Players
     }
 
     /**
+     * Get a data by key
+     *
+     * @param string The key data to retrieve
+     * @access public
+     */
+    public function &__get ($key) {
+        return $this->$key;
+    }
+
+    /**
+     * Whether or not an data exists by key
+     *
+     * @param string An data key to check for
+     * @access public
+     * @return boolean
+     * @abstracting ArrayAccess
+     */
+    public function __isset ($key) {
+        return isset($this->$key);
+    }
+
+    /**
      * Сохраняет текущие параметры игрока в базу
      * @return bool
      */

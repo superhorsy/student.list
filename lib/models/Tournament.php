@@ -16,8 +16,10 @@ use Throwable;
  */
 class Tournament implements TournamentInterface
 {
+    const STATUS_AWAITING = 'awaiting';
+    const STATUS_IN_PROGRESS = 'in progress';
+    const STATUS_ENDED = 'ended';
     protected $tdg;
-
     protected $id = null;
     protected $name = null;
     protected $date = null;
@@ -27,15 +29,11 @@ class Tournament implements TournamentInterface
     protected $round_count;
     protected $toss;
     protected $prize_pool;
-    protected $type;
-
-    protected $players = array();
-    protected $loosers = array();
 
     /*Статусы турнира*/
-    const STATUS_AWAITING = 'awaiting';
-    const STATUS_IN_PROGRESS = 'in progress';
-    const STATUS_ENDED = 'ended';
+    protected $type;
+    protected $players = array();
+    protected $loosers = array();
 
     /**
      *
@@ -48,8 +46,30 @@ class Tournament implements TournamentInterface
             $this->setPlayers();
         }
         if ($this->toss) {
-            $this->toss = json_decode($this->toss,true);
+            $this->toss = json_decode($this->toss, true);
         }
+    }
+
+    /**
+     * Get a data by key
+     *
+     * @param string The key data to retrieve
+     * @access public
+     */
+    public function &__get ($key) {
+        return $this->$key;
+    }
+
+    /**
+     * Whether or not an data exists by key
+     *
+     * @param string An data key to check for
+     * @access public
+     * @return boolean
+     * @abstracting ArrayAccess
+     */
+    public function __isset ($key) {
+        return isset($this->$key);
     }
 
     public function start()
@@ -57,9 +77,7 @@ class Tournament implements TournamentInterface
         if ($this->status != self::STATUS_IN_PROGRESS) {
             $this->setStatus(self::STATUS_IN_PROGRESS);
 
-
-            $teams = $this->setTeams();
-            $this->toss($teams);
+            $this->toss();
 
             $this->current_round = 1;
 
@@ -67,224 +85,37 @@ class Tournament implements TournamentInterface
             $this->round_count = $round_count;
 
             $this->save();
-
         }
-
     }
 
     /**
-     * Подводим результаты раунда
-     * @param array $roundResult
+     * Проводит жеребьевку среди комманд
+     * @param $teams array Массив с коммандами
+     * @return array
      */
-    public function next(array $roundResult)
+    public function toss()
     {
-        if ($this->status == self::STATUS_IN_PROGRESS) {
-
-            (new PlayersTDG())->resetSuspension($this);
-
-            /** @var Players $player */
-            foreach ($this->players as $player) {
-                $team = $player->getTeam();
-                $lifes = $player->getLifes();
-                $wins = $player->getWins();
-                $gamesPlayed = $player->getGamesPlayed();
-
-                //Победители
-                if (in_array($team, $roundResult['winners'])) {
-                    $player->setWins(++$wins);
-                    $player->setGamesPlayed(++$gamesPlayed);
-                    $player->save();
-                    //Проигравшие
-                } elseif (!in_array($team, [Players::STATUS_WAIT, Players::STATUS_OUT]) && !$player->getIsSuspended()) {
-                    $player->setGamesPlayed(++$gamesPlayed);
-                    $player->setLifes(--$lifes);
-                    if ($player->getLifes() <= 0) {
-                        $player->setLifes(0);
-                        $player->setTeam(Players::STATUS_OUT);
-                    }
-                    $player->save();
-                }
-            }
-
-            $this->setPlayers();
-
-            $alivePlayers = $this->getAlivePlayers();
-
-            if (count($alivePlayers) >= 10) {
-                $teams = $this->setTeams();
-                $this->toss($teams);
-                $this->current_round++;
-            } else {
-                $this->setStatus(self::STATUS_ENDED);
-                $this->reward();
-            }
-
-            $this->save();
-        }
-    }
-
-    /**
-     * Применяет выбранные действия к игрокам с жеребьевкой
-     * @param array $roundResult
-     */
-    public function sendHome(array $roundResult)
-{
-    $waitingPlayers = (new PlayersTDG())->getPossibleChangePlayers($this);
-
-    foreach ($roundResult['sendHome'] as $id => $action) {
-        $player = (new PlayersTDG())->getPlayersbyTournamentID($this->id, $id)[0];
-        if ($waitingPlayers) {
-            if (isset($join)) {
-                $join = next($waitingPlayers);
-            } else {
-                $join = current($waitingPlayers);
-            }
-        }
-        switch ($action) {
-            case '1': //Убрать с посева
-                if ($join) {
-                    $join->setTeam($player->getTeam());
-                }
-                $player->setTeam(Players::STATUS_WAIT);
-                $player->setIsSuspended(true);
-                break;
-            case '2': //Убрать жизнь и снять с посева
-                if ($join) {
-                    $join->setTeam($player->getTeam());
-                }
-                $player->setLifes($player->getLifes() - 1);
-                if ($player->getLifes() < 1) {
-                    $player->setTeam(Players::STATUS_OUT);
-                } else {
-                    $player->setTeam(Players::STATUS_WAIT);
-                }
-                $player->setIsSuspended(true);
-                break;
-            case '3': //Дисквалифицировать
-                if ($join) {
-                    $join->setTeam($player->getTeam());
-                }
-                $player->setLifes(0);
-                $player->setTeam(Players::STATUS_OUT);
-                $player->setIsSuspended(true);
-                break;
-            default:
-                continue 2;
-        }
-        $player->save();
-        if ($join) {
-            $join->save();
-        }
-    }
-
-    $this->setPlayers();
-
-    $alivePlayers = $this->getAlivePlayers();
-
-    if (count($alivePlayers) >= 10) {
         $teams = $this->setTeams();
-        $this->toss($teams);
-    } else {
-        $this->setStatus(self::STATUS_ENDED);
-        $this->reward();
-    }
+        $toss = array();
 
-    $this->save();
-}
-
-    /**
-     * Применяет выбранные действия к игрокам без жеребьевки
-     * @param array $roundResult
-     */
-    public function sendHomeWithoutToss(array $roundResult)
-    {
-        $changePlayers = (new PlayersTDG())->getPossibleChangePlayers($this);
-
-        foreach ($roundResult['sendHome'] as $id => $action) {
-            /** @var Players $player */
-            $player = (new PlayersTDG())->getPlayersbyTournamentID($this->id, $id)[0];
-            $team = $player->getTeam();
-            if ($changePlayers) {
-                $join = isset($join) ? next($changePlayers) : current($changePlayers);
-            }
-            switch ($action) {
-                case '1': //Убрать с посева
-                    if ($join) {
-                        $join->setTeam($team);
-                    }
-                    $player->setTeam(Players::STATUS_WAIT);
-                    $player->setIsSuspended(true);
-                    break;
-                case '2': //Убрать жизнь и снять с посева
-                    if ($join) {
-                        $join->setTeam($team);
-                    }
-                    $player->setLifes($player->getLifes() - 1);
-                    if ($player->getLifes() < 1) {
-                        $player->setTeam(Players::STATUS_OUT);
-                    } else {
-                        $player->setTeam(Players::STATUS_WAIT);
-                    }
-                    $player->setIsSuspended(true);
-                    break;
-                case '3': //Дисквалифицировать
-                    if ($join) {
-                        $join->setTeam($team);
-                    }
-                    $player->setLifes(0);
-                    $player->setTeam(Players::STATUS_OUT);
-                    $player->setIsSuspended(true);
-                    break;
-                default:
-                    continue 2;
-            }
-            $player->save();
-
-            if ($join) {
-                $join->save();
-            } else { //если не нашлось замены - шлем всю команду на банку
-                if(!($team == Players::STATUS_WAIT && $team == Players::STATUS_OUT)) {
-                    foreach ($this->toss as $key => $pair) {
-                        if (in_array($team, $pair)) {
-                            foreach($pair as $team) {
-                                $players = $this->getPlayersByTeam($team);
-                                foreach ($players as $player) {
-                                    $player->setTeam(Players::STATUS_WAIT);
-                                    $player->save();
-                                }
-                            }
-                            unset($this->toss[$key]);
-                            break;
-                        }
-                    }
-
-                }
+        $groupNumber = 'A';
+        $toss[$groupNumber] = array();
+        $group = array();
+        foreach ($teams as $teamName) {
+            if (count($group) < 2) {
+                $group[] = $teamName;
+            } else {
+                $toss[$groupNumber] = $group;
+                $group = array();
+                $groupNumber++;
+                $group[] = $teamName;
             }
         }
+        $toss[$groupNumber] = $group;
 
-        $this->setPlayers();
+        $this->toss = $toss;
 
-        $playersInGame = (new PlayersTDG())->getPlayersInGame($this);
-
-        if (!count($playersInGame) >= 10) {
-            $this->setStatus(self::STATUS_ENDED);
-            $this->reward();
-        }
-
-        $this->save();
-    }
-
-    public function reset()
-    {
-        $this->toss = null;
-        $this->current_round = null;
-        $this->round_count = null;
-        $this->status = self::STATUS_AWAITING;
-        foreach ($this->players as $player) {
-            $player->reset();
-        }
-
-        $this->save();
+        return $toss;
     }
 
     /**
@@ -293,7 +124,6 @@ class Tournament implements TournamentInterface
      */
     public function setTeams()
     {
-
         $players = array();
         foreach ($this->getAlivePlayers() as $player) {
             if (!$player->getIsSuspended()) {
@@ -358,35 +188,14 @@ class Tournament implements TournamentInterface
         return $teams;
     }
 
-    public function getEstimation(): int
+    protected function getAlivePlayers()
     {
-        foreach ($this->players as $player) {
-            $players[] = $player->getLifes(); //each player has 2 lifes at the start
-        }
-
-        $cycles = 15;
-
-        for ($i = 1; $i <= $cycles; $i++) {
-            $estimation[] = Utils::estimateRounds($players);
-        }
-
-        return intdiv(array_sum($estimation), $cycles);
+        return (new PlayersTDG())->getAlivePlayers($this);
     }
 
-    /**
-     * Наполняет объект свойствами
-     * @param array $values
-     */
-    public function hydrate(array $values)
+    public function getWaitingPlayers()
     {
-        $values['name'] ? $this->setName($values['name']) : $this->setName('');
-        $values['date'] ? $this->setDate($values['date']) : $this->setDate('');
-        $values['prize_pool'] ? $this->setPrizePool($values['prize_pool']) : $this->setPrizePool(null);
-        $values['owner_id'] ? $this->setOwnerId($values['owner_id']) : $this->setOwnerId('');
-        $values['type'] ? $this->setType($values['type']) : $this->setType(null);
-        if (isset($values['players']) && $values['players']) {
-            $this->setPlayers($values['players']);
-        };
+        return (new PlayersTDG())->getWaitingPlayers($this);
     }
 
     public function save($mode = 1): bool
@@ -419,6 +228,314 @@ class Tournament implements TournamentInterface
         }
 
         return $this->id ? true : false;
+    }
+
+    /**
+     * Подводим результаты раунда
+     * @param array $roundResult
+     */
+    public function next(array $roundResult)
+    {
+        if (!$this->status == self::STATUS_IN_PROGRESS) {
+            return;
+        }
+
+        (new PlayersTDG())->resetSuspension($this);
+
+        $this->updatePlayersAfterRoundResults($roundResult);
+
+        $shouldContinue = $this->checkIfTournamentShouldContinue();
+
+        if ($shouldContinue) {
+            $this->toss();
+            $this->current_round++;
+        } else {
+            $this->setStatus(self::STATUS_ENDED);
+            $this->reward();
+        }
+
+        $this->save();
+    }
+
+    private function updatePlayersAfterRoundResults(array $roundResult)
+    {
+        /** @var Players $player */
+        foreach ($this->players as $player) {
+            $team = $player->getTeam();
+            $lifes = $player->getLifes();
+            $wins = $player->getWins();
+            $gamesPlayed = $player->getGamesPlayed();
+
+            //Победители
+            if (in_array($team, $roundResult['winners'])) {
+                $player->setWins(++$wins);
+                $player->setGamesPlayed(++$gamesPlayed);
+                $player->save();
+                //Проигравшие
+            } elseif (!in_array($team, [Players::STATUS_WAIT, Players::STATUS_OUT]) && !$player->getIsSuspended()) {
+                $player->setGamesPlayed(++$gamesPlayed);
+                $player->setLifes(--$lifes);
+                if ($player->getLifes() <= 0) {
+                    $player->setLifes(0);
+                    $player->setTeam(Players::STATUS_OUT);
+                }
+                $player->save();
+            }
+        }
+
+        $this->setPlayers();
+    }
+
+    protected function checkIfTournamentShouldContinue(): bool
+    {
+        $alivePlayers = $this->getAlivePlayers();
+        return count($alivePlayers) >= 10;
+    }
+
+    public function reward()
+    {
+        if ($this->prize_pool) {
+            $alive = (new PlayersTDG())->getAlivePlayers($this);
+            $lifes_1 = array();
+            $lifes_2 = array();
+
+            if ($alive) {
+                foreach ($alive as $player) {
+                    if ($player->getLifes() == 2) {
+                        $lifes_2[] = $player;
+                    } elseif ($player->getLifes() == 1) {
+                        $lifes_1[] = $player;
+                    }
+                }
+
+                $prize_2_lifes = [];
+                $prize_1_lifes = [];
+
+                if (!count($lifes_1)) {
+                    $prize_2_lifes = $this->prize_pool / count($lifes_2);
+                } elseif (!count($lifes_2)) {
+                    $prize_1_lifes = $this->prize_pool / count($lifes_1);
+                } else {
+                    $prize_2_lifes = ($this->prize_pool * 0.75) / count($lifes_2);
+                    $prize_1_lifes = ($this->prize_pool * 0.25) / count($lifes_1);
+                    //Если выигрыш игрока с 1 жизнью больше половины от выигрыша игрока с двумя
+                    if ($prize_1_lifes > $prize_2_lifes / 2) {
+                        $prize_1_lifes = $prize_2_lifes / 2;
+                        $winners_pool = $this->prize_pool - count($lifes_1) * $prize_1_lifes;
+                        $prize_2_lifes = $winners_pool / count($lifes_2);
+                    }
+                }
+
+                //Раздаем призы
+                foreach ($lifes_1 as $player) {
+                    $player->setPrize($prize_1_lifes);
+                    $player->save();
+                }
+                foreach ($lifes_2 as $player) {
+                    $player->setPrize($prize_2_lifes);
+                    $player->save();
+                }
+            }
+        }
+        $this->setPlayers();
+    }
+
+    /**
+     * Применяет выбранные действия к игрокам с жеребьевкой
+     * @param array $roundResult
+     */
+    public function sendHome(array $roundResult)
+    {
+        $waitingPlayers = (new PlayersTDG())->getPossibleChangePlayers($this);
+
+        foreach ($roundResult['sendHome'] as $id => $action) {
+            $player = (new PlayersTDG())->getPlayersbyTournamentID($this->id, $id)[0];
+            if ($waitingPlayers) {
+                if (isset($join)) {
+                    $join = next($waitingPlayers);
+                } else {
+                    $join = current($waitingPlayers);
+                }
+            }
+            switch ($action) {
+                case '1': //Убрать с посева
+                    if ($join) {
+                        $join->setTeam($player->getTeam());
+                    }
+                    $player->setTeam(Players::STATUS_WAIT);
+                    $player->setIsSuspended(true);
+                    break;
+                case '2': //Убрать жизнь и снять с посева
+                    if ($join) {
+                        $join->setTeam($player->getTeam());
+                    }
+                    $player->setLifes($player->getLifes() - 1);
+                    if ($player->getLifes() < 1) {
+                        $player->setTeam(Players::STATUS_OUT);
+                    } else {
+                        $player->setTeam(Players::STATUS_WAIT);
+                    }
+                    $player->setIsSuspended(true);
+                    break;
+                case '3': //Дисквалифицировать
+                    if ($join) {
+                        $join->setTeam($player->getTeam());
+                    }
+                    $player->setLifes(0);
+                    $player->setTeam(Players::STATUS_OUT);
+                    $player->setIsSuspended(true);
+                    break;
+                default:
+                    continue 2;
+            }
+            $player->save();
+            if ($join) {
+                $join->save();
+            }
+        }
+
+        $this->setPlayers();
+
+        if ($this->checkIfTournamentShouldContinue()) {
+            $this->toss();
+        } else {
+            $this->setStatus(self::STATUS_ENDED);
+            $this->reward();
+        }
+
+        $this->save();
+    }
+
+    /**
+     * Применяет выбранные действия к игрокам без жеребьевки
+     * @param array $roundResult
+     */
+    public function sendHomeWithoutToss(array $roundResult)
+    {
+        $changePlayers = (new PlayersTDG())->getPossibleChangePlayers($this);
+
+        foreach ($roundResult['sendHome'] as $id => $action) {
+            /** @var Players $player */
+            $player = (new PlayersTDG())->getPlayersbyTournamentID($this->id, $id)[0];
+            $team = $player->getTeam();
+            if ($changePlayers) {
+                $join = isset($join) ? next($changePlayers) : current($changePlayers);
+            }
+            switch ($action) {
+                case '1': //Убрать с посева
+                    if ($join) {
+                        $join->setTeam($team);
+                    }
+                    $player->setTeam(Players::STATUS_WAIT);
+                    $player->setIsSuspended(true);
+                    break;
+                case '2': //Убрать жизнь и снять с посева
+                    if ($join) {
+                        $join->setTeam($team);
+                    }
+                    $player->setLifes($player->getLifes() - 1);
+                    if ($player->getLifes() < 1) {
+                        $player->setTeam(Players::STATUS_OUT);
+                    } else {
+                        $player->setTeam(Players::STATUS_WAIT);
+                    }
+                    $player->setIsSuspended(true);
+                    break;
+                case '3': //Дисквалифицировать
+                    if ($join) {
+                        $join->setTeam($team);
+                    }
+                    $player->setLifes(0);
+                    $player->setTeam(Players::STATUS_OUT);
+                    $player->setIsSuspended(true);
+                    break;
+                default:
+                    continue 2;
+            }
+            $player->save();
+
+            if ($join) {
+                $join->save();
+            } else {
+                //если не нашлось замены - шлем всю команду на банку
+                if (!($team == Players::STATUS_WAIT && $team == Players::STATUS_OUT)) {
+                    foreach ($this->toss as $key => $pair) {
+                        if (in_array($team, $pair)) {
+                            foreach ($pair as $team) {
+                                $players = $this->getPlayersByTeam($team);
+                                foreach ($players as $player) {
+                                    $player->setTeam(Players::STATUS_WAIT);
+                                    $player->save();
+                                }
+                            }
+                            unset($this->toss[$key]);
+                            break;
+                        }
+                    }
+
+                }
+            }
+        }
+
+        $this->setPlayers();
+
+        $playersInGame = (new PlayersTDG())->getPlayersInGame($this);
+
+        if (!count($playersInGame) >= 10) {
+            $this->setStatus(self::STATUS_ENDED);
+            $this->reward();
+        }
+
+        $this->save();
+    }
+
+    public function getPlayersByTeam($team)
+    {
+        return (new PlayersTDG())->getPlayersbyTeam($this, $team);
+    }
+
+    public function reset()
+    {
+        $this->toss = null;
+        $this->current_round = null;
+        $this->round_count = null;
+        $this->status = self::STATUS_AWAITING;
+        foreach ($this->players as $player) {
+            $player->reset();
+        }
+
+        $this->save();
+    }
+
+    public function getEstimation(): int
+    {
+        foreach ($this->players as $player) {
+            $players[] = $player->getLifes(); //each player has 2 lifes at the start
+        }
+
+        $cycles = 15;
+
+        for ($i = 1; $i <= $cycles; $i++) {
+            $estimation[] = Utils::estimateRounds($players);
+        }
+
+        return intdiv(array_sum($estimation), $cycles);
+    }
+
+    /**
+     * Наполняет объект свойствами
+     * @param array $values
+     */
+    public function hydrate(array $values)
+    {
+        $values['name'] ? $this->setName($values['name']) : $this->setName('');
+        $values['date'] ? $this->setDate($values['date']) : $this->setDate('');
+        $values['prize_pool'] ? $this->setPrizePool($values['prize_pool']) : $this->setPrizePool(null);
+        $values['owner_id'] ? $this->setOwnerId($values['owner_id']) : $this->setOwnerId('');
+        $values['type'] ? $this->setType($values['type']) : $this->setType(null);
+        if (isset($values['players']) && $values['players']) {
+            $this->setPlayers($values['players']);
+        };
     }
 
     /**
@@ -497,35 +614,6 @@ class Tournament implements TournamentInterface
         } elseif ($this->id) {
             $this->players = (new PlayersTDG())->getPlayersbyTournamentID($this->id);
         }
-    }
-
-    /**
-     * Проводит жеребьевку среди комманд
-     * @param $teams array Массив с коммандами
-     * @return array
-     */
-    public function toss($teams)
-    {
-        $toss = array();
-
-        $groupNumber = 'A';
-        $toss[$groupNumber] = array();
-        $group = array();
-        foreach ($teams as $teamName) {
-            if (count($group) < 2) {
-                $group[] = $teamName;
-            } else {
-                $toss[$groupNumber] = $group;
-                $group = array();
-                $groupNumber++;
-                $group[] = $teamName;
-            }
-        }
-        $toss[$groupNumber] = $group;
-
-        $this->toss = $toss;
-
-        return $toss;
     }
 
     /**
@@ -641,14 +729,6 @@ class Tournament implements TournamentInterface
     }
 
     /**
-     * @param mixed $toss
-     */
-    public function setToss($toss): void
-    {
-        $this->toss = $toss;
-    }
-
-    /**
      * @return mixed
      */
     public function getToss()
@@ -656,14 +736,12 @@ class Tournament implements TournamentInterface
         return $this->toss;
     }
 
-    public function getPlayersByTeam($team)
+    /**
+     * @param mixed $toss
+     */
+    public function setToss($toss): void
     {
-        return (new PlayersTDG())->getPlayersbyTeam($this, $team);
-    }
-
-    public function getWaitingPlayers()
-    {
-        return (new PlayersTDG())->getWaitingPlayers($this);
+        $this->toss = $toss;
     }
 
     /**
@@ -682,22 +760,9 @@ class Tournament implements TournamentInterface
         $this->loosers = $loosers;
     }
 
-    protected function getAlivePlayers()
-    {
-        return (new PlayersTDG())->getAlivePlayers($this);
-    }
-
     public function getPlayersOrderedByLifes()
     {
         return (new PlayersTDG())->getPlayersOrderedByLifes($this);
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getPrizePool()
-    {
-        return $this->prize_pool;
     }
 
     /**
@@ -706,62 +771,6 @@ class Tournament implements TournamentInterface
     public function setPrizePool($prize_pool): void
     {
         $this->prize_pool = $prize_pool;
-    }
-
-    public function reward()
-    {
-        if ($this->prize_pool) {
-            $alive = (new PlayersTDG())->getAlivePlayers($this);
-            $lifes_1 = array();
-            $lifes_2 = array();
-
-            if ($alive) {
-                foreach ($alive as $player) {
-                    if ($player->getLifes() == 2) {
-                        $lifes_2[] = $player;
-                    } elseif ($player->getLifes() == 1) {
-                        $lifes_1[] = $player;
-                    }
-                }
-
-                $prize_2_lifes = [];
-                $prize_1_lifes = [];
-
-                if (!count($lifes_1)) {
-                    $prize_2_lifes = $this->prize_pool / count($lifes_2);
-                } elseif (!count($lifes_2)) {
-                    $prize_1_lifes = $this->prize_pool / count($lifes_1);
-                } else {
-                    $prize_2_lifes = ($this->prize_pool * 0.75) / count($lifes_2);
-                    $prize_1_lifes = ($this->prize_pool * 0.25) / count($lifes_1);
-                    //Если выигрыш игрока с 1 жизнью больше половины от выигрыша игрока с двумя
-                    if ($prize_1_lifes > $prize_2_lifes / 2) {
-                        $prize_1_lifes = $prize_2_lifes / 2;
-                        $winners_pool = $this->prize_pool - count($lifes_1) * $prize_1_lifes;
-                        $prize_2_lifes = $winners_pool / count($lifes_2);
-                    }
-                }
-
-                //Раздаем призы
-                foreach ($lifes_1 as $player) {
-                    $player->setPrize($prize_1_lifes);
-                    $player->save();
-                }
-                foreach ($lifes_2 as $player) {
-                    $player->setPrize($prize_2_lifes);
-                    $player->save();
-                }
-            }
-        }
-        $this->setPlayers();
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getType()
-    {
-        return $this->type;
     }
 
     /**
