@@ -36,7 +36,7 @@ class TournamentInterregional extends Tournament implements TournamentInterface
         }
         if (isset($values['players']) && $values['players']) {
             $this->setPlayers($values['players'], $values['regions']);
-        };
+        }
 
     }
 
@@ -60,7 +60,7 @@ class TournamentInterregional extends Tournament implements TournamentInterface
         $validation = parent::isValid();
         $errors = [];
         if ($this->players) {
-            $regions = $this->getRegions();
+            $regions = $this->regions;
             foreach ($this->players as $player) {
                 if (!in_array($player->getRegion(), $regions)) {
                     $errors[] = "Для игрока {$player->getNickname()} указан некорректный регион";
@@ -71,14 +71,6 @@ class TournamentInterregional extends Tournament implements TournamentInterface
         $errors = $validation ? array_merge($validation, $errors) : $errors;
 
         return empty($errors) ? null : $errors;
-    }
-
-    /**
-     * @return array|null
-     */
-    public function getRegions(): ?array
-    {
-        return $this->regions;
     }
 
     /**
@@ -93,7 +85,7 @@ class TournamentInterregional extends Tournament implements TournamentInterface
      * Присваивает игрокам команды
      * @return array Массив с командами для жеребьевки
      */
-    public function setTeams()
+    private function setTeams()
     {
         $waited = $suspended = $other = [];
         foreach ($this->getAlivePlayers() as $player) {
@@ -178,13 +170,16 @@ class TournamentInterregional extends Tournament implements TournamentInterface
     }
 
     /**
-     * Проводит жеребьевку среди комманд
-     * @param $teams array Массив с коммандами, разбитыми по регионам [Регион=>[Команда, Команда ..]]
+     * Проводит жеребьевку
      * @return array
      */
-    public function toss($teams)
+    public function toss()
     {
+        //Массив с коммандами, разбитыми по регионам [Регион=>[Команда, Команда ..]]
+        $teams = $this->setTeams();
+
         $regions = array_keys($teams);
+
         //Команды попадающие в игру
         $sortedTeams = [];
         //Расформированные команды
@@ -308,8 +303,8 @@ class TournamentInterregional extends Tournament implements TournamentInterface
                     if ($join) {
                         $join->setTeam($team);
                     }
-                    $player->setLifes($player->getLifes() - 1);
-                    if ($player->getLifes() < 1) {
+                    $player->setLives($player->getLives() - 1);
+                    if ($player->getLives() < 1) {
                         $player->setTeam(Players::STATUS_OUT);
                     } else {
                         $player->setTeam(Players::STATUS_WAIT);
@@ -320,7 +315,7 @@ class TournamentInterregional extends Tournament implements TournamentInterface
                     if ($join) {
                         $join->setTeam($team);
                     }
-                    $player->setLifes(0);
+                    $player->setLives(0);
                     $player->setTeam(Players::STATUS_OUT);
                     $player->setIsSuspended(true);
                     break;
@@ -367,11 +362,11 @@ class TournamentInterregional extends Tournament implements TournamentInterface
     {
         $alivePlayers = $this->getAlivePlayers();
 
-        if (count($alivePlayers) <10) {
+        if (count($alivePlayers) < 10) {
             return false;
         }
 
-        $playersRegions = array_column($alivePlayers,'region');
+        $playersRegions = array_column($alivePlayers, 'region');
         $countPlayersByRegions = array_count_values($playersRegions);
 
         return EndConditions::checkIfShouldContinueTournament($countPlayersByRegions);

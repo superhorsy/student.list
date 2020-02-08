@@ -27,17 +27,25 @@
 
             <?php foreach ($tournaments as $number => $tournament): ?>
                 <tr>
-                    <th scope="row"><?= $number+1 ?></th>
-                    <td><?= $tournament->getName() ?></td>
-                    <td><?= $tournament->getDate() ?></td>
+                    <th scope="row"><?= $number + 1 ?></th>
+                    <td><?= $tournament->name ?></td>
+                    <td><?= $tournament->date ?></td>
                     <td>
                         <form method="post" action="/tournament/">
                             <input name="token_tournament" type="hidden"
                                    value="<?= htmlspecialchars($_SESSION['token_tournament'], ENT_QUOTES); ?>">
                             <div class="btn-group" role="group">
-                                <button type="button" class="btn btn-success" onclick="window.location.href='/tournament/show/<?=$tournament->getId()?>'">Перейти к турниру</button>
-                                <button type="button" class="btn btn-info" onclick="window.location.href='/tournament/edit/<?=$tournament->getId()?>'">Редактировать данные игроков</button>
-                                <button type="submit" class="btn btn-danger" name="delete" value="<?= $tournament->getId() ?>">Удалить турнир</button>
+                                <button type="button" class="btn btn-success"
+                                        onclick="window.location.href='/tournament/show/<?= $tournament->id ?>'">Перейти
+                                    к турниру
+                                </button>
+                                <button type="button" class="btn btn-info"
+                                        onclick="window.location.href='/tournament/edit/<?= $tournament->id ?>'">
+                                    Редактировать данные игроков
+                                </button>
+                                <button type="submit" class="btn btn-danger" name="delete"
+                                        value="<?= $tournament->id ?>">Удалить турнир
+                                </button>
                             </div>
                         </form>
                     </td>

@@ -56,7 +56,8 @@ class Tournament implements TournamentInterface
      * @param string The key data to retrieve
      * @access public
      */
-    public function &__get ($key) {
+    public function &__get($key)
+    {
         return $this->$key;
     }
 
@@ -68,34 +69,35 @@ class Tournament implements TournamentInterface
      * @return boolean
      * @abstracting ArrayAccess
      */
-    public function __isset ($key) {
+    public function __isset($key)
+    {
         return isset($this->$key);
     }
 
     public function start()
     {
-        if ($this->status != self::STATUS_IN_PROGRESS) {
-            $this->setStatus(self::STATUS_IN_PROGRESS);
+        if ($this->status === self::STATUS_IN_PROGRESS) return;
 
-            $this->toss();
+        $this->setStatus(self::STATUS_IN_PROGRESS);
 
-            $this->current_round = 1;
+        $this->toss();
 
-            $round_count = (count($this->players) - (count($this->players) % 10)) / 5;
-            $this->round_count = $round_count;
+        $this->current_round = 1;
 
-            $this->save();
-        }
+        $round_count = (count($this->players) - (count($this->players) % 10)) / 5;
+        $this->round_count = $round_count;
+
+        $this->save();
     }
 
     /**
      * Проводит жеребьевку среди комманд
-     * @param $teams array Массив с коммандами
      * @return array
      */
     public function toss()
     {
         $teams = $this->setTeams();
+
         $toss = array();
 
         $groupNumber = 'A';
@@ -122,7 +124,7 @@ class Tournament implements TournamentInterface
      * Присваивает игрокам команды
      * @return array Массив с командами для жеребьевки
      */
-    public function setTeams()
+    private function setTeams()
     {
         $players = array();
         foreach ($this->getAlivePlayers() as $player) {
@@ -216,14 +218,14 @@ class Tournament implements TournamentInterface
                     /** @var Players $player */
                     $player->setTournamentId($this->id);
                     $player->save();
-                };
+                }
                 break;
             case 2: //редактирование турнира с удалением игроков
                 (new PlayersTDG())->deleteAllPlayers($this);
                 foreach ($this->players as $player) {
                     $player->setTournamentId($this->id);
                     $player->save();
-                };
+                }
                 break;
         }
 
@@ -232,6 +234,7 @@ class Tournament implements TournamentInterface
 
     /**
      * Подводим результаты раунда
+     *
      * @param array $roundResult
      */
     public function next(array $roundResult)
@@ -262,7 +265,7 @@ class Tournament implements TournamentInterface
         /** @var Players $player */
         foreach ($this->players as $player) {
             $team = $player->getTeam();
-            $lifes = $player->getLifes();
+            $lives = $player->getLives();
             $wins = $player->getWins();
             $gamesPlayed = $player->getGamesPlayed();
 
@@ -274,9 +277,9 @@ class Tournament implements TournamentInterface
                 //Проигравшие
             } elseif (!in_array($team, [Players::STATUS_WAIT, Players::STATUS_OUT]) && !$player->getIsSuspended()) {
                 $player->setGamesPlayed(++$gamesPlayed);
-                $player->setLifes(--$lifes);
-                if ($player->getLifes() <= 0) {
-                    $player->setLifes(0);
+                $player->setLives(--$lives);
+                if ($player->getLives() <= 0) {
+                    $player->setLives(0);
                     $player->setTeam(Players::STATUS_OUT);
                 }
                 $player->save();
@@ -294,54 +297,42 @@ class Tournament implements TournamentInterface
 
     public function reward()
     {
-        if ($this->prize_pool) {
-            $alive = (new PlayersTDG())->getAlivePlayers($this);
-            $lifes_1 = array();
-            $lifes_2 = array();
+        if (!$this->prize_pool) return;
 
-            if ($alive) {
-                foreach ($alive as $player) {
-                    if ($player->getLifes() == 2) {
-                        $lifes_2[] = $player;
-                    } elseif ($player->getLifes() == 1) {
-                        $lifes_1[] = $player;
-                    }
-                }
+        $alive = (new PlayersTDG())->getAlivePlayers($this);
 
-                $prize_2_lifes = [];
-                $prize_1_lifes = [];
+        if (!$alive) return;
 
-                if (!count($lifes_1)) {
-                    $prize_2_lifes = $this->prize_pool / count($lifes_2);
-                } elseif (!count($lifes_2)) {
-                    $prize_1_lifes = $this->prize_pool / count($lifes_1);
-                } else {
-                    $prize_2_lifes = ($this->prize_pool * 0.75) / count($lifes_2);
-                    $prize_1_lifes = ($this->prize_pool * 0.25) / count($lifes_1);
-                    //Если выигрыш игрока с 1 жизнью больше половины от выигрыша игрока с двумя
-                    if ($prize_1_lifes > $prize_2_lifes / 2) {
-                        $prize_1_lifes = $prize_2_lifes / 2;
-                        $winners_pool = $this->prize_pool - count($lifes_1) * $prize_1_lifes;
-                        $prize_2_lifes = $winners_pool / count($lifes_2);
-                    }
-                }
+        $lives = array_column($alive, 'lives');
+        $countLives = array_count_values($lives);
 
-                //Раздаем призы
-                foreach ($lifes_1 as $player) {
-                    $player->setPrize($prize_1_lifes);
+
+        $N2 = $countLives[2];
+        $N1 = $countLives[1];
+
+        $twoLifePrize = ($this->prize_pool / ($N2 * 3 + $N1)) * ($N2 * 3) / $N2;
+        $oneLifePrize = $twoLifePrize / 3;
+
+        //Раздаем призы
+        foreach ($alive as $player) {
+            switch ($player->lives) {
+                case 2:
+                    $player->setPrize($twoLifePrize);
                     $player->save();
-                }
-                foreach ($lifes_2 as $player) {
-                    $player->setPrize($prize_2_lifes);
+                    break;
+                case 1:
+                    $player->setPrize($oneLifePrize);
                     $player->save();
-                }
+                    break;
             }
         }
+
         $this->setPlayers();
     }
 
     /**
      * Применяет выбранные действия к игрокам с жеребьевкой
+     *
      * @param array $roundResult
      */
     public function sendHome(array $roundResult)
@@ -369,8 +360,8 @@ class Tournament implements TournamentInterface
                     if ($join) {
                         $join->setTeam($player->getTeam());
                     }
-                    $player->setLifes($player->getLifes() - 1);
-                    if ($player->getLifes() < 1) {
+                    $player->setLives($player->getLives() - 1);
+                    if ($player->getLives() < 1) {
                         $player->setTeam(Players::STATUS_OUT);
                     } else {
                         $player->setTeam(Players::STATUS_WAIT);
@@ -381,7 +372,7 @@ class Tournament implements TournamentInterface
                     if ($join) {
                         $join->setTeam($player->getTeam());
                     }
-                    $player->setLifes(0);
+                    $player->setLives(0);
                     $player->setTeam(Players::STATUS_OUT);
                     $player->setIsSuspended(true);
                     break;
@@ -433,8 +424,8 @@ class Tournament implements TournamentInterface
                     if ($join) {
                         $join->setTeam($team);
                     }
-                    $player->setLifes($player->getLifes() - 1);
-                    if ($player->getLifes() < 1) {
+                    $player->setLives($player->getLives() - 1);
+                    if ($player->getLives() < 1) {
                         $player->setTeam(Players::STATUS_OUT);
                     } else {
                         $player->setTeam(Players::STATUS_WAIT);
@@ -445,7 +436,7 @@ class Tournament implements TournamentInterface
                     if ($join) {
                         $join->setTeam($team);
                     }
-                    $player->setLifes(0);
+                    $player->setLives(0);
                     $player->setTeam(Players::STATUS_OUT);
                     $player->setIsSuspended(true);
                     break;
@@ -503,14 +494,13 @@ class Tournament implements TournamentInterface
         foreach ($this->players as $player) {
             $player->reset();
         }
-
         $this->save();
     }
 
     public function getEstimation(): int
     {
         foreach ($this->players as $player) {
-            $players[] = $player->getLifes(); //each player has 2 lifes at the start
+            $players[] = $player->getLives(); //each player has 2 lives at the start
         }
 
         $cycles = 15;
@@ -535,7 +525,7 @@ class Tournament implements TournamentInterface
         $values['type'] ? $this->setType($values['type']) : $this->setType(null);
         if (isset($values['players']) && $values['players']) {
             $this->setPlayers($values['players']);
-        };
+        }
     }
 
     /**
@@ -575,7 +565,7 @@ class Tournament implements TournamentInterface
                 $playerErrors = $player->isValid();
                 if ($playerErrors) {
                     $errors = array_merge($errors, $playerErrors);
-                };
+                }
             }
             if (count($playerNicknames) !== count(array_unique($playerNicknames))) {
                 $errors[] = 'Никнэймы игроков не могут дублироваться';
@@ -633,27 +623,11 @@ class Tournament implements TournamentInterface
     }
 
     /**
-     * @return null
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    /**
      * @param null $name
      */
     public function setName($name): void
     {
         $this->name = $name;
-    }
-
-    /**
-     * @return null
-     */
-    public function getDate()
-    {
-        return $this->date;
     }
 
     /**
@@ -694,14 +668,6 @@ class Tournament implements TournamentInterface
     public function setStatus($status): void
     {
         $this->status = $status;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getCurrentRound()
-    {
-        return $this->current_round;
     }
 
     /**
@@ -760,9 +726,9 @@ class Tournament implements TournamentInterface
         $this->loosers = $loosers;
     }
 
-    public function getPlayersOrderedByLifes()
+    public function getPlayersOrderedByLives()
     {
-        return (new PlayersTDG())->getPlayersOrderedByLifes($this);
+        return (new PlayersTDG())->getPlayersOrderedByLives($this);
     }
 
     /**

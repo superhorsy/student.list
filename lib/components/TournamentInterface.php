@@ -35,23 +35,15 @@ interface TournamentInterface
 
     public function setId($id): void;
 
-    public function getName();
-
    public function  setName($name): void;
 
-    public function getDate();
-
     public function setDate($date): void;
-
-    public function getOwnerId();
 
     public function setOwnerId($owner_id): void;
 
     public function getStatus();
 
     public function setStatus($status): void;
-
-    public function getCurrentRound();
 
     public function setCurrentRound($current_round): void;
 
@@ -71,15 +63,11 @@ interface TournamentInterface
 
     public function setLoosers($loosers): void;
 
-    public function getPlayersOrderedByLifes();
-
-    public function getPrizePool();
+    public function getPlayersOrderedByLives();
 
     public function setPrizePool($prize_pool): void;
 
     public function reward();
-
-    public function getType();
 
     public function setType($type): void;
 }

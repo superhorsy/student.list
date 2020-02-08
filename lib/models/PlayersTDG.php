@@ -5,6 +5,7 @@ namespace App\models;
 
 
 use App\components\TournamentInterface;
+use PDO;
 
 class PlayersTDG extends TDG
 {
@@ -21,7 +22,7 @@ class PlayersTDG extends TDG
         } else {
             $query = $this->connection->query("SELECT * FROM `$this->table` WHERE `tournament_id` = '$tournamentID'");
         }
-        $players = $query->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, '\App\models\Players');
+        $players = $query->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, '\App\models\Players');
         return $players ? $players : null;
     }
 
@@ -29,7 +30,7 @@ class PlayersTDG extends TDG
     {
         $sql = "UPDATE `$this->table` SET `team` = ? WHERE `id` = {$player->getId()}";
         $stmt = $this->connection->prepare($sql);
-        $stmt->bindValue(1, $player->getTeam(),\PDO::PARAM_STR);
+        $stmt->bindValue(1, $player->getTeam(), PDO::PARAM_STR);
         $stmt->execute();
         return true;
     }
@@ -37,7 +38,7 @@ class PlayersTDG extends TDG
     public function getPlayersbyTeam(TournamentInterface $tournament, $team): ?array
     {
         $query = $this->connection->query("SELECT * FROM `$this->table` WHERE `tournament_id` = '{$tournament->getId()}' AND `team` = '$team'");
-        $players = $query->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, '\App\models\Players');
+        $players = $query->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, '\App\models\Players');
         return $players ? $players : null;
     }
 
@@ -48,28 +49,29 @@ class PlayersTDG extends TDG
      */
     public function getAlivePlayers(TournamentInterface $tournament)
     {
-        $query = $this->connection->query("SELECT * FROM `$this->table` WHERE `tournament_id` = '{$tournament->getId()}' AND `lifes` > 0");
-        $players = $query->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, '\App\models\Players');
+        $query = $this->connection->query("SELECT * FROM `$this->table` WHERE `tournament_id` = '{$tournament->getId()}' AND `lives` > 0");
+        $players = $query->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, '\App\models\Players');
         return $players ? $players : null;
     }
 
     public function getLoosers(TournamentInterface $tournament)
     {
-        $query = $this->connection->query("SELECT * FROM `$this->table` WHERE `tournament_id` = '{$tournament->getId()}' AND `lifes` <= 0");
-        $players = $query->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, '\App\models\Players');
+        $query = $this->connection->query("SELECT * FROM `$this->table` WHERE `tournament_id` = '{$tournament->getId()}' AND `lives` <= 0");
+        $players = $query->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, '\App\models\Players');
         return $players ? $players : null;
     }
 
     public function getWaitingPlayers(TournamentInterface $tournament)
     {
         $query = $this->connection->query("SELECT * FROM `$this->table` WHERE `tournament_id` = '{$tournament->getId()}' AND `team` = 'WAIT'");
-        $players = $query->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, '\App\models\Players');
+        $players = $query->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, '\App\models\Players');
         return $players ? $players : null;
     }
-    public function getPlayersOrderedByLifes(TournamentInterface $tournament)
+
+    public function getPlayersOrderedByLives(TournamentInterface $tournament)
     {
-        $query = $this->connection->query("SELECT * FROM `$this->table` WHERE `tournament_id` = '{$tournament->getId()}' ORDER BY `lifes` DESC");
-        $players = $query->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, '\App\models\Players');
+        $query = $this->connection->query("SELECT * FROM `$this->table` WHERE `tournament_id` = '{$tournament->getId()}' ORDER BY `lives` DESC");
+        $players = $query->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, '\App\models\Players');
         return $players ? $players : null;
     }
 
@@ -95,7 +97,7 @@ class PlayersTDG extends TDG
         $wait = Players::STATUS_WAIT;
         $out = Players::STATUS_OUT;
         $query = $this->connection->query("SELECT * FROM {$this->table} WHERE tournament_id = '{$tournament->getId()}' AND team NOT IN ('$wait', '$out')");
-        $players = $query->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, '\App\models\Players');
+        $players = $query->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, '\App\models\Players');
         return $players ? $players : null;
     }
 
@@ -109,7 +111,7 @@ class PlayersTDG extends TDG
         $wait = Players::STATUS_WAIT;
         $out = Players::STATUS_OUT;
         $query = $this->connection->query("SELECT * FROM {$this->table} WHERE tournament_id = '{$tournament->getId()}' AND team = '$wait' AND is_suspended != 1");
-        $players = $query->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, '\App\models\Players');
+        $players = $query->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, '\App\models\Players');
         return $players ? $players : null;
     }
 

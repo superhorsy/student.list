@@ -10,29 +10,29 @@ class TournamentTDG extends TDG
     public function saveTournament(TournamentInterface $tournament): ?int
     {
         $values = [
-            'name' => $tournament->getName(),
-            'date' => $tournament->getDate(),
+            'name' => $tournament->name,
+            'date' => $tournament->date,
             'owner_id' => $tournament->getOwnerId(),
             'prize_pool' => $tournament->prize_pool,
             'type' => $tournament->type,
         ];
         if (method_exists('getRegions', $tournament)) {
-            $values = array_merge($values, ['regions' => json_encode($tournament->getRegions(),JSON_UNESCAPED_UNICODE)]);
+            $values = array_merge($values, ['regions' => json_encode($tournament->regions, JSON_UNESCAPED_UNICODE)]);
         }
 
         $this->insertValues($values);
         $id = $this->connection->lastInsertId();
-        return $id ? $id : null;
+        return $id ?: null;
     }
 
     public function updateTournament(TournamentInterface $tournament): void
     {
         $values = [
-            'name' => $tournament->getName(),
-            'date' => $tournament->getDate(),
-            'owner_id' => $tournament->getOwnerId(),
-            'status' => $tournament->getStatus(),
-            'current_round' => $tournament->getCurrentRound(),
+            'name' => $tournament->name,
+            'date' => $tournament->date,
+            'owner_id' => $tournament->owner_id,
+            'status' => $tournament->status,
+            'current_round' => $tournament->current_round,
             'round_count' => $tournament->getRoundCount(),
             'toss' => json_encode($tournament->getToss(), JSON_UNESCAPED_UNICODE),
             'prize_pool' => $tournament->prize_pool,
@@ -40,7 +40,7 @@ class TournamentTDG extends TDG
         ];
 
         if (method_exists('getRegions', $tournament)) {
-            $values = array_merge($values, ['regions' => json_encode($tournament->getRegions(),JSON_UNESCAPED_UNICODE)]);
+            $values = array_merge($values, ['regions' => json_encode($tournament->regions, JSON_UNESCAPED_UNICODE)]);
         }
 
         $this->updateValues($values, $tournament->getId());

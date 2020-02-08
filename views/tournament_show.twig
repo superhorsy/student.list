@@ -121,7 +121,7 @@
                                                             <td>{{ p.region }}</td>
                                                         {% endif %}
                                                         <td>
-                                                            <span class="badge badge-pill badge-info">{{ p.lifes }}</span>
+                                                            <span class="badge badge-pill badge-info">{{ p.lives }}</span>
                                                         </td>
                                                         {% if is_owner %}
                                                             <td>
@@ -185,7 +185,7 @@
                                             <td>{{ p.region }}</td>
                                         {% endif %}
                                         <td>
-                                            <span class="badge badge-pill badge-info">{{ p.lifes }}</span>
+                                            <span class="badge badge-pill badge-info">{{ p.lives }}</span>
                                         </td>
                                         <td>{{ p.wins }}</td>
                                         <td>{{ p.gamesPlayed }}</td>
@@ -226,7 +226,7 @@
                                         {% if t.type == 2 %}
                                             <td>{{ p.region }}</td>
                                         {% endif %}
-                                        <td>{{ p.lifes }}</td>
+                                        <td>{{ p.lives }}</td>
                                         <td>{{ p.wins }}</td>
                                         <td>{{ p.gamesPlayed }}</td>
                                     </tr>
@@ -260,24 +260,24 @@
                         <th scope="col">Жизни</th>
                         <th scope="col">Побед</th>
                         <th scope="col">Игр</th>
-                        {% if t.prizePool %}
+                        {% if t.prize_pool %}
                             <th scope="col">Награда</th>
                         {% endif %}
                     </tr>
                     </thead>
 
                     <tbody>
-                    {% for number,p in t.playersOrderedByLifes %}
+                    {% for number,p in t.playersOrderedByLives %}
                         <tr>
                             <th scope="row">{{ number+1 }}</th>
                             <td>{{ p.nickname }}</td>
                             {% if t.type == 2 %}
                                 <td>{{ p.region }}</td>
                             {% endif %}
-                            <td>{{ p.lifes }}</td>
+                            <td>{{ p.lives }}</td>
                             <td>{{ p.wins }}</td>
                             <td>{{ p.gamesPlayed|default(0) }}</td>
-                            {% if t.prizePool %}
+                            {% if t.prize_pool %}
                                 <td>{{ p.prize }}</td>
                             {% endif %}
                         </tr>

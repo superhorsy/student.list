@@ -11,7 +11,7 @@ class Players
     private $nickname;
     private $team;
     private $tournament_id;
-    private $lifes;
+    private $lives;
     private $is_suspended;
     private $prize = null;
     private $region = null;
@@ -37,7 +37,7 @@ class Players
 
     public function __toString()
     {
-        return "Ник - {$this->nickname}, жизней - {$this->lifes}, игр - {$this->games_played}, побед - {$this->wins}, 
+        return "Ник - {$this->nickname}, жизней - {$this->lives}, игр - {$this->games_played}, побед - {$this->wins}, 
         отстранен - {$this->is_suspended}";
     }
 
@@ -75,8 +75,8 @@ class Players
             'tournament_id' => $this->tournament_id,
         ];
 
-        if (isset($this->lifes)) {
-            $insertValues = array_merge($insertValues, ['lifes' => $this->lifes]);
+        if (isset($this->lives)) {
+            $insertValues = array_merge($insertValues, ['lives' => $this->lives]);
         }
 
         if (isset($this->wins)) {
@@ -115,7 +115,7 @@ class Players
 
     public function reset()
     {
-        $this->setLifes(2);
+        $this->setLives(2);
         $this->setGamesPlayed(0);
         $this->setWins(0);
         $this->setTeam(null);
@@ -205,17 +205,17 @@ class Players
     /**
      * @return null
      */
-    public function getLifes()
+    public function getLives()
     {
-        return $this->lifes;
+        return $this->lives;
     }
 
     /**
-     * @param null $lifes
+     * @param null $lives
      */
-    public function setLifes($lifes): void
+    public function setLives($lives): void
     {
-        $this->lifes = $lifes;
+        $this->lives = $lives;
     }
 
     /**

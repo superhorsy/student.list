@@ -22,8 +22,8 @@ class Utils
 
         $date = date('Y-m-d H:i:s');
         $data = <<<TEXT
-$date {$tournament->getName()}
-Раунд {$tournament->getCurrentRound()}
+$date {$tournament->name}
+Раунд {$tournament->current_round}
 Текущее распределение команд:
 TEXT;
         foreach ($tournament->getToss() as $pair) {
@@ -82,7 +82,7 @@ TEXT;
 
     /**
      * Estimates count of rounds till the end
-     * @param array $players with amount of lifes
+     * @param array $players with amount of lives
      * @return int
      */
     public static function estimateRounds(array $players): int

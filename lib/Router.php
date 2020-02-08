@@ -56,7 +56,6 @@ class Router
                 // Если не загружен нужный класс контроллера или в нём нет
                 // нужного метода — 404
                 if (!is_callable([$controller, $this->action])) {
-                    var_dump([$controller, $this->action]);exit();
                     header("HTTP/1.0 404 Not Found");
                     return;
                 }
@@ -74,7 +73,7 @@ class Router
     }
 
     /**
-     * Метод получает URI. Несколько вариантов представлены для надёжности.
+     * Метод получает URI.
      * @return string
      */
     public function getPath()
