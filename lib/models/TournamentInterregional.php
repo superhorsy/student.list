@@ -87,20 +87,18 @@ class TournamentInterregional extends Tournament implements TournamentInterface
      */
     private function setTeams()
     {
-        $waited = $suspended = $other = [];
+        $waited = $other = $toWait = $toMix = [];
+
         foreach ($this->getAlivePlayers() as $player) {
-            if ($player->getIsSuspended()) {
-                $suspended[] = $player;
+            //Отстраненных - к ожидающим
+            if ($player->is_suspended) {
+                $toWait[] = $player;
             } else if ($player->getTeam() == Players::STATUS_WAIT) {
+                //Игроки, ждавшие в прошлом раунде
                 $waited[] = $player;
             } else {
                 $other[] = $player;
             }
-        }
-
-        foreach ($suspended as $player) {
-            $player->setTeam(Players::STATUS_WAIT);
-            $player->save();
         }
 
         //Имена комманд
@@ -120,32 +118,47 @@ class TournamentInterregional extends Tournament implements TournamentInterface
             $playersByRegion[$player->getRegion()][] = $player;
         }
 
-        //Игроки, оставшиеся вне команд по 5 человек
-        $leftovers = [];
-
         $teams = [];
         $i = 1;
 
         //Раскручиваем каждый регион
-        foreach ($playersByRegion as $name => $region) {
-            $leftovers = array_merge($leftovers, array_splice($region, -(count($region) % 5), count($region) % 5));
-            foreach ($region as $player) {
-                $player->setTeam(current($teamNames));
-                $player->save();
-                if ($i == 5) {
-                    $i = 1;
-                    $teams[$name][] = current($teamNames);
-                    next($teamNames);
-                } else {
-                    $i++;
+        foreach ($playersByRegion as $regionName => $players) {
+
+            if (count($players) >= 5) {
+                $toWait = array_merge($toWait, array_splice($players, -(count($players) % 5), count($players) % 5));
+
+                foreach ($players as $player) {
+                    $player->setTeam(current($teamNames));
+                    $player->save();
+                    if ($i == 5) {
+                        $i = 1;
+                        $teams[$regionName][] = current($teamNames);
+                        next($teamNames);
+                    } else {
+                        $i++;
+                    }
+                }
+            } elseif (count($players) < 5) {
+                $toMix = array_merge($toMix, array_splice($players, -(count($players) % 5), count($players) % 5));
+
+                foreach ($players as $player) {
+                    $player->setTeam(current($teamNames));
+                    $player->save();
+                    if ($i == 5) {
+                        $i = 1;
+                        $teams[$regionName][] = current($teamNames);
+                        next($teamNames);
+                    } else {
+                        $i++;
+                    }
                 }
             }
         }
 
-        $last = array_splice($leftovers, -(count($leftovers) % 5), count($leftovers) % 5);
+        $last = array_splice($toMix, -(count($toMix) % 5), count($toMix) % 5);
 
         //Команды для игроков из неполных команд
-        foreach ($leftovers as $player) {
+        foreach ($toMix as $player) {
             $player->setTeam(current($teamNames));
             $player->save();
             if ($i == 5) {
@@ -156,13 +169,13 @@ class TournamentInterregional extends Tournament implements TournamentInterface
                 $i++;
             }
         }
-        //Последние игроки (не хватит на команду)
-        if ($last) {
-            foreach ($last as $player) {
-                $player->setTeam(Players::STATUS_WAIT);
-                $player->save();
-            }
+
+        //Ждущие и последние игроки из миксуемых (не хватит на команду)
+        foreach (array_merge($last, $toWait) as $player) {
+            $player->setTeam(Players::STATUS_WAIT);
+            $player->save();
         }
+
         //Обновляем игроков в турнире
         $this->setPlayers();
 
@@ -173,7 +186,8 @@ class TournamentInterregional extends Tournament implements TournamentInterface
      * Проводит жеребьевку
      * @return array
      */
-    public function toss()
+    public
+    function toss()
     {
         //Массив с коммандами, разбитыми по регионам [Регион=>[Команда, Команда ..]]
         $teams = $this->setTeams();
@@ -245,7 +259,8 @@ class TournamentInterregional extends Tournament implements TournamentInterface
      * @param array $acceptableRegions
      * @return array|bool|mixed
      */
-    private function findTeamByRegions(array $teams, array $acceptableRegions, $excludedTeams = [])
+    private
+    function findTeamByRegions(array $teams, array $acceptableRegions, $excludedTeams = [])
     {
         foreach ($teams as $region => $teams) {
             if (!empty($teams) && in_array($region, $acceptableRegions)) {
@@ -264,7 +279,8 @@ class TournamentInterregional extends Tournament implements TournamentInterface
      * Применяет выбранные действия к игрокам без жеребьевки
      * @param array $roundResult
      */
-    public function sendHomeWithoutToss(array $roundResult)
+    public
+    function sendHomeWithoutToss(array $roundResult)
     {
         $changePlayers = (new PlayersTDG())->getPossibleChangePlayers($this);
 
@@ -358,7 +374,8 @@ class TournamentInterregional extends Tournament implements TournamentInterface
         $this->save();
     }
 
-    protected function checkIfTournamentShouldContinue(): bool
+    protected
+    function checkIfTournamentShouldContinue(): bool
     {
         $alivePlayers = $this->getAlivePlayers();
 
