@@ -1,6 +1,6 @@
 <?php
 
-namespace App\components;
+namespace App\models\tournament\interfaces;
 
 
 /**
@@ -35,7 +35,7 @@ interface TournamentInterface
 
     public function setId($id): void;
 
-   public function  setName($name): void;
+    public function setName($name): void;
 
     public function setDate($date): void;
 

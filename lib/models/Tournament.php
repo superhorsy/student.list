@@ -4,7 +4,7 @@
 namespace App\models;
 
 
-use App\components\TournamentInterface;
+use App\models\tournament\interfaces\TournamentInterface;
 use App\Utils;
 use DateTime;
 use Exception;

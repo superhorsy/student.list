@@ -2,7 +2,7 @@
 
 namespace App\models;
 
-use App\components\TournamentInterface;
+use App\models\tournament\interfaces\TournamentInterface;
 use PDO;
 
 class TournamentTDG extends TDG

@@ -13,18 +13,21 @@ class TournamentFactory
         'INTERREGIONAL' => 2,
     );
     const TOURNAMENT_CLASS = array(
-        self::TOURNAMENT_TYPE['NORMAL'] => '\App\models\Tournament',
-        self::TOURNAMENT_TYPE['INTERREGIONAL'] => '\App\models\TournamentInterregional',
+        self::TOURNAMENT_TYPE['NORMAL'] => Tournament::class,
+        self::TOURNAMENT_TYPE['INTERREGIONAL'] => TournamentInterregional::class,
 
     );
 
+    /**
+     * Creates tournaments
+     * @param $type
+     * @return mixed
+     * @throws TournamentException
+     */
     public static function factory($type) {
-        switch ($type) {
-            case self::TOURNAMENT_TYPE['NORMAL']:
-                return new Tournament();
-                break;
-            case self::TOURNAMENT_TYPE['INTERREGIONAL']:
-                return new TournamentInterregional();
+        if (isset(self::TOURNAMENT_CLASS[$type])) {
+            $className = self::TOURNAMENT_CLASS[$type];
+            return new $className();
         }
         throw new TournamentException("Не удалось создать турнир типа '$type'");
     }

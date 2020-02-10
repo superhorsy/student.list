@@ -4,7 +4,7 @@
 namespace App\models\tournament;
 
 
-use App\components\TournamentInterface;
+use App\models\tournament\interfaces\TournamentInterface;
 use App\lib\Arr;
 use App\models\Players;
 use App\models\tournament\interfaces\Toss;
@@ -64,7 +64,7 @@ class TossInterregional implements Toss
 
         //Имена комманд
         $teamNames = Utils::getDotaTeamNames();
-        shuffle($teamNames);
+
         shuffle($waited);
         shuffle($other);
 
@@ -84,6 +84,7 @@ class TossInterregional implements Toss
         //Раскручиваем каждый регион
         foreach ($playersByRegion as $regionName => $players) {
 
+            //While count of players > 5 we not mixing teams
             if (count($players) >= 5) {
                 $toWait = array_merge($toWait, array_splice($players, -(count($players) % 5), count($players) % 5));
                 foreach ($players as $player) {
@@ -130,6 +131,7 @@ class TossInterregional implements Toss
         }
 
         $withoutPair = array_splice($toPlay, -(count($toPlay) % 10), count($toPlay) % 10);
+
         if (!empty($withoutPair)) {
             foreach ($withoutPair as $player) {
                 $region = $withoutPair[0]->region;
@@ -144,7 +146,8 @@ class TossInterregional implements Toss
             }
         }
 
-        if (count(Arr::flatten($this->regions)) % 2 !== 0) xdebug_break();
+        /*if (count(Arr::flatten($this->regions)) % 2 !== 0) xdebug_break();*/
+
         //Ждущие + последние игроки из миксуемых (не хватит на команду) + игроки из непарной команды
         foreach (array_merge($last, $toWait, $withoutPair) as $player) {
             $player->setTeam(Players::STATUS_WAIT);

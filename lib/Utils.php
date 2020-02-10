@@ -3,7 +3,7 @@
 
 namespace App;
 
-use App\components\TournamentInterface;
+use App\models\tournament\interfaces\TournamentInterface;
 
 class Utils
 {
@@ -104,6 +104,7 @@ TEXT;
     {
         $teamNames = array_map('str_getcsv', file(ROOT . '/../Heroes of Dota.csv'));
         $teamNames = array_column($teamNames, 0);
+        shuffle($teamNames);
         return $teamNames;
     }
 
@@ -122,4 +123,6 @@ TEXT;
         header("Location: /tournament?$query");
         exit;
     }
+
+
 }

@@ -4,7 +4,7 @@
 namespace App\models;
 
 use App\components\EndConditions;
-use App\components\TournamentInterface;
+use App\models\tournament\interfaces\TournamentInterface;
 use App\models\tournament\TossInterregional;
 
 class TournamentInterregional extends Tournament implements TournamentInterface
@@ -46,6 +46,14 @@ class TournamentInterregional extends Tournament implements TournamentInterface
     public function setRegions(array $regions): void
     {
         $this->regions = $regions;
+    }
+
+    /**
+     * @param array $regions
+     */
+    public function getRegions(): void
+    {
+        return $this->regions;
     }
 
     /**
