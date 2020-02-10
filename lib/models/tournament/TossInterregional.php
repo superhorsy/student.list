@@ -1,12 +1,13 @@
 <?php
 
 
-namespace App\models\tournament\interfaces;
+namespace App\models\tournament;
 
 
 use App\components\TournamentInterface;
 use App\lib\Arr;
 use App\models\Players;
+use App\models\tournament\interfaces\Toss;
 use App\Utils;
 
 class TossInterregional implements Toss

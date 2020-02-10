@@ -5,9 +5,7 @@ namespace App\models;
 
 use App\components\EndConditions;
 use App\components\TournamentInterface;
-use App\lib\Arr;
-use App\models\tournament\interfaces\TossInterregional;
-use App\Utils;
+use App\models\tournament\TossInterregional;
 
 class TournamentInterregional extends Tournament implements TournamentInterface
 {
@@ -90,7 +88,7 @@ class TournamentInterregional extends Tournament implements TournamentInterface
      * Проводит жеребьевку
      * @return array
      */
-    public function toss():void
+    public function toss(): void
     {
         $toss = new TossInterregional($this);
 

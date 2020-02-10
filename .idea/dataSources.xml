@@ -15,7 +15,7 @@
         <property name="yearIsDateType" value="false" />
       </driver-properties>
     </data-source>
-    <data-source source="LOCAL" name="tournament@localhost" uuid="b4b0969d-2ba9-4bd1-842a-120e82405543">
+    <data-source source="LOCAL" name="tournament@localhost" uuid="0409c0b2-d776-416d-b421-b90a9adc09d7">
       <driver-ref>mariadb</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.mariadb.jdbc.Driver</jdbc-driver>
