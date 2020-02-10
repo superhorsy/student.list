@@ -18,9 +18,9 @@ class PlayersTDG extends TDG
             } else {
                 $ids = "({$ids})";
             }
-            $query = $this->connection->query("SELECT * FROM `$this->table` WHERE `tournament_id` = '$tournamentID' AND `id` IN $ids");
+            $query = $this->connection->query("SELECT * FROM `$this->table` WHERE `tournament_id` = '$tournamentID' AND `id` IN $ids  ORDER BY region, wins");
         } else {
-            $query = $this->connection->query("SELECT * FROM `$this->table` WHERE `tournament_id` = '$tournamentID'");
+            $query = $this->connection->query("SELECT * FROM `$this->table` WHERE `tournament_id` = '$tournamentID' ORDER BY region, wins");
         }
         $players = $query->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, '\App\models\Players');
         return $players ? $players : null;
@@ -63,7 +63,7 @@ class PlayersTDG extends TDG
 
     public function getWaitingPlayers(TournamentInterface $tournament)
     {
-        $query = $this->connection->query("SELECT * FROM `$this->table` WHERE `tournament_id` = '{$tournament->getId()}' AND `team` = 'WAIT'");
+        $query = $this->connection->query("SELECT * FROM `$this->table` WHERE `tournament_id` = '{$tournament->getId()}' AND `team` = 'WAIT'  ORDER BY region, wins");
         $players = $query->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, '\App\models\Players');
         return $players ? $players : null;
     }

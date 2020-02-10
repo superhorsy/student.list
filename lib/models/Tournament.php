@@ -98,22 +98,7 @@ class Tournament implements TournamentInterface
     {
         $teams = $this->setTeams();
 
-        $toss = array();
-
-        $groupNumber = 'A';
-        $toss[$groupNumber] = array();
-        $group = array();
-        foreach ($teams as $teamName) {
-            if (count($group) < 2) {
-                $group[] = $teamName;
-            } else {
-                $toss[$groupNumber] = $group;
-                $group = array();
-                $groupNumber++;
-                $group[] = $teamName;
-            }
-        }
-        $toss[$groupNumber] = $group;
+        $toss = $this->sortTeamsByGroups($teams);
 
         $this->toss = $toss;
 
@@ -509,7 +494,7 @@ class Tournament implements TournamentInterface
             $estimation[] = Utils::estimateRounds($players);
         }
 
-        return intdiv(array_sum($estimation), $cycles);
+        return round(array_sum($estimation)/$cycles, 0, PHP_ROUND_HALF_UP);
     }
 
     /**
@@ -745,6 +730,31 @@ class Tournament implements TournamentInterface
     public function setType($type): void
     {
         $this->type = $type;
+    }
+
+    /**
+     * @param array $teams
+     * @return array
+     */
+    protected function sortTeamsByGroups(array $teams): array
+    {
+        $toss = array();
+
+        $groupNumber = 'A';
+        $toss[$groupNumber] = array();
+        $group = array();
+        foreach ($teams as $teamName) {
+            if (count($group) < 2) {
+                $group[] = $teamName;
+            } else {
+                $toss[$groupNumber] = $group;
+                $group = array();
+                $groupNumber++;
+                $group[] = $teamName;
+            }
+        }
+        $toss[$groupNumber] = $group;
+        return $toss;
     }
 
 }

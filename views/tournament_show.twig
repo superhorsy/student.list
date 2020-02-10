@@ -203,7 +203,7 @@
                 {% endif %}
 
                 <!--Выбывшие-->
-                {% if t.loosers %}
+                {% if t.getLoosers %}
                     <div class="container-fluid">
                         <div>
                             <h5 class="text-center">Выбывшие</h5>
@@ -220,7 +220,7 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {% for p in t.loosers %}
+                                {% for p in t.getLoosers %}
                                     <tr>
                                         <td>{{ p.nickname }}</td>
                                         {% if t.type == 2 %}
