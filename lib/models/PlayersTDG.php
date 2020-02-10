@@ -26,15 +26,6 @@ class PlayersTDG extends TDG
         return $players ? $players : null;
     }
 
-    public function setTeam(Players $player): bool
-    {
-        $sql = "UPDATE `$this->table` SET `team` = ? WHERE `id` = {$player->getId()}";
-        $stmt = $this->connection->prepare($sql);
-        $stmt->bindValue(1, $player->getTeam(), PDO::PARAM_STR);
-        $stmt->execute();
-        return true;
-    }
-
     public function getPlayersbyTeam(TournamentInterface $tournament, $team): ?array
     {
         $query = $this->connection->query("SELECT * FROM `$this->table` WHERE `tournament_id` = '{$tournament->getId()}' AND `team` = '$team'");
@@ -70,7 +61,7 @@ class PlayersTDG extends TDG
 
     public function getPlayersOrderedByLives(TournamentInterface $tournament)
     {
-        $query = $this->connection->query("SELECT * FROM `$this->table` WHERE `tournament_id` = '{$tournament->getId()}' ORDER BY `lives` DESC");
+        $query = $this->connection->query("SELECT * FROM `$this->table` WHERE `tournament_id` = '{$tournament->getId()}' ORDER BY lives DESC, `wins` DESC, games_played DESC");
         $players = $query->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, '\App\models\Players');
         return $players ? $players : null;
     }

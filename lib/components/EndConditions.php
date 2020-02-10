@@ -29,7 +29,7 @@ class EndConditions
         $keyMax = array_keys($region2count, $max);
 
         foreach ($region2count as $region => $count) {
-            if ($region === $keyMax) continue;
+            if ($region === $keyMax[0]) continue;
             $countOthers += $count;
         }
 
@@ -46,7 +46,7 @@ class EndConditions
      */
     private static function endCondition2Happend(array $region2count)
     {
-        if (max($region2count) > 5 || array_sum($region2count) >= 10) return false;
+        if (max($region2count) >= 5 || array_sum($region2count) <= 10) return false;
 
         return true;
     }

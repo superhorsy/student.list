@@ -94,9 +94,9 @@ class TournamentController extends Controller
                                 if ($tournament->getStatus() == Tournament::STATUS_IN_PROGRESS) {
                                     $playersPlaying = count($tournament->getPlayers()) - count($tournament->getWaitingPlayers()) - count($tournament->getLoosers());
 
-                                    if (!(isset($_POST['winners']) && !empty($_POST['winners']) && is_array($_POST['winners'])) || count($_POST['winners']) != ($playersPlaying) / 10) {
+                                    /*if (!(isset($_POST['winners']) && !empty($_POST['winners']) && is_array($_POST['winners'])) || count($_POST['winners']) != ($playersPlaying) / 10) {
                                         $errors[] = 'Отмечены не все победители';
-                                    }
+                                    }*/
                                     if (!$errors) {
                                         $roundResult = [
                                             'winners' => $_POST['winners'] ?? '',

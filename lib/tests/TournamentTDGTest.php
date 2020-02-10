@@ -20,14 +20,16 @@ class TournamentTDGTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-    public function testGetTournamentById() {
+    public function testGetTournamentById()
+    {
         $tdg = new TournamentTDG();
         $tournaments = $tdg->getTournamentById(8);
         $this->assertInstanceOf('\App\models\Tournament', $tournaments);
 
     }
 
-    public function testSetTeams() {
+    public function testSetTeams()
+    {
         $tdg = new TournamentTDG();
         $tournaments = $tdg->getTournamentById(8);
         $result = $tournaments->setTeams();
@@ -38,7 +40,8 @@ class TournamentTDGTest extends \PHPUnit_Framework_TestCase
     /**
      * @depends testSetTeams
      */
-    public function testToss(array $teams) {
+    public function testToss(array $teams)
+    {
         $tdg = new TournamentTDG();
         $tournaments = $tdg->getTournamentById(8);
         $teams = $tournaments->setTeams();

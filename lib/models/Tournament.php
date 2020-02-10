@@ -94,15 +94,11 @@ class Tournament implements TournamentInterface
      * Проводит жеребьевку среди комманд
      * @return array
      */
-    public function toss()
+    public function toss():void
     {
         $teams = $this->setTeams();
 
-        $toss = $this->sortTeamsByGroups($teams);
-
-        $this->toss = $toss;
-
-        return $toss;
+        $this->toss = $this->sortTeamsByGroups($teams);
     }
 
     /**
@@ -175,7 +171,7 @@ class Tournament implements TournamentInterface
         return $teams;
     }
 
-    protected function getAlivePlayers()
+    public function getAlivePlayers()
     {
         return (new PlayersTDG())->getAlivePlayers($this);
     }
@@ -291,22 +287,34 @@ class Tournament implements TournamentInterface
         $lives = array_column($alive, 'lives');
         $countLives = array_count_values($lives);
 
+        $N2 = $countLives[2] ?? 0;
+        $N1 = $countLives[1] ?? 0;
 
-        $N2 = $countLives[2];
-        $N1 = $countLives[1];
+        if ($N2 !== 0 && $N1 !== 0 ) {
+            $twoLifePrize = ($this->prize_pool / ($N2 * 3 + $N1)) * ($N2 * 3) / $N2;
+            $oneLifePrize = $twoLifePrize / 3;
+        } else {
+            if ($N2 == 0) {
+                $twoLifePrize = 0;
+                $oneLifePrize = $this->prize_pool / $N1;
+            }
+            if ($N1 == 0) {
+                $oneLifePrize = 0;
+                $twoLifePrize = $this->prize_pool / $N2;
+            }
+        }
 
-        $twoLifePrize = ($this->prize_pool / ($N2 * 3 + $N1)) * ($N2 * 3) / $N2;
-        $oneLifePrize = $twoLifePrize / 3;
+
 
         //Раздаем призы
         foreach ($alive as $player) {
             switch ($player->lives) {
                 case 2:
-                    $player->setPrize($twoLifePrize);
+                    $player->setPrize((int)$twoLifePrize);
                     $player->save();
                     break;
                 case 1:
-                    $player->setPrize($oneLifePrize);
+                    $player->setPrize((int)$oneLifePrize);
                     $player->save();
                     break;
             }
