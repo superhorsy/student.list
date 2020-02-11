@@ -1,12 +1,13 @@
 <?php
 
 
-namespace App\models;
+namespace App\Models\Player;
 
 class Players
 {
+    const STATUS_WAIT = 'WAIT';
+    const STATUS_OUT = 'OUT';
     private $tdg;
-
     private $id;
     private $nickname;
     private $team;
@@ -15,12 +16,10 @@ class Players
     private $is_suspended;
     private $prize = null;
     private $region = null;
-    private $wins = null;
-    private $games_played = null;
 
     //Player status
-    const STATUS_WAIT = 'WAIT';
-    const STATUS_OUT = 'OUT';
+    private $wins = null;
+    private $games_played = null;
 
     /**
      * Players constructor.
@@ -35,6 +34,15 @@ class Players
         $this->tdg = $tdg;
     }
 
+    public function hydrate(array $values)
+    {
+        $this->setId($values['id'] ?? '');
+        $this->setNickname($values['nickname'] ?? '');
+        $this->setTournamentId($values['tournament_id'] ?? '');
+        $this->setPrize($values['prize'] ?? '');
+        $this->setRegion($values['region'] ?? null);
+    }
+
     public function __toString()
     {
         return "Ник - {$this->nickname}, жизней - {$this->lives}, игр - {$this->games_played}, побед - {$this->wins}, 
@@ -47,7 +55,8 @@ class Players
      * @param string The key data to retrieve
      * @access public
      */
-    public function &__get ($key) {
+    public function &__get($key)
+    {
         return $this->$key;
     }
 
@@ -59,8 +68,20 @@ class Players
      * @return boolean
      * @abstracting ArrayAccess
      */
-    public function __isset ($key) {
+    public function __isset($key)
+    {
         return isset($this->$key);
+    }
+
+    public function reset()
+    {
+        $this->setLives(2);
+        $this->setGamesPlayed(0);
+        $this->setWins(0);
+        $this->setTeam(null);
+        $this->setIsSuspended(0);
+        $this->setPrize(null);
+        $this->save();
     }
 
     /**
@@ -103,25 +124,20 @@ class Players
         }
     }
 
-
-    public function hydrate(array $values)
+    /**
+     * @return mixed
+     */
+    public function getId()
     {
-        $values['id'] ? $this->setId($values['id']) : $this->setId('');
-        $values['nickname'] ? $this->setNickname($values['nickname']) : $this->setNickname('');
-        $values['tournament_id'] ? $this->setTournamentId($values['tournament_id']) : $this->setTournamentId('');
-        $values['prize'] ? $this->setPrize($values['prize']) : $this->setPrize('');
-        $values['region'] ? $this->setRegion($values['region']) : $this->setRegion(null);
+        return $this->id;
     }
 
-    public function reset()
+    /**
+     * @param mixed $id
+     */
+    public function setId($id): void
     {
-        $this->setLives(2);
-        $this->setGamesPlayed(0);
-        $this->setWins(0);
-        $this->setTeam(null);
-        $this->setIsSuspended(0);
-        $this->setPrize(null);
-        $this->save();
+        $this->id = $id;
     }
 
     public function isValid(): ?array
@@ -152,22 +168,6 @@ class Players
     public function setTournamentId($tournament_id): void
     {
         $this->tournament_id = $tournament_id;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    /**
-     * @param mixed $id
-     */
-    public function setId($id): void
-    {
-        $this->id = $id;
     }
 
     /**

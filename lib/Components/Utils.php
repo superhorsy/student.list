@@ -1,9 +1,9 @@
 <?php
 
 
-namespace App;
+namespace App\Components;
 
-use App\models\tournament\interfaces\TournamentInterface;
+use App\Models\Tournament\Interfaces\TournamentInterface;
 
 class Utils
 {
@@ -12,7 +12,7 @@ class Utils
      * Пишем параметры раунда в лог
      * @param TournamentInterface
      */
-    public static function log($tournament)
+    public static function log(TournamentInterface $tournament)
     {
         $logsPath = ROOT . DIRECTORY_SEPARATOR . 'tournament_logs';
         if (!is_dir($logsPath)) {
@@ -26,7 +26,7 @@ $date {$tournament->name}
 Раунд {$tournament->current_round}
 Текущее распределение команд:
 TEXT;
-        foreach ($tournament->getToss() as $pair) {
+        foreach ($tournament->getToss() ?? [] as $pair) {
             $data .= $pair[0] . '-' . $pair[1] . PHP_EOL;
         }
         foreach ($tournament->getPlayers() as $player) {
@@ -69,15 +69,20 @@ TEXT;
     {
         $values = array_filter($postData, 'self::trimValue');
 
-        return [
+        $result = [
             'name' => $values['t_name'] ?? '',
             'date' => $values['t_date'] ?? '',
             'prize_pool' => $values['t_prize_pool'] ?? '',
             'owner_id' => $ownerId,
             'type' => (int)$values['t_type'],
-            'regions' => $values['t_regions'] ? explode(',', $values['t_regions']) : null,
             'players' => $values['players'] ?? '',
         ];
+
+        if (isset($values['t_region'])) {
+            $result += ['regions' => explode(',', $values['t_regions'])];
+        }
+
+        return $result;
     }
 
     /**
@@ -123,6 +128,4 @@ TEXT;
         header("Location: /tournament?$query");
         exit;
     }
-
-
 }

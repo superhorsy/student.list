@@ -3,22 +3,20 @@
 
 namespace App\Controllers;
 
-use App\{components\exceptions\TournamentException,
-    Controller,
-    models\Tournament,
-    models\TournamentFactory,
-    models\TournamentTDG,
-    models\User,
-    Utils,
-    View
-};
+use App\Components\Controller;
+use App\Components\Exceptions\TournamentException;
+use App\Components\Utils;
+use App\Components\View;
+use App\Models\Tournament\Tournament;
+use App\Models\Tournament\TournamentFactory;
+use App\Models\Tournament\TournamentTDG;
+use App\Models\User\User;
 
 class TournamentController extends Controller
 {
-
     public $view;
     public $is_owner;
-    private $user = null;
+    private $user;
     private $tdg;
     /**
      * Сообщение из реквеста
@@ -43,7 +41,7 @@ class TournamentController extends Controller
             $this->user = new User($_COOKIE['auth']);
         }
 
-        $this->notification = $_GET['notify'] ?? strval($_GET['notify']);
+        $this->notification = $_GET['notify'] ?? '';
 
     }
 
@@ -94,9 +92,9 @@ class TournamentController extends Controller
                                 if ($tournament->getStatus() == Tournament::STATUS_IN_PROGRESS) {
                                     $playersPlaying = count($tournament->getPlayers()) - count($tournament->getWaitingPlayers()) - count($tournament->getLoosers());
 
-                                    /*if (!(isset($_POST['winners']) && !empty($_POST['winners']) && is_array($_POST['winners'])) || count($_POST['winners']) != ($playersPlaying) / 10) {
+                                    if (!(isset($_POST['winners']) && !empty($_POST['winners']) && is_array($_POST['winners'])) || count($_POST['winners']) != ($playersPlaying) / 10) {
                                         $errors[] = 'Отмечены не все победители';
-                                    }*/
+                                    }
                                     if (!$errors) {
                                         $roundResult = [
                                             'winners' => $_POST['winners'] ?? '',
@@ -170,7 +168,7 @@ class TournamentController extends Controller
             }
         }
 
-        $this->view->render('tournament_add', ['user' => $this->user, 'errors' => $errors, 'tournament' => $tournament]);
+        $this->view->render('tournament_add', ['user' => $this->user, 'errors' => $errors, 'tournament' => $tournament ?? false]);
 
     }
 
@@ -200,7 +198,7 @@ class TournamentController extends Controller
             $tournament = $this->tdg->getTournamentById($tournamentId);
         }
 
-        $this->view->render('tournament_add', ['user' => $this->user, 'errors' => $errors, 'tournament' => $tournament]);
+        $this->view->render('tournament_add', ['user' => $this->user, 'errors' => $errors ?? null, 'tournament' => $tournament]);
 
     }
 }

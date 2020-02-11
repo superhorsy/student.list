@@ -1,6 +1,6 @@
 <?php
 
-namespace App\lib;
+namespace App\Components;
 
 use ArrayAccess;
 use Closure;

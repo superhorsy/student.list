@@ -1,37 +1,44 @@
 <?php
 
 
-namespace App\models;
+namespace App\Models\Tournament;
 
 
-use App\models\tournament\interfaces\TournamentInterface;
-use App\Utils;
+use App\Components\Exceptions\CantBeContinuedException;
+use App\Components\Utils;
+use App\Models\Player\Players;
+use App\Models\Player\PlayersTDG;
+use App\Models\Tournament\Interfaces\TournamentInterface;
 use DateTime;
 use Exception;
 use Throwable;
 
 /**
  * Class Tournament
- * @package App\models
+ * @package App\Models
  */
 class Tournament implements TournamentInterface
 {
-    const STATUS_AWAITING = 'awaiting';
-    const STATUS_IN_PROGRESS = 'in progress';
-    const STATUS_ENDED = 'ended';
     protected $tdg;
+
     protected $id = null;
     protected $name = null;
     protected $date = null;
     protected $owner_id = null;
+
     protected $status;
+    /*Статусы турнира*/
+    const STATUS_AWAITING = 'awaiting';
+    const STATUS_IN_PROGRESS = 'in progress';
+    const STATUS_ENDED = 'ended';
+
     protected $current_round;
     protected $round_count;
     protected $toss;
     protected $prize_pool;
 
-    /*Статусы турнира*/
     protected $type;
+
     protected $players = array();
     protected $loosers = array();
 
@@ -80,7 +87,11 @@ class Tournament implements TournamentInterface
 
         $this->setStatus(self::STATUS_IN_PROGRESS);
 
-        $this->toss();
+        try {
+            $this->toss();
+        } catch (CantBeContinuedException $exception) {
+            $this->end();
+        }
 
         $this->current_round = 1;
 
@@ -94,7 +105,7 @@ class Tournament implements TournamentInterface
      * Проводит жеребьевку среди комманд
      * @return array
      */
-    public function toss():void
+    public function toss(): void
     {
         $teams = $this->setTeams();
 
@@ -104,6 +115,7 @@ class Tournament implements TournamentInterface
     /**
      * Присваивает игрокам команды
      * @return array Массив с командами для жеребьевки
+     * @throws CantBeContinuedException
      */
     private function setTeams()
     {
@@ -138,7 +150,11 @@ class Tournament implements TournamentInterface
         //Team names
         $teamNames = Utils::getDotaTeamNames();
 
-        $teamKeys = array_rand($teamNames, intval(count($players) / 10) * 2);
+        $teamsNumber = intval(count($players) / 10) * 2;
+
+        if ($teamsNumber < 2) throw new  CantBeContinuedException("Not enough players to continue");
+
+        $teamKeys = array_rand($teamNames, $teamsNumber);
 
         foreach ($teamKeys as $key) {
             for ($i = 0; $i < 5; $i++) {
@@ -176,7 +192,7 @@ class Tournament implements TournamentInterface
         return (new PlayersTDG())->getAlivePlayers($this);
     }
 
-    public function getWaitingPlayers()
+    public function getWaitingPlayers(): array
     {
         return (new PlayersTDG())->getWaitingPlayers($this);
     }
@@ -234,8 +250,7 @@ class Tournament implements TournamentInterface
             $this->toss();
             $this->current_round++;
         } else {
-            $this->setStatus(self::STATUS_ENDED);
-            $this->reward();
+            $this->end();
         }
 
         $this->save();
@@ -290,7 +305,7 @@ class Tournament implements TournamentInterface
         $N2 = $countLives[2] ?? 0;
         $N1 = $countLives[1] ?? 0;
 
-        if ($N2 !== 0 && $N1 !== 0 ) {
+        if ($N2 !== 0 && $N1 !== 0) {
             $twoLifePrize = ($this->prize_pool / ($N2 * 3 + $N1)) * ($N2 * 3) / $N2;
             $oneLifePrize = $twoLifePrize / 3;
         } else {
@@ -303,7 +318,6 @@ class Tournament implements TournamentInterface
                 $twoLifePrize = $this->prize_pool / $N2;
             }
         }
-
 
 
         //Раздаем призы
@@ -383,8 +397,7 @@ class Tournament implements TournamentInterface
         if ($this->checkIfTournamentShouldContinue()) {
             $this->toss();
         } else {
-            $this->setStatus(self::STATUS_ENDED);
-            $this->reward();
+            $this->end();
         }
 
         $this->save();
@@ -466,8 +479,7 @@ class Tournament implements TournamentInterface
         $playersInGame = (new PlayersTDG())->getPlayersInGame($this);
 
         if (!count($playersInGame) >= 10) {
-            $this->setStatus(self::STATUS_ENDED);
-            $this->reward();
+            $this->end();
         }
 
         $this->save();
@@ -502,7 +514,7 @@ class Tournament implements TournamentInterface
             $estimation[] = Utils::estimateRounds($players);
         }
 
-        return round(array_sum($estimation)/$cycles, 0, PHP_ROUND_HALF_UP);
+        return round(array_sum($estimation) / $cycles, 0, PHP_ROUND_HALF_UP);
     }
 
     /**
@@ -511,11 +523,12 @@ class Tournament implements TournamentInterface
      */
     public function hydrate(array $values)
     {
-        $values['name'] ? $this->setName($values['name']) : $this->setName('');
-        $values['date'] ? $this->setDate($values['date']) : $this->setDate('');
-        $values['prize_pool'] ? $this->setPrizePool($values['prize_pool']) : $this->setPrizePool(null);
-        $values['owner_id'] ? $this->setOwnerId($values['owner_id']) : $this->setOwnerId('');
-        $values['type'] ? $this->setType($values['type']) : $this->setType(null);
+        $this->setName($values['name'] ?? '');
+        $this->setDate($values['date'] ?? '');
+        $this->setPrizePool($values['prize_pool'] ?? null);
+        $this->setOwnerId($values['owner_id'] ?? '');
+        $this->setType($values['type'] ?? null);
+
         if (isset($values['players']) && $values['players']) {
             $this->setPlayers($values['players']);
         }
@@ -672,14 +685,6 @@ class Tournament implements TournamentInterface
     }
 
     /**
-     * @return mixed
-     */
-    public function getRoundCount()
-    {
-        return $this->round_count;
-    }
-
-    /**
      * @param mixed $round_count
      */
     public function setRoundCount($round_count): void
@@ -706,7 +711,7 @@ class Tournament implements TournamentInterface
     /**
      * @return mixed
      */
-    public function getLoosers()
+    public function getLoosers(): array
     {
         return (new PlayersTDG())->getLoosers($this);
     }
@@ -765,4 +770,9 @@ class Tournament implements TournamentInterface
         return $toss;
     }
 
+    private function end(): void
+    {
+        $this->setStatus(self::STATUS_ENDED);
+        $this->reward();
+    }
 }

@@ -1,10 +1,6 @@
 <?php
 
-namespace App\tests;
-//Bootstrap file
-use App\models\TournamentTDG;
-
-require_once '../../bootstrap.php';
+namespace App\Tests;
 
 class TournamentTDGTest extends \PHPUnit_Framework_TestCase
 {
@@ -13,10 +9,10 @@ class TournamentTDGTest extends \PHPUnit_Framework_TestCase
     {
         $tdg = new TournamentTDG();
         $tournaments = $tdg->getTournamentsByUser(14);
-        $this->assertContainsOnlyInstancesOf('\App\models\Tournament', $tournaments);
+        $this->assertContainsOnlyInstancesOf('\App\\Models\tournament\Tournament', $tournaments);
         foreach ($tournaments as $tournament) {
             $players = $tournament->getPlayers();
-            $this->assertContainsOnlyInstancesOf('\App\models\Players', $players);
+            $this->assertContainsOnlyInstancesOf('\App\Models\Players', $players);
         }
     }
 
@@ -24,7 +20,7 @@ class TournamentTDGTest extends \PHPUnit_Framework_TestCase
     {
         $tdg = new TournamentTDG();
         $tournaments = $tdg->getTournamentById(8);
-        $this->assertInstanceOf('\App\models\Tournament', $tournaments);
+        $this->assertInstanceOf('\App\\Models\tournament\Tournament', $tournaments);
 
     }
 

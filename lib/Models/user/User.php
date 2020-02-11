@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App\models;
+namespace App\Models\User;
 
 
 class User
@@ -38,6 +38,7 @@ class User
         $this->hash = $values['hash'] = password_hash($password, PASSWORD_DEFAULT);
         $this->tdg->insertValues($values);
     }
+
     public function validate(): array
     {
 

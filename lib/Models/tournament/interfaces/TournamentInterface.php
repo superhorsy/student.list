@@ -1,11 +1,11 @@
 <?php
 
-namespace App\models\tournament\interfaces;
+namespace App\Models\Tournament\Interfaces;
 
 
 /**
  * Class Tournament
- * @package App\models
+ * @package App\Models
  */
 interface TournamentInterface
 {
@@ -47,8 +47,6 @@ interface TournamentInterface
 
     public function setCurrentRound($current_round): void;
 
-    public function getRoundCount();
-
     public function setRoundCount($round_count): void;
 
     public function setToss($toss): void;
@@ -57,9 +55,9 @@ interface TournamentInterface
 
     public function getPlayersByTeam($team);
 
-    public function getWaitingPlayers();
+    public function getWaitingPlayers(): array;
 
-    public function getLoosers();
+    public function getLoosers(): array;
 
     public function setLoosers($loosers): void;
 

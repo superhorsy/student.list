@@ -1,8 +1,9 @@
 <?php
 
-namespace App\models;
+namespace App\Models\Tournament;
 
-use App\models\tournament\interfaces\TournamentInterface;
+use App\Components\TDG;
+use App\Models\Tournament\Interfaces\TournamentInterface;
 use PDO;
 
 class TournamentTDG extends TDG
@@ -12,11 +13,11 @@ class TournamentTDG extends TDG
         $values = [
             'name' => $tournament->name,
             'date' => $tournament->date,
-            'owner_id' => $tournament->getOwnerId(),
+            'owner_id' => $tournament->owner_id,
             'prize_pool' => $tournament->prize_pool,
             'type' => $tournament->type,
         ];
-        if (method_exists('getRegions', $tournament)) {
+        if (isset($tournament->regions)) {
             $values = array_merge($values, ['regions' => json_encode($tournament->regions, JSON_UNESCAPED_UNICODE)]);
         }
 
@@ -33,13 +34,13 @@ class TournamentTDG extends TDG
             'owner_id' => $tournament->owner_id,
             'status' => $tournament->status,
             'current_round' => $tournament->current_round,
-            'round_count' => $tournament->getRoundCount(),
+            'round_count' => $tournament->round_count,
             'toss' => json_encode($tournament->getToss(), JSON_UNESCAPED_UNICODE),
             'prize_pool' => $tournament->prize_pool,
             'type' => $tournament->type,
         ];
 
-        if (method_exists('getRegions', $tournament)) {
+        if (method_exists($tournament, 'getRegions')) {
             $values = array_merge($values, ['regions' => json_encode($tournament->regions, JSON_UNESCAPED_UNICODE)]);
         }
 
@@ -90,7 +91,7 @@ class TournamentTDG extends TDG
     private function getObj($id, $type): TournamentInterface
     {
         return $this->connection->query("SELECT * FROM `tournament` WHERE `id` = {$id}")
-            ->fetchObject(TournamentFactory::TOURNAMENT_CLASS[$type]);
+            ->fetchObject(TournamentFactory::TOURNAMENT_CLASS[(int)$type]);
     }
 
 }

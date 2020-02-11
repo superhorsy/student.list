@@ -1,10 +1,9 @@
 <?php
 
 
-namespace App\models;
+namespace App\Models\Tournament;
 
-
-use App\components\exceptions\TournamentException;
+use App\Components\Exceptions\TournamentException;
 
 class TournamentFactory
 {

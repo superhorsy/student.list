@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App;
+namespace App\Components;
 
 
 class ErrorHandler
@@ -18,7 +18,7 @@ class ErrorHandler
 
     private function showError($errno, $errstr, $file, $line, $status = '500')
     {
-        $message = "Номер ошибки " . $errno . ': ' . $errstr . $file . $line .  PHP_EOL;
+        $message = "Номер ошибки " . $errno . ': ' . $errstr . $file . $line . PHP_EOL;
         $config = parse_ini_file(ROOT . '/../config.ini');
         $pathToLog = $config['log'];
         error_log($message, 3, $pathToLog);

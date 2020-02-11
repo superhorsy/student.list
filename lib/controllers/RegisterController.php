@@ -2,10 +2,9 @@
 
 namespace App\Controllers;
 
-use App\models\User;
-use App\models\UserTDG;
-use App\Utils;
-use App\View;
+use App\Components\Utils;
+use App\Components\View;
+use App\Models\User\User;
 
 class RegisterController
 {

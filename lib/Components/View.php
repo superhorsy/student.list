@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Components;
 
 use Twig_Environment;
 use Twig_Error_Loader;

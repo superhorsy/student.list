@@ -1,15 +1,15 @@
 <?php
 
 
-namespace App\components;
+namespace App\Components;
 
 
 class EndConditions
 {
 
-    public static function checkIfShouldContinueTournament(array $region2count):bool
+    public static function checkIfShouldContinueTournament(array $region2count): bool
     {
-        return ! (static::endCondition1Happend($region2count));
+        return !(static::endCondition1Happend($region2count));
     }
 
     /**
@@ -34,6 +34,19 @@ class EndConditions
         }
 
         if ($countOthers > 5) return false;
+
+        return true;
+    }
+
+    /**
+     * Когда нет регионов с количеством участников больше 5
+     * и сумма всех оставшихся меньше 10
+     *
+     * @return bool
+     */
+    private static function endCondition2Happend(array $region2count)
+    {
+        if (max($region2count) >= 5 || array_sum($region2count) <= 10) return false;
 
         return true;
     }

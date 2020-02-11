@@ -2,9 +2,9 @@
 
 namespace App\Controllers;
 
-use App\models\User;
-use App\models\UserTDG;
-use App\Utils;
+use App\Components\Utils;
+use App\Components\View;
+use App\Models\User\User;
 
 class IndexController
 {
@@ -18,7 +18,7 @@ class IndexController
             $_SESSION['token_login'] = md5(uniqid(mt_rand(), true));
         }
 
-        $this->view = new \App\View();
+        $this->view = new View();
     }
 
     public function action()

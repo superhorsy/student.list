@@ -1,8 +1,7 @@
 <?php
 
-namespace App\Models;
+namespace App\Components;
 
-use App\Config;
 use PDO;
 
 abstract class TDG
@@ -28,8 +27,8 @@ abstract class TDG
             $type = $config->type;
             $dsn = "$type:host=$mysql_host;dbname=$mysql_database;charset=utf8mb4"; // utf8mb4, чтобы создаваемые в ней таблицы поддерживали хранение любых символов Юникода
             $dsn_Options = [
-                PDO::ATTR_ERRMODE               => PDO::ERRMODE_EXCEPTION,                                              // выводит ошибки SQL при взаимодействии с базой
-                PDO::MYSQL_ATTR_INIT_COMMAND    => "SET sql_mode='STRICT_TRANS_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE';"   //строгий режим MySQL
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,                                              // выводит ошибки SQL при взаимодействии с базой
+                PDO::MYSQL_ATTR_INIT_COMMAND => "SET sql_mode='STRICT_TRANS_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE';"   //строгий режим MySQL
             ];
             $db = new PDO($dsn, $mysql_user, $mysql_password, $dsn_Options);
         }
@@ -39,7 +38,7 @@ abstract class TDG
     protected function getTableName()
     {
         $className = mb_strtolower(get_class($this));
-        $tableName = preg_match('~\\\\([a-z]*)tdg$~u', $className,$matches);
+        $tableName = preg_match('~\\\\([a-z]*)tdg$~u', $className, $matches);
 
         return $matches[1];
     }
@@ -60,7 +59,7 @@ abstract class TDG
      * Подгрузка всех значений из БД
      * @return array
      */
-    public function getAll():array
+    public function getAll(): array
     {
         $dataArray = $this->connection->query("SELECT * FROM `$this->table`")->fetchAll(PDO::FETCH_ASSOC);
         return $dataArray;
@@ -84,7 +83,7 @@ abstract class TDG
         }
 
         $columnString = "`" . implode("`, `", $columns) . "`";
-        $columnBindString = implode(', ',$bind);
+        $columnBindString = implode(', ', $bind);
 
 
         //Creating variable for "Prepare"
@@ -117,7 +116,7 @@ abstract class TDG
 
         $bind = array();
 
-        foreach($values as $key => $value) {
+        foreach ($values as $key => $value) {
             $bind[] = "`$key` = :$key";
         }
 

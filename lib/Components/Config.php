@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App;
+namespace App\Components;
 
 
 class Config
@@ -23,9 +23,5 @@ class Config
         foreach ($config as $key => $value) {
             $this->$key = $value;
         }
-    }
-
-    protected function __clone()
-    {
     }
 }

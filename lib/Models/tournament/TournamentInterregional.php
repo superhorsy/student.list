@@ -1,15 +1,16 @@
 <?php
 
 
-namespace App\models;
+namespace App\Models\Tournament;
 
-use App\components\EndConditions;
-use App\models\tournament\interfaces\TournamentInterface;
-use App\models\tournament\TossInterregional;
+use App\Components\EndConditions;
+use App\Models\Player\Players;
+use App\Models\Player\PlayersTDG;
+use App\Models\Tournament\Interfaces\TournamentInterface;
 
 class TournamentInterregional extends Tournament implements TournamentInterface
 {
-    private $regions = [];
+    protected $regions = [];
 
     public function __construct()
     {
@@ -25,19 +26,12 @@ class TournamentInterregional extends Tournament implements TournamentInterface
      */
     public function hydrate(array $values)
     {
-        $values['name'] ? $this->setName($values['name']) : $this->setName('');
-        $values['date'] ? $this->setDate($values['date']) : $this->setDate('');
-        $values['prize_pool'] ? $this->setPrizePool($values['prize_pool']) : $this->setPrizePool(null);
-        $values['owner_id'] ? $this->setOwnerId($values['owner_id']) : $this->setOwnerId('');
-        $values['type'] ? $this->setType($values['type']) : $this->setType(null);
+        parent::hydrate($values);
+
         if ($values['regions'] && !empty($values['regions'])) {
             array_map('trim', $values['regions']);
             $this->setRegions($values['regions']);
         }
-        if (isset($values['players']) && $values['players']) {
-            $this->setPlayers($values['players'], $values['regions']);
-        }
-
     }
 
     /**
@@ -46,14 +40,6 @@ class TournamentInterregional extends Tournament implements TournamentInterface
     public function setRegions(array $regions): void
     {
         $this->regions = $regions;
-    }
-
-    /**
-     * @param array $regions
-     */
-    public function getRegions(): void
-    {
-        return $this->regions;
     }
 
     /**
@@ -213,9 +199,9 @@ class TournamentInterregional extends Tournament implements TournamentInterface
     {
         $alivePlayers = $this->getAlivePlayers();
 
-        /*if (count($alivePlayers) < 10) {
+        if (count($alivePlayers) < 10) {
             return false;
-        }*/
+        }
 
         $countPlayersByRegions = $this->getRegionsToPlayerCount($alivePlayers);
 

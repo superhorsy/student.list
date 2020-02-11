@@ -1,9 +1,10 @@
 <?php
 
 
-namespace App\models;
+namespace App\Models\User;
 
 
+use App\Components\TDG;
 use PDO;
 
 class UserTDG extends TDG
@@ -36,13 +37,13 @@ class UserTDG extends TDG
         return $hash ? $hash : false;
     }
 
-    public function getUser($idOrUsername):?User
+    public function getUser($idOrUsername): ?User
     {
         $sql = "SELECT `id`, `username`, `name`, `email`, `hash` FROM `user` WHERE `username` = ? OR `id` = ?";
         $stmt = $this->connection->prepare($sql);
         if ($stmt) {
             $stmt->execute(["$idOrUsername", "$idOrUsername"]);
-            $user = $stmt->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, '\App\models\User');
+            $user = $stmt->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, User::class);
             if ($user[0]) {
                 return $user[0];
 
@@ -51,7 +52,7 @@ class UserTDG extends TDG
         return null;
     }
 
-    public function getUserData($idOrUsername):?array
+    public function getUserData($idOrUsername): ?array
     {
         $sql = "SELECT `id`, `username`, `name`, `email`, `hash` FROM `user` WHERE `username` = ? OR `id` = ?";
         $stmt = $this->connection->prepare($sql);
@@ -65,4 +66,4 @@ class UserTDG extends TDG
         return null;
     }
 
-    }
+}
