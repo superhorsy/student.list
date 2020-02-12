@@ -1,0 +1,33 @@
+<div class="btn-group container-fluid" role="group">
+    <button name='tournament_action' value='start' class="btn btn-success" type="submit">Начать
+        турнир
+    </button>
+    <button type="button" class="btn btn-secondary" onclick="window.location.href='/tournament/'">
+        Вернуться к перечню турниров
+    </button>
+</div>
+<table class="table table-striped">
+
+
+    <thead class="thead-light">
+    <tr>
+        <th scope="col">№</th>
+        <th scope="col">Ник</th>
+        {% if t.type == 2 %}
+            <th scope="col">Регион</th>
+        {% endif %}
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for k,p in t.players %}
+        <tr>
+            <th scope="row">{{ k+1 }}</th>
+            <td>{{ p.nickname }}</td>
+            {% if t.type == 2 %}
+                <td>{{ p.region }}</td>
+            {% endif %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

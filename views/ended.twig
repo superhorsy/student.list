@@ -1,0 +1,45 @@
+<div class="btn-group container-fluid" role="group">
+    <button type="button" class="btn btn-secondary" onclick="window.location.href='/tournament/'">
+        Вернуться к перечню турниров
+    </button>
+    <button name='tournament_action' value='reset' type="submit" class="btn btn-danger">Сбросить
+        прогресс турнира
+    </button>
+</div>
+<table class="table table-striped">
+    <h4>Участники:</h4>
+    <br>
+    <thead class="thead-light">
+    <tr>
+        <th scope="col">№</th>
+        <th scope="col">Ник</th>
+        {% if t.type == 2 %}
+            <th scope="col">Регион</th>
+        {% endif %}
+        <th scope="col">Жизни</th>
+        <th scope="col">Побед</th>
+        <th scope="col">Игр</th>
+        {% if t.prize_pool %}
+            <th scope="col">Награда</th>
+        {% endif %}
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for number,p in t.playersOrderedByLives %}
+        <tr>
+            <th scope="row">{{ number+1 }}</th>
+            <td>{{ p.nickname }}</td>
+            {% if t.type == 2 %}
+                <td>{{ p.region }}</td>
+            {% endif %}
+            <td>{{ p.lives }}</td>
+            <td>{{ p.wins }}</td>
+            <td>{{ p.gamesPlayed|default(0) }}</td>
+            {% if t.prize_pool %}
+                <td>{{ p.prize }}</td>
+            {% endif %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

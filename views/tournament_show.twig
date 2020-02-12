@@ -4,9 +4,13 @@
         <h1 class="display-4">Турнир {{ t.name }}</h1>
         <p class="lead">Дата проведения: {{ t.date }}</p>
         <hr class="my-4">
+        {% if t.status = 'ended' %}
+            <p>Всего раундов: {{ t.current_round }}</p>
+        {% endif %}
         {% if t.status != 'ended' and t.estimation %}
-            {% if t.currentRound %}
-                <p>Текущий раунд: {{ t.currentRound }}</p>
+            {% if t.current_round %}
+
+                <p>Текущий раунд: {{ t.current_round }}</p>
             {% endif %}
             {% if t.estimation %}
                 <p>Оценка количества раундов до конца турнира: {{ t.estimation }}</p>
@@ -31,271 +35,15 @@
                    value="{{ session.token_tournament }}">
 
             {% if t.status == 'awaiting' %}
-                <div class="btn-group container-fluid" role="group">
-                    <button name='tournament_action' value='start' class="btn btn-success" type="submit">Начать
-                        турнир
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="window.location.href='/tournament/'">
-                        Вернуться к перечню турниров
-                    </button>
-                </div>
-                <table class="table table-striped">
-
-
-                    <thead class="thead-light">
-                    <tr>
-                        <th scope="col">№</th>
-                        <th scope="col">Ник</th>
-                        {% if t.type == 2 %}
-                            <th scope="col">Регион</th>
-                        {% endif %}
-                    </tr>
-                    </thead>
-
-                    <tbody>
-                    {% for k,p in t.players %}
-                        <tr>
-                            <th scope="row">{{ k+1 }}</th>
-                            <td>{{ p.nickname }}</td>
-                            {% if t.type == 2 %}
-                                <td>{{ p.region }}</td>
-                            {% endif %}
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
+                {% include 'awaiting.twig' %}
             {% endif %}
 
             {% if t.status == 'in progress' %}
-                <!--Кнопки управления-->
-                {% if is_owner %}
-                    <div class="fixed-bottom btn-group container-fluid" role="group">
-                        <button name='tournament_action' value='next' type="submit" class="btn btn-success">Продолжить
-                        </button>
-                        <button name='tournament_action' value='send_home_without_toss' type="submit"
-                                class="btn btn-secondary">Применить
-                            действия без жеребьевки
-                        </button>
-                        <button name='tournament_action' value='replace' type="submit" class="btn btn-secondary">
-                            Поменять двух выбранных игроков местами
-                        </button>
-                        <button name='tournament_action' value='send_home' type="submit" class="btn btn-danger">
-                            Применить
-                            действия и повторить жеребьевку
-                        </button>
-                        <button id="tournament_finish" name='tournament_action' value='finish' type="submit"
-                                class="btn btn-danger">Завершить турнир с подведением итогов
-                        </button>
-                        <button id="tournament_reset" name='tournament_action' value='reset' type="submit"
-                                class="btn btn-danger">Сбросить
-                            прогресс турнира
-                        </button>
-                    </div>
-                {% endif %}
-                {% for pair in t.getToss %}
-                    <div class="row border m-3 p-0 no-gutters">
-                        {% for k,team in pair %}
-                            <div class="col">
-                                <div id="team_card" class="card align-middle bg-dark text-white">
-                                    <img src="https://dota2.ru/img/heroes/{{ team|lower|replace({' ': '_', '-':'_'}) }}/portrait.jpg"
-                                         class="card-img" alt="{{ team }}" style="opacity: 0.4">
-                                    <div class="card-img-overlay">
-                                        <div class="card-title text-center"><h5><b>Команда {{ team }}</b></h5></div>
-                                        <div>
-                                            <table class="table text-white">
-
-                                                <thead class="thead">
-                                                <tr>
-                                                    <th scope="col">Ник</th>
-                                                    {% if t.type == 2 %}
-                                                        <th scope="col">Регион</th>
-                                                    {% endif %}
-                                                    <th scope="col">Жизни</th>
-                                                    {% if is_owner %}
-                                                        <th scope="col">Действия</th>
-                                                    {% endif %}
-                                                    <th scope="col">Побед</th>
-                                                    <th scope="col">Игр</th>
-                                                    <th scope="col"></th>
-                                                </tr>
-                                                </thead>
-
-                                                <tbody>
-                                                {% for p in t.playersByTeam(team) %}
-                                                    <tr class="panel-heading">
-                                                        <td>{{ p.nickname }}</td>
-                                                        {% if t.type == 2 %}
-                                                            <td>{{ p.region }}</td>
-                                                        {% endif %}
-                                                        <td>
-                                                            <span class="badge badge-pill badge-info">{{ p.lives }}</span>
-                                                        </td>
-                                                        {% if is_owner %}
-                                                            <td>
-                                                                <select name="sendHome[{{ p.id }}]"
-                                                                        class="custom-select custom-select-sm">
-                                                                    <option disabled selected>Выбрать опции</option>
-                                                                    <option value="1">Cнять с посева</option>
-                                                                    <option value="2">Убрать жизнь и снять с посева
-                                                                    </option>
-                                                                    <option value="3">Дисквалифицировать</option>
-                                                                </select>
-                                                            </td>
-                                                        {% endif %}
-                                                        <td>{{ p.wins }}</td>
-                                                        <td>{{ p.getGamesPlayed|default(0) }}</td>
-                                                        <td><input class="replace" type="checkbox" name="replace[]"
-                                                                   value="{{ p.id }}"></td>
-                                                    </tr>
-                                                {% endfor %}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            {% if is_owner and pair[k+1] %}
-                                <div class="col-sm-1">
-                                    <select name="winners[]" class="custom-select">
-                                        <option value="" disabled selected>Победитель</option>
-                                        {% for team in pair %}
-                                            <option value="{{ team }}">{{ team }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                {% endfor %}
-
-                <!--Ожидающие-->
-                {% if t.waitingPlayers %}
-                    <div class="container-fluid">
-                        <div>
-                            <h5 class="text-center">Ожидающие</h5>
-                            <table class="table table-striped">
-                                <thead class="thead-light">
-                                <tr>
-                                    <th scope="col">Ник</th>
-                                    {% if t.type == 2 %}
-                                        <th scope="col">Регион</th>
-                                    {% endif %}
-                                    <th scope="col">Жизни</th>
-                                    <th scope="col">Побед</th>
-                                    <th scope="col">Игр сыграно</th>
-                                    <th scope="col">Отметка</th>
-                                    <th scope="col"></th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {% for p in t.waitingPlayers %}
-                                    <tr>
-                                        <td>{{ p.nickname }}</td>
-                                        {% if t.type == 2 %}
-                                            <td>{{ p.region }}</td>
-                                        {% endif %}
-                                        <td>
-                                            <span class="badge badge-pill badge-info">{{ p.lives }}</span>
-                                        </td>
-                                        <td>{{ p.wins }}</td>
-                                        <td>{{ p.gamesPlayed }}</td>
-                                        <td>
-                                            {% if p.isSuspended %}
-                                                <span class="badge badge-pill badge-danger">Отстранен от раунда</span>
-                                            {% endif %}
-                                        </td>
-                                        <td><input class="replace" type="checkbox" name="replace[]" value="{{ p.id }}">
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                {% endif %}
-
-                <!--Выбывшие-->
-                {% if t.getLoosers %}
-                    <div class="container-fluid">
-                        <div>
-                            <h5 class="text-center">Выбывшие</h5>
-                            <table class="table table-striped">
-                                <thead class="thead-light">
-                                <tr>
-                                    <th scope="col">Ник</th>
-                                    {% if t.type == 2 %}
-                                        <th scope="col">Регион</th>
-                                    {% endif %}
-                                    <th scope="col">Жизни</th>
-                                    <th scope="col">Побед</th>
-                                    <th scope="col">Игр сыграно</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {% for p in t.getLoosers %}
-                                    <tr>
-                                        <td>{{ p.nickname }}</td>
-                                        {% if t.type == 2 %}
-                                            <td>{{ p.region }}</td>
-                                        {% endif %}
-                                        <td>{{ p.lives }}</td>
-                                        <td>{{ p.wins }}</td>
-                                        <td>{{ p.gamesPlayed }}</td>
-                                    </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                {% endif %}
+                {% include 'in_progress.twig' %}
             {% endif %}
 
             {% if t.status == 'ended' %}
-                <div class="btn-group container-fluid" role="group">
-                    <button type="button" class="btn btn-secondary" onclick="window.location.href='/tournament/'">
-                        Вернуться к перечню турниров
-                    </button>
-                    <button name='tournament_action' value='reset' type="submit" class="btn btn-danger">Сбросить
-                        прогресс турнира
-                    </button>
-                </div>
-                <table class="table table-striped">
-                    <h4>Участники:</h4>
-                    <br>
-                    <thead class="thead-light">
-                    <tr>
-                        <th scope="col">№</th>
-                        <th scope="col">Ник</th>
-                        {% if t.type == 2 %}
-                            <th scope="col">Регион</th>
-                        {% endif %}
-                        <th scope="col">Жизни</th>
-                        <th scope="col">Побед</th>
-                        <th scope="col">Игр</th>
-                        {% if t.prize_pool %}
-                            <th scope="col">Награда</th>
-                        {% endif %}
-                    </tr>
-                    </thead>
-
-                    <tbody>
-                    {% for number,p in t.playersOrderedByLives %}
-                        <tr>
-                            <th scope="row">{{ number+1 }}</th>
-                            <td>{{ p.nickname }}</td>
-                            {% if t.type == 2 %}
-                                <td>{{ p.region }}</td>
-                            {% endif %}
-                            <td>{{ p.lives }}</td>
-                            <td>{{ p.wins }}</td>
-                            <td>{{ p.gamesPlayed|default(0) }}</td>
-                            {% if t.prize_pool %}
-                                <td>{{ p.prize }}</td>
-                            {% endif %}
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
+                {% include 'ended.twig' %}
             {% endif %}
         </div>
 
