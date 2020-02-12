@@ -6,7 +6,7 @@ namespace App\Models\Tournament;
 use App\Components\EndConditions;
 use App\Models\Player\Players;
 use App\Models\Player\PlayersTDG;
-use App\Models\Tournament\nterfaces\TournamentInterface;
+use App\Models\Tournament\Interfaces\TournamentInterface;
 
 class TournamentInterregional extends Tournament implements TournamentInterface
 {

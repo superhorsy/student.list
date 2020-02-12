@@ -3,5 +3,3 @@ views/cache
 /htdocs/tournament_logs/
 /vendor/
 vendor
-.idea
-vendor

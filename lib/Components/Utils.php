@@ -3,7 +3,7 @@
 
 namespace App\Components;
 
-use App\Models\Tournament\nterfaces\TournamentInterface;
+use App\Models\Tournament\Interfaces\TournamentInterface;
 
 class Utils
 {

@@ -7,8 +7,8 @@ namespace App\Models\Tournament;
 use App\Components\Arr;
 use App\Components\Utils;
 use App\Models\Player\Players;
+use App\Models\Tournament\Interfaces\TournamentInterface;
 use App\Models\Tournament\nterfaces\Toss;
-use App\Models\Tournament\nterfaces\TournamentInterface;
 
 class TossInterregional implements Toss
 {

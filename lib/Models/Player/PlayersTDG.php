@@ -5,7 +5,7 @@ namespace App\Models\Player;
 
 
 use App\Components\TDG;
-use App\Models\Tournament\nterfaces\TournamentInterface;
+use App\Models\Tournament\Interfaces\TournamentInterface;
 use PDO;
 
 class PlayersTDG extends TDG
