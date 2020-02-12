@@ -4,7 +4,7 @@
         <h1 class="display-4">Турнир {{ t.name }}</h1>
         <p class="lead">Дата проведения: {{ t.date }}</p>
         <hr class="my-4">
-        {% if t.status = 'ended' %}
+        {% if t.status == 'ended' %}
             <p>Всего раундов: {{ t.current_round }}</p>
         {% endif %}
         {% if t.status != 'ended' and t.estimation %}

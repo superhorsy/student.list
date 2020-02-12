@@ -7,8 +7,8 @@ namespace App\Models\Tournament;
 use App\Components\Arr;
 use App\Components\Utils;
 use App\Models\Player\Players;
+use App\Models\Tournament\Interfaces\Toss;
 use App\Models\Tournament\Interfaces\TournamentInterface;
-use App\Models\Tournament\nterfaces\Toss;
 
 class TossInterregional implements Toss
 {
@@ -65,10 +65,16 @@ class TossInterregional implements Toss
         //Имена комманд
         $teamNames = Utils::getDotaTeamNames();
 
-        shuffle($waited);
-        shuffle($other);
+        /*$waited = $this->sortByGamesPlayed($waited);
+        $other = $this->sortByGamesPlayed($other);*/
 
-        //Получаем игроков для каждого региона
+        $players = $this->sortByGamesPlayed(array_merge($waited, $other));
+        $playersByRegion = [];
+        foreach ($players as $player) {
+            $playersByRegion[$player->region][] = $player;
+        }
+
+        /*//Получаем игроков для каждого региона
         $playersByRegion = [];
         //Сначала ждавшие
         foreach ($waited as $player) {
@@ -77,7 +83,7 @@ class TossInterregional implements Toss
         //Затем остальные
         foreach ($other as $player) {
             $playersByRegion[$player->region][] = $player;
-        }
+        }*/
 
         $i = 1;
 
@@ -134,9 +140,9 @@ class TossInterregional implements Toss
 
         if (!empty($withoutPair)) {
             foreach ($withoutPair as $player) {
-                $region = $withoutPair[0]->region;
-                $team = $withoutPair[0]->team;
-                if (Arr::has($this->regions,$region)) {
+                $region = $player->region;
+                $team = $player->team;
+                if (Arr::has($this->regions, $region)) {
                     $teamKey = array_search($team, Arr::get($this->regions, $region));
                     Arr::pull($this->regions, "$region.$teamKey");
                 } else {
@@ -145,8 +151,6 @@ class TossInterregional implements Toss
                 }
             }
         }
-
-        /*if (count(Arr::flatten($this->regions)) % 2 !== 0) xdebug_break();*/
 
         //Ждущие + последние игроки из миксуемых (не хватит на команду) + игроки из непарной команды
         foreach (array_merge($last, $toWait, $withoutPair) as $player) {
@@ -201,5 +205,10 @@ class TossInterregional implements Toss
         }
         $toss[$groupNumber] = $group;
         return $toss;
+    }
+
+    private function sortByGamesPlayed(array $players)
+    {
+        return Arr::array_sort($players, 'games_played', SORT_ASC);
     }
 }

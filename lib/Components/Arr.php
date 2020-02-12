@@ -29,7 +29,7 @@ class Arr
     /**
      * Get an item from an array using "dot" notation.
      *
-     * @param \ArrayAccess|array $array
+     * @param ArrayAccess|array $array
      * @param string $key
      * @param mixed $default
      * @return mixed
@@ -73,7 +73,7 @@ class Arr
     /**
      * Determine if the given key exists in the provided array.
      *
-     * @param \ArrayAccess|array $array
+     * @param ArrayAccess|array $array
      * @param string|int $key
      * @return bool
      */
@@ -310,7 +310,7 @@ class Arr
     /**
      * Check if an item or items exist in an array using "dot" notation.
      *
-     * @param \ArrayAccess|array $array
+     * @param ArrayAccess|array $array
      * @param string|array $keys
      * @return bool
      */
@@ -456,7 +456,7 @@ class Arr
      * @param int|null $number
      * @return mixed
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public static function random($array, $number = null)
     {
@@ -665,5 +665,41 @@ class Arr
         }
         return $res;
     }
+
+    public static function array_sort($array, $on, $order = SORT_ASC)
+    {
+        $new_array = array();
+        $sortable_array = array();
+
+        if (count($array) > 0) {
+            foreach ($array as $k => $v) {
+                if (is_array($v)) {
+                    foreach ($v as $k2 => $v2) {
+                        if ($k2 == $on) {
+                            $sortable_array[$k] = $v2;
+                        }
+                    }
+                } else {
+                    $sortable_array[$k] = $v;
+                }
+            }
+
+            switch ($order) {
+                case SORT_ASC:
+                    asort($sortable_array);
+                    break;
+                case SORT_DESC:
+                    arsort($sortable_array);
+                    break;
+            }
+
+            foreach ($sortable_array as $k => $v) {
+                $new_array[$k] = $array[$k];
+            }
+        }
+
+        return $new_array;
+    }
+
 
 }
