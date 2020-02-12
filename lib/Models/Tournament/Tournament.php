@@ -8,7 +8,7 @@ use App\Components\Exceptions\CantBeContinuedException;
 use App\Components\Utils;
 use App\Models\Player\Players;
 use App\Models\Player\PlayersTDG;
-use App\Models\Tournament\Interfaces\TournamentInterface;
+use App\Models\Tournament\nterfaces\TournamentInterface;
 use DateTime;
 use Exception;
 use Throwable;
