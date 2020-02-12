@@ -65,7 +65,7 @@ class IndexController
                 $query = http_build_query(['notify'=>'logined']);
                 header("Location: /index?$query");
             }
-        };
+        }
 
         $this->view->render('index', [
             'notify' => $notify,

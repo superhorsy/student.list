@@ -61,7 +61,7 @@ class User
             if (!$this->tdg->isUsernameAvailable($username)) {
                 $errors['username'] = 'Данное имя пользователя занято.';
             }
-        };
+        }
 
         if (!(filter_has_var(INPUT_POST, 'name') &&
             (strlen(filter_input(INPUT_POST, 'name')) > 0))) {
