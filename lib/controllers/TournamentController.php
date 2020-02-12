@@ -107,6 +107,17 @@ class TournamentController extends Controller
                             case 'reset':
                                 $tournament->reset();
                                 break;
+                            case 'finish':
+                                $tournament->end();
+                                break;
+                            case 'replace':
+                                $playerIds = $_POST['replace'] ?? [];
+                                if (count($playerIds) !== 2) {
+                                    $errors[] = 'Должно быть отмечено ровно 2 игрока';
+                                } else {
+                                    $tournament->swapPlayersTeams($playerIds);
+                                }
+                                break;
                             case 'send_home':
                                 if (isset($_POST['sendHome']) && $_POST['sendHome']) {
                                     $data = [
@@ -174,7 +185,6 @@ class TournamentController extends Controller
 
     public function actionEdit(int $tournamentId)
     {
-
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $tournament = $this->tdg->getTournamentById($tournamentId, (int)$_POST['t_type']);
             if (!$_POST['token_tournament']) {
@@ -199,6 +209,5 @@ class TournamentController extends Controller
         }
 
         $this->view->render('tournament_add', ['user' => $this->user, 'errors' => $errors ?? null, 'tournament' => $tournament]);
-
     }
 }

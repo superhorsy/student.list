@@ -20,6 +20,7 @@ use Throwable;
 class Tournament implements TournamentInterface
 {
     protected $tdg;
+    protected $playersTdg;
 
     protected $id = null;
     protected $name = null;
@@ -49,6 +50,8 @@ class Tournament implements TournamentInterface
     public function __construct()
     {
         $this->tdg = new TournamentTDG();
+        $this->playersTdg = new PlayersTDG();
+
         if ($this->id) {
             $this->setPlayers();
         }
@@ -249,11 +252,10 @@ class Tournament implements TournamentInterface
         if ($shouldContinue) {
             $this->toss();
             $this->current_round++;
+            $this->save();
         } else {
             $this->end();
         }
-
-        $this->save();
     }
 
     private function updatePlayersAfterRoundResults(array $roundResult)
@@ -396,11 +398,10 @@ class Tournament implements TournamentInterface
 
         if ($this->checkIfTournamentShouldContinue()) {
             $this->toss();
+            $this->save();
         } else {
             $this->end();
         }
-
-        $this->save();
     }
 
     /**
@@ -480,9 +481,9 @@ class Tournament implements TournamentInterface
 
         if (!count($playersInGame) >= 10) {
             $this->end();
+        } else {
+            $this->save();
         }
-
-        $this->save();
     }
 
     public function getPlayersByTeam($team)
@@ -770,9 +771,24 @@ class Tournament implements TournamentInterface
         return $toss;
     }
 
-    private function end(): void
+    public function end(): void
     {
         $this->setStatus(self::STATUS_ENDED);
         $this->reward();
+        $this->save();
+    }
+
+    public function swapPlayersTeams(array $playerIds)
+    {
+        $player1 = $this->playersTdg->getPlayerbyID($playerIds[0]);
+        $player2 = $this->playersTdg->getPlayerbyID($playerIds[1]);
+
+        $team = $player1->getTeam();
+
+        $player1->setTeam($player2->getTeam());
+        $player2->setTeam($team);
+
+        $player1->save();
+        $player2->save();
     }
 }

@@ -31,8 +31,6 @@ interface TournamentInterface
 
     public function toss();
 
-    public function getId();
-
     public function setId($id): void;
 
     public function setName($name): void;
@@ -68,4 +66,6 @@ interface TournamentInterface
     public function reward();
 
     public function setType($type): void;
+
+    public function swapPlayersTeams(array $playerIds);
 }

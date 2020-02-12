@@ -139,4 +139,16 @@ abstract class TDG
         $exec = $myInsertStatment->execute();
 
     }
+
+    /**
+     * Returns object of given class
+     * @param $id
+     * @param $type
+     * @return mixed
+     */
+    protected function getObj($id, $class)
+    {
+        return $this->connection->query("SELECT * FROM {$this->table} WHERE id = {$id}")
+            ->fetchObject($class);
+    }
 }

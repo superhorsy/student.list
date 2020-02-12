@@ -7,8 +7,8 @@ namespace App\Models\Tournament;
 use App\Components\Arr;
 use App\Components\Utils;
 use App\Models\Player\Players;
-use App\Models\Tournament\Interfaces\TournamentInterface;
 use App\Models\Tournament\Interfaces\Toss;
+use App\Models\Tournament\Interfaces\TournamentInterface;
 
 class TossInterregional implements Toss
 {
@@ -72,11 +72,11 @@ class TossInterregional implements Toss
         $playersByRegion = [];
         //Сначала ждавшие
         foreach ($waited as $player) {
-            $playersByRegion[$player->getRegion()][] = $player;
+            $playersByRegion[$player->region][] = $player;
         }
         //Затем остальные
         foreach ($other as $player) {
-            $playersByRegion[$player->getRegion()][] = $player;
+            $playersByRegion[$player->region][] = $player;
         }
 
         $i = 1;
@@ -169,7 +169,7 @@ class TossInterregional implements Toss
         $countRegions = [];
         foreach ($regions as $name => $teams) {
             $countRegions[$name] = count($teams);
-        };
+        }
 
         $maxRegion = array_search(max($countRegions), $countRegions);
         $teams = Arr::get($regions,$maxRegion);

@@ -88,7 +88,7 @@ class TournamentTDG extends TDG
         return $stmt->execute() ? true : false;
     }
 
-    private function getObj($id, $type): TournamentInterface
+    protected function getObj($id, $type): TournamentInterface
     {
         return $this->connection->query("SELECT * FROM `tournament` WHERE `id` = {$id}")
             ->fetchObject(TournamentFactory::TOURNAMENT_CLASS[(int)$type]);

@@ -67,7 +67,7 @@ class TournamentInterregional extends Tournament implements TournamentInterface
         if ($this->players) {
             $regions = $this->regions;
             foreach ($this->players as $player) {
-                if (!in_array($player->getRegion(), $regions)) {
+                if (!in_array($player->region, $regions)) {
                     $errors[] = "Для игрока {$player->getNickname()} указан некорректный регион";
                 }
             }
@@ -108,13 +108,13 @@ class TournamentInterregional extends Tournament implements TournamentInterface
             /** @var Players $player */
             $player = (new PlayersTDG())->getPlayersbyTournamentID($this->id, $id)[0];
             $team = $player->getTeam();
-            $region = $player->getRegion();
+            $region = $player->region;
 
             $join = false;
             if ($changePlayers && !in_array($region, [Players::STATUS_OUT, Players::STATUS_WAIT])) {
                 /** @var Players $changePlayer */
                 foreach ($changePlayers as $key => $changePlayer) {
-                    $playerRegion = $changePlayer->getRegion();
+                    $playerRegion = $changePlayer->region;
                     if ($playerRegion == $region) {
                         $join = $changePlayer;
                         unset($changePlayers[$key]);

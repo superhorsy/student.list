@@ -10,6 +10,11 @@ use PDO;
 
 class PlayersTDG extends TDG
 {
+    public function getPlayerbyID(int $id): ?Players
+    {
+        return $this->getObj($id, Players::class) ?? null;
+    }
+
     public function getPlayersbyTournamentID($tournamentID, $ids = null): ?array
     {
         if ($ids) {

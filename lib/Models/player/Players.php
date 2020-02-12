@@ -251,14 +251,6 @@ class Players
     }
 
     /**
-     * @return null
-     */
-    public function getRegion()
-    {
-        return $this->region;
-    }
-
-    /**
      * @param null $region
      */
     public function setRegion($region): void

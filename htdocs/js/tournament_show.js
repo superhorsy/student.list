@@ -21,5 +21,7 @@ jQuery(document).ready(function ($) {
     $('#tournament_reset').click(function () {
         if (!confirm('Вы уверены?')) return false;
     });
-})
-;
+    $('#tournament_finish').click(function () {
+        if (!confirm('Вы уверены?')) return false;
+    });
+});
