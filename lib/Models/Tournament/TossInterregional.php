@@ -34,15 +34,6 @@ class TossInterregional implements Toss
     }
 
     /**
-     * Returns players after tossing
-     * @return mixed
-     */
-    public function getPlayers()
-    {
-        return $this->players;
-    }
-
-    /**
      * Присваивает игрокам команды
      */
     private function setTeams(): void
@@ -65,16 +56,10 @@ class TossInterregional implements Toss
         //Имена комманд
         $teamNames = Utils::getDotaTeamNames();
 
-        /*$waited = $this->sortByGamesPlayed($waited);
-        $other = $this->sortByGamesPlayed($other);*/
+        $waited = $this->sortByGamesPlayed($waited);
+        $other = $this->sortByGamesPlayed($other);
 
-        $players = $this->sortByGamesPlayed(array_merge($waited, $other));
-        $playersByRegion = [];
-        foreach ($players as $player) {
-            $playersByRegion[$player->region][] = $player;
-        }
-
-        /*//Получаем игроков для каждого региона
+        //Получаем игроков для каждого региона
         $playersByRegion = [];
         //Сначала ждавшие
         foreach ($waited as $player) {
@@ -83,7 +68,7 @@ class TossInterregional implements Toss
         //Затем остальные
         foreach ($other as $player) {
             $playersByRegion[$player->region][] = $player;
-        }*/
+        }
 
         $i = 1;
 
@@ -92,7 +77,7 @@ class TossInterregional implements Toss
 
             //While count of players > 5 we not mixing teams
             if (count($players) >= 5) {
-                $toWait = array_merge($toWait, array_splice($players, -(count($players) % 5), count($players) % 5));
+                $toWait = array_merge($toWait, Arr::popModuloFromEnd($players, 5));
                 foreach ($players as $player) {
                     $toPlay[] = $player;
                     $player->setTeam(current($teamNames));
@@ -105,7 +90,7 @@ class TossInterregional implements Toss
                     }
                 }
             } elseif (count($players) < 5) {
-                $toMix = array_merge($toMix, array_splice($players, -(count($players) % 5), count($players) % 5));
+                $toMix = array_merge($toMix, Arr::popModuloFromEnd($players, 5));
 
                 foreach ($players as $player) {
                     $toPlay[] = $player;
@@ -121,7 +106,8 @@ class TossInterregional implements Toss
             }
         }
 
-        $last = array_splice($toMix, -(count($toMix) % 5), count($toMix) % 5);
+        $last = Arr::popModuloFromEnd($toMix, 5);
+        $toMix = $this->sortByGamesPlayed($toMix);
 
         //Команды для игроков из неполных команд
         foreach ($toMix as $player) {
@@ -136,7 +122,7 @@ class TossInterregional implements Toss
             }
         }
 
-        $withoutPair = array_splice($toPlay, -(count($toPlay) % 10), count($toPlay) % 10);
+        $withoutPair = Arr::popModuloFromEnd($toPlay, 10);
 
         if (!empty($withoutPair)) {
             foreach ($withoutPair as $player) {
@@ -158,6 +144,14 @@ class TossInterregional implements Toss
         }
     }
 
+    private function sortByGamesPlayed(array $players)
+    {
+        usort($players, function ($a, $b) {
+            return $a->games_played - $b->games_played;
+        });
+        return $players;
+    }
+
     private function sortTeams(): array
     {
         $regions = $this->regions;
@@ -176,7 +170,7 @@ class TossInterregional implements Toss
         }
 
         $maxRegion = array_search(max($countRegions), $countRegions);
-        $teams = Arr::get($regions,$maxRegion);
+        $teams = Arr::get($regions, $maxRegion);
         $teamKey = array_key_first($teams);
 
         return Arr::pull($regions, "$maxRegion.$teamKey");
@@ -207,8 +201,12 @@ class TossInterregional implements Toss
         return $toss;
     }
 
-    private function sortByGamesPlayed(array $players)
+    /**
+     * Returns players after tossing
+     * @return mixed
+     */
+    public function getPlayers()
     {
-        return Arr::array_sort($players, 'games_played', SORT_ASC);
+        return $this->players;
     }
 }
