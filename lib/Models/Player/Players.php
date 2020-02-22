@@ -45,8 +45,9 @@ class Players
 
     public function __toString()
     {
-        return "Ник - {$this->nickname}, жизней - {$this->lives}, игр - {$this->games_played}, побед - {$this->wins}, 
-        отстранен - {$this->is_suspended}";
+        $suspended = $this->is_suspended ? ", ОТСТРАНЕН" : "";
+        return "Ник - {$this->nickname}, команда - {$this->team}, жизней - {$this->lives}, игр - {$this->games_played}, побед - {$this->wins} 
+        $suspended <br>";
     }
 
     /**

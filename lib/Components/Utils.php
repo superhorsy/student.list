@@ -21,21 +21,22 @@ class Utils
         $filePath = $logsPath . DIRECTORY_SEPARATOR . date('y-m-d') . '_tournament_log.txt';
 
         $date = date('Y-m-d H:i:s');
-        $data = <<<TEXT
-$date {$tournament->name}
-Раунд {$tournament->current_round}
-Текущее распределение команд:
-TEXT;
+
+        $data = '';
+        $data .= "$date {$tournament->name}" . "<br>";
+        $data .= "Раунд {$tournament->current_round}" . "<br><br>";
+        $data .= "Текущее распределение команд:" . "<br><br>";
+
         foreach ($tournament->getToss() ?? [] as $pair) {
-            $data .= $pair[0] . '-' . $pair[1] . PHP_EOL;
+            $data .= $pair[0] . '-' . $pair[1] . "<br>";
         }
         foreach ($tournament->getPlayers() as $player) {
-            $data .= $player . PHP_EOL;
+            $data .= $player . "<br>";
         }
-        $data .= "______________________________________" . PHP_EOL;
+        $data .= "______________________________________" . "<br>";
 
 
-        file_put_contents($filePath, $data . PHP_EOL, FILE_APPEND | LOCK_EX);
+        file_put_contents($filePath, $data . "<br>", FILE_APPEND | LOCK_EX);
     }
 
     private static function trimValue($value)
@@ -78,7 +79,7 @@ TEXT;
             'players' => $values['players'] ?? '',
         ];
 
-        if (isset($values['t_region'])) {
+        if (isset($values['t_regions'])) {
             $result += ['regions' => explode(',', $values['t_regions'])];
         }
 

@@ -11,6 +11,6 @@ return array(
     '^tournament/edit/([\d]+)$' => 'tournament/edit/$1',
     '^tournament.+' => 'tournament',
     '^tournament' => 'tournament',
-
-    'about' => 'page/show/about',
+    '^logs/view/([\d]+)$' => 'logs/view/$1',
+    '^logs' => 'logs',
 );

@@ -1,0 +1,26 @@
+<div class="container content">
+    <h1 class="text-center">Имеющиеся логи</h1>
+    <br>
+    <table class="table table-striped container-fluid">
+
+        <thead class="thead-light">
+        <tr>
+            <th scope="col">№</th>
+            <th scope="col">Лог</th>
+            <th scope="col">Ссылка</th>
+        </tr>
+        </thead>
+
+        <tbody>
+
+        {% for number,log in logs %}
+            <tr>
+                <td>{{ number+1 }}</td>
+                <td>{{ log }}</td>
+                <td><a href="view/{{ log }}">Просмотр</a></td>
+            </tr>
+        {% endfor %}
+
+        </tbody>
+    </table>
+</div>
