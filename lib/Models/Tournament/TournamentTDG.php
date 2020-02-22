@@ -38,6 +38,7 @@ class TournamentTDG extends TDG
             'toss' => json_encode($tournament->getToss(), JSON_UNESCAPED_UNICODE),
             'prize_pool' => $tournament->prize_pool,
             'type' => $tournament->type,
+            'is_shown' => $tournament->is_shown,
         ];
 
         if (method_exists($tournament, 'getRegions')) {
@@ -71,6 +72,8 @@ class TournamentTDG extends TDG
         $stmt->execute();
         $tournament = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        if (!$tournament) return null;
+
         if (!$type) {
             if (in_array((int)$tournament[0]['type'], TournamentFactory::TOURNAMENT_TYPE)) {
                 $tournament = $this->getObj((int)$tournament[0]['id'], (int)$tournament[0]['type']);
@@ -78,7 +81,7 @@ class TournamentTDG extends TDG
         } else {
             $tournament = $this->getObj((int)$tournament[0]['id'], (int)$type);
         }
-        return $tournament ? $tournament : null;
+        return $tournament;
     }
 
     public function deleteTournamentById(string $tournamentID): bool

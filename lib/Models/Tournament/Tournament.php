@@ -42,6 +42,7 @@ class Tournament implements TournamentInterface
 
     protected $players = array();
     protected $loosers = array();
+    protected $is_shown;
 
     /**
      *
@@ -654,6 +655,14 @@ class Tournament implements TournamentInterface
     }
 
     /**
+     * @return null
+     */
+    public function setIsShown()
+    {
+        return $this->is_shown;
+    }
+
+    /**
      * @param null $owner_id
      */
     public function setOwnerId($owner_id): void
@@ -790,5 +799,11 @@ class Tournament implements TournamentInterface
 
         $player1->save();
         $player2->save();
+    }
+
+    public function toggleVisibility()
+    {
+        $this->is_shown = $this->is_shown == 0 ? 1 : 0;
+        $this->save();
     }
 }

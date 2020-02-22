@@ -49,9 +49,13 @@
                 </li>-->
             </ul>
             <?php if (isset($_COOKIE['auth'])): ?>
-                <form class="form-inline mt-2 mt-md-0">
-                    <a class="btn btn-outline-danger my-2 my-sm-0" role="button" href="/index/logout/">Выйти из
-                        аккаунта</a>
+                <form method="post" action="/index/logout/" class="form-inline mt-2 mt-md-0">
+                    <input name="token_logout" type="hidden"
+                           value="<?= htmlspecialchars($_SESSION['token_logout'], ENT_QUOTES); ?>">
+                    <button name="logout" id="submit-button" class="btn btn-outline-danger my-2 my-sm-0" type="submit">
+                        Выйти из
+                        аккаунта
+                    </button>
                 </form>
             <?php endif; ?>
             <!--Форма поиска-->

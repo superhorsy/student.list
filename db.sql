@@ -42,6 +42,7 @@ create table players
     region        varchar(255)  null,
     wins          int default 0 not null,
     games_played  int default 0 not null,
+    is_shown      int default 1 not null,
     constraint players_tournament_id_fk
         foreign key (tournament_id) references tournament (id)
             on update cascade on delete cascade

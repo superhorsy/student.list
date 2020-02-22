@@ -146,10 +146,18 @@ class TossInterregional implements Toss
 
     private function sortByGamesPlayed(array $players)
     {
-        usort($players, function ($a, $b) {
-            return $a->games_played - $b->games_played;
-        });
-        return $players;
+        $playersByGamesPlayed = [];
+        foreach ($players as $number => $player) {
+            $playersByGamesPlayed[$player->games_played][] = $player;
+        }
+        ksort($playersByGamesPlayed);
+        $result = [];
+        foreach ($playersByGamesPlayed as $gamesPlayed => $players) {
+            $item = $players;
+            shuffle($item);
+            $result += $item;
+        }
+        return $result;
     }
 
     private function sortTeams(): array

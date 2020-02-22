@@ -16,9 +16,11 @@
                 <p>Оценка количества раундов до конца турнира: {{ t.estimation }}</p>
             {% endif %}
         {% endif %}
-        <p class="lead">
-            <a class="btn btn-secondary schedule" role="button">Скопировать ссылку на расписание турнира</a>
-        </p>
+        {% if is_owner %}
+            <p class="lead">
+                <a class="btn btn-secondary schedule" role="button">Скопировать ссылку на расписание турнира</a>
+            </p>
+        {% endif %}
     </div>
 
     <br>
@@ -30,6 +32,13 @@
         </div>
     {% endif %}
     <form method="post" action="/tournament/show/{{ t.id }}/">
+        {% if is_owner and t.status == 'in_progress' %}
+            <button name='tournament_action' value='toggle_visibility' type="submit" class="btn btn-secondary">
+                Переключить
+                видимость турнира (сейчас
+                - {% if t.is_shown == 1 %} видим {% else %} невидим {% endif %})
+            </button>
+        {% endif %}
         <div>
             <input name="token_tournament" type="hidden"
                    value="{{ session.token_tournament }}">

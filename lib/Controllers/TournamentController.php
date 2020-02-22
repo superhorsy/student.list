@@ -3,6 +3,7 @@
 
 namespace App\Controllers;
 
+use App\Components\Arr;
 use App\Components\Controller;
 use App\Components\Exceptions\TournamentException;
 use App\Components\Utils;
@@ -28,7 +29,7 @@ class TournamentController extends Controller
     {
         $this->view = new View();
         $this->tdg = new TournamentTDG();
-        if (!$_SESSION['token_tournament']) {
+        if (!isset($_SESSION['token_tournament'])) {
             $_SESSION['token_tournament'] = md5(uniqid(mt_rand(), true));
         }
 
@@ -73,9 +74,19 @@ class TournamentController extends Controller
     public function actionShow($tournamentId)
     {
         $tournament = (new TournamentTDG())->getTournamentById($tournamentId);
+
+        if (!$tournament) {
+            exit;
+        }
+
         $errors = [];
 
         $this->is_owner = $this->user && $tournament->getOwnerId() == $this->user->getId() ? true : false;
+
+        if ($tournament->is_shown == false && !$this->is_owner) {
+            $this->view->render('temporary_hidden');
+            exit;
+        }
 
         if ($tournament) {
             if ($this->is_owner) {
@@ -92,7 +103,7 @@ class TournamentController extends Controller
                                 if ($tournament->getStatus() == Tournament::STATUS_IN_PROGRESS) {
                                     $playersPlaying = count($tournament->getPlayers()) - count($tournament->getWaitingPlayers()) - count($tournament->getLoosers());
 
-                                    if (!(isset($_POST['winners']) && !empty($_POST['winners']) && is_array($_POST['winners'])) || count($_POST['winners']) != ($playersPlaying) / 10) {
+                                    if (!isset($_POST['winners']) || !is_array($_POST['winners']) || count(Arr::flatten($tournament->getToss())) / 2 !== count($_POST['winners'])) {
                                         $errors[] = 'Отмечены не все победители';
                                     }
                                     if (!$errors) {
@@ -100,7 +111,9 @@ class TournamentController extends Controller
                                             'winners' => $_POST['winners'] ?? '',
                                         ];
                                         $tournament->next($roundResult);
-                                        Utils::log($tournament);
+                                        if ($tournament->getStatus() !== Tournament::STATUS_ENDED) {
+                                            Utils::log($tournament);
+                                        }
                                     }
                                 }
                                 break;
@@ -109,6 +122,9 @@ class TournamentController extends Controller
                                 break;
                             case 'finish':
                                 $tournament->end();
+                                break;
+                            case 'toggle_visibility':
+                                $tournament->toggleVisibility();
                                 break;
                             case 'replace':
                                 $playerIds = $_POST['replace'] ?? [];
@@ -155,7 +171,6 @@ class TournamentController extends Controller
 
     public function actionAdd(array $errors = null, array $values = null)
     {
-
         $values = $errors = [];
 
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {

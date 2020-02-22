@@ -37,6 +37,9 @@
 
                                                 <thead class="thead">
                                                 <tr>
+                                                    {% if is_owner %}
+                                                        <th scope="col"></th>
+                                                    {% endif %}
                                                     <th scope="col">Ник</th>
                                                     {% if t.type == 2 %}
                                                         <th scope="col">Регион</th>
@@ -47,13 +50,16 @@
                                                     {% endif %}
                                                     <th scope="col">Побед</th>
                                                     <th scope="col">Игр</th>
-                                                    <th scope="col"></th>
                                                 </tr>
                                                 </thead>
 
                                                 <tbody>
                                                 {% for p in t.playersByTeam(team) %}
                                                     <tr>
+                                                        {% if is_owner %}
+                                                            <td><input class="replace" type="checkbox" name="replace[]"
+                                                                       value="{{ p.id }}"></td>
+                                                        {% endif %}
                                                         <td>{{ p.nickname }}</td>
                                                         {% if t.type == 2 %}
                                                             <td>{{ p.region }}</td>
@@ -75,8 +81,6 @@
                                                         {% endif %}
                                                         <td>{{ p.wins }}</td>
                                                         <td>{{ p.getGamesPlayed|default(0) }}</td>
-                                                        <td><input class="replace" type="checkbox" name="replace[]"
-                                                                   value="{{ p.id }}"></td>
                                                     </tr>
                                                 {% endfor %}
                                                 </tbody>
@@ -107,6 +111,7 @@
             <table class="table table-striped">
                 <thead class="thead-light">
                 <tr>
+                    <th scope="col"></th>
                     <th scope="col">Ник</th>
                     {% if t.type == 2 %}
                         <th scope="col">Регион</th>
@@ -115,12 +120,15 @@
                     <th scope="col">Побед</th>
                     <th scope="col">Игр сыграно</th>
                     <th scope="col">Отметка</th>
-                    <th scope="col"></th>
                 </tr>
                 </thead>
                 <tbody>
                 {% for p in t.waitingPlayers %}
                     <tr>
+                        {% if is_owner %}
+                            <td><input class="replace" type="checkbox" name="replace[]" value="{{ p.id }}">
+                            </td>
+                        {% endif %}
                         <td>{{ p.nickname }}</td>
                         {% if t.type == 2 %}
                             <td>{{ p.region }}</td>
@@ -134,8 +142,6 @@
                             {% if p.isSuspended %}
                                 <span class="badge badge-pill badge-danger">Отстранен от раунда</span>
                             {% endif %}
-                        </td>
-                        <td><input class="replace" type="checkbox" name="replace[]" value="{{ p.id }}">
                         </td>
                     </tr>
                 {% endfor %}

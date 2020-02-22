@@ -30,6 +30,7 @@ class Utils
         foreach ($tournament->getToss() ?? [] as $pair) {
             $data .= $pair[0] . '-' . $pair[1] . "<br>";
         }
+        $data .= "<br>";
         foreach ($tournament->getPlayers() as $player) {
             $data .= $player . "<br>";
         }

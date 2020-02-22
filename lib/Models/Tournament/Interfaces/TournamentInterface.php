@@ -68,4 +68,6 @@ interface TournamentInterface
     public function setType($type): void;
 
     public function swapPlayersTeams(array $playerIds);
+
+    public function toggleVisibility();
 }

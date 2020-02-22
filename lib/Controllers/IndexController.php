@@ -28,7 +28,7 @@ class IndexController
         $values = [];
         $user = '';
 
-        if(isset($_COOKIE['auth'])) {
+        if (isset($_COOKIE['auth'])) {
             $user = new User($_COOKIE['auth']);
         } elseif ($_SERVER['REQUEST_METHOD'] == 'POST') {
             //CSRF protection
@@ -48,7 +48,7 @@ class IndexController
                 }
             }
 
-            if(!empty($errors)) {
+            if (!empty($errors)) {
                 unset($user);
             }
 
@@ -58,11 +58,11 @@ class IndexController
                 } else {
                     setcookie('auth', $user->getId(), 0, '/', '', false, true);
                 }
-                if(!$_SESSION['token_logout']) {
-                    $_SESSION['token_logout'] = md5(uniqid(mt_rand(),true));
+                if (!isset($_SESSION['token_logout'])) {
+                    $_SESSION['token_logout'] = md5(uniqid(mt_rand(), true));
                 }
                 http_response_code(302);
-                $query = http_build_query(['notify'=>'logined']);
+                $query = http_build_query(['notify' => 'logined']);
                 header("Location: /index?$query");
             }
         }
@@ -77,21 +77,18 @@ class IndexController
 
     public function actionLogout()
     {
-
-        if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-            //CSRF protection
-            if (isset($_POST['token_logout']) || $_SESSION['token_logout'] !== $_POST['token_logout']) {
-                setcookie('auth',null,-1, '/');
-                $notify = 'logout';
+        //CSRF protection
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['token_logout'])) {
+            if (!($_SESSION['token_logout'] !== $_POST['token_logout'])) {
+                setcookie('auth', null, -1, '/');
                 session_unset();
                 session_destroy();
-                header("Location: /index");
-                }
+                session_cache_expire();
             }
+        }
 
-        $this->view->render('index', [
-            'notify' => $notify
-        ]);
+        header("Location: /index");
+        exit;
     }
 
 }
