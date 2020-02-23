@@ -56,9 +56,6 @@ class TossInterregional implements Toss
         //Имена комманд
         $teamNames = Utils::getDotaTeamNames();
 
-        $waited = $this->sortByGamesPlayed($waited);
-        $other = $this->sortByGamesPlayed($other);
-
         //Получаем игроков для каждого региона
         $playersByRegion = [];
         //Сначала ждавшие
@@ -77,12 +74,14 @@ class TossInterregional implements Toss
         //Раскручиваем каждый регион
         foreach ($playersByRegion as $regionName => $players) {
 
+            $players = $this->sortByGamesPlayed($players);
             //While count of players > 5 we not mixing teams
             if (count($players) >= 5) {
                 $toWait = array_merge($toWait, Arr::popModuloFromEnd($players, 5));
                 foreach ($players as $player) {
                     $toPlay[] = $player;
                     $player->setTeam(current($teamNames));
+                    $player->save();
                     if ($i == 5) {
                         $i = 1;
                         $this->regions[$regionName][] = current($teamNames);
@@ -103,6 +102,7 @@ class TossInterregional implements Toss
         foreach ($toMix as $player) {
             $toPlay[] = $player;
             $player->setTeam(current($teamNames));
+            $player->save();
             if ($i == 5) {
                 $i = 1;
                 $this->regions['MIX'][] = current($teamNames);
@@ -128,11 +128,10 @@ class TossInterregional implements Toss
             }
         }
 
-        if (count(Arr::flatten($this->regions)) % 2) xdebug_break();
-
         //Ждущие + последние игроки из миксуемых (не хватит на команду) + игроки из непарной команды
         foreach (array_merge($last, $toWait, $withoutPair) as $player) {
             $player->setTeam(Players::STATUS_WAIT);
+            $player->save();
         }
     }
 
@@ -147,8 +146,9 @@ class TossInterregional implements Toss
         foreach ($playersByGamesPlayed as $gamesPlayed => $players) {
             $item = $players;
             shuffle($item);
-            $result += $item;
+            $result = array_merge($result, $item);
         }
+        if (count($result) !== count($players)) xdebug_break();
         return $result;
     }
 
@@ -199,14 +199,5 @@ class TossInterregional implements Toss
         }
         $toss[$groupNumber] = $group;
         return $toss;
-    }
-
-    /**
-     * Returns players after tossing
-     * @return mixed
-     */
-    public function getPlayers()
-    {
-        return $this->players;
     }
 }

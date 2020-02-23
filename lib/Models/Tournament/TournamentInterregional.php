@@ -86,14 +86,10 @@ class TournamentInterregional extends Tournament implements TournamentInterface
     {
         $toss = new TossInterregional($this);
 
+        //Обновляет игроков и жеребьевку
         $this->toss = $toss->run();
 
-        $this->players = $toss->getPlayers();
-
-        /** @var Players $player */
-        foreach ($this->players as $player) {
-            $player->save();
-        }
+        $this->setPlayers();
     }
 
     /**

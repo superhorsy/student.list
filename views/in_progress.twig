@@ -1,3 +1,10 @@
+{% if is_owner %}
+    <button name='tournament_action' value='toggle_visibility' type="submit" class="btn btn-secondary">
+        Переключить
+        видимость турнира (сейчас
+        - {% if t.is_shown == 1 %} видим {% else %} невидим {% endif %})
+    </button>
+{% endif %}
 <!--Кнопки управления-->
 {% if is_owner %}
     <div class="fixed-bottom btn-group container-fluid" role="group">
