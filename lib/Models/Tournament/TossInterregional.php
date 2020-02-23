@@ -92,19 +92,7 @@ class TossInterregional implements Toss
                     }
                 }
             } elseif (count($players) < 5) {
-                $toMix = array_merge($toMix, Arr::popModuloFromEnd($players, 5));
-
-                foreach ($players as $player) {
-                    $toPlay[] = $player;
-                    $player->setTeam(current($teamNames));
-                    if ($i == 5) {
-                        $i = 1;
-                        $this->regions[$regionName][] = current($teamNames);
-                        next($teamNames);
-                    } else {
-                        $i++;
-                    }
-                }
+                $toMix = array_merge($toMix, $players);
             }
         }
 
