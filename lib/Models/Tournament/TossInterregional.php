@@ -72,6 +72,8 @@ class TossInterregional implements Toss
 
         $i = 1;
 
+        Arr::shuffle_assoc($playersByRegion);
+
         //Раскручиваем каждый регион
         foreach ($playersByRegion as $regionName => $players) {
 
@@ -106,8 +108,8 @@ class TossInterregional implements Toss
             }
         }
 
-        $last = Arr::popModuloFromEnd($toMix, 5);
         $toMix = $this->sortByGamesPlayed($toMix);
+        $last = Arr::popModuloFromEnd($toMix, 5);
 
         //Команды для игроков из неполных команд
         foreach ($toMix as $player) {
@@ -137,6 +139,8 @@ class TossInterregional implements Toss
                 }
             }
         }
+
+        if (count(Arr::flatten($this->regions)) % 2) xdebug_break();
 
         //Ждущие + последние игроки из миксуемых (не хватит на команду) + игроки из непарной команды
         foreach (array_merge($last, $toWait, $withoutPair) as $player) {

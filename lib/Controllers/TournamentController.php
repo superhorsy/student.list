@@ -101,8 +101,6 @@ class TournamentController extends Controller
                                 break;
                             case 'next':
                                 if ($tournament->getStatus() == Tournament::STATUS_IN_PROGRESS) {
-                                    $playersPlaying = count($tournament->getPlayers()) - count($tournament->getWaitingPlayers()) - count($tournament->getLoosers());
-
                                     if (!isset($_POST['winners']) || !is_array($_POST['winners']) || count(Arr::flatten($tournament->getToss())) / 2 !== count($_POST['winners'])) {
                                         $errors[] = 'Отмечены не все победители';
                                     }
